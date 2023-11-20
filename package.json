@@ -1,29 +1,16 @@
 {
-  "name": "sequel-embed-toolkit",
-  "version": "1.0.0",
-  "description": "The Sequel toolkit to enable embedding on all website builds",
-  "main": "src/app.js",
+  "name": "sequel-embed-kit",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "clean": "tsc --build --clean"
+    "preview": "vite preview"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/introvoke/sequel-embed-toolkit.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/introvoke/sequel-embed-toolkit/issues"
-  },
-  "homepage": "https://github.com/introvoke/sequel-embed-toolkit#readme",
   "devDependencies": {
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^20.9.2",
+    "@vitejs/plugin-basic-ssl": "^1.0.2",
     "typescript": "^5.2.2",
     "vite": "^5.0.0"
   },
