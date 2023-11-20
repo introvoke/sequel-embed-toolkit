@@ -16,7 +16,7 @@ export interface MarketoFormSettings {
   formId: string;
 }
 
-class SequelUtility {
+export class SequelUtility {
   public static getUrlParameter(name: string): string {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     const regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
@@ -31,7 +31,7 @@ class SequelUtility {
   }
 
   public static setSequelCookie(joinCode: string): string {
-    return Cookies.set("sequel", joinCode, { secure: true });
+    return Cookies.set("sequel", joinCode, { secure: true }) ?? "";
   }
 
   public static async getUserJoinInformation(
@@ -82,13 +82,9 @@ class SequelUtility {
     }
 
     if (displayForm && (window as any).MktoForms2) {
-      (window as any).MktoForms2.loadForm(
-        marketoUrl,
-        marketoId,
-        marketoFormId
-      );
-      (window as any).MktoForms2.whenReady((e) => {
-        e.onSuccess(function (a, b) {
+      (window as any).MktoForms2.loadForm(marketoUrl, marketoId, marketoFormId);
+      (window as any).MktoForms2.whenReady((e: any) => {
+        e.onSuccess(function (a: any) {
           fetch("http://localhost:8000/api/v3/events/registrant/marketo", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
