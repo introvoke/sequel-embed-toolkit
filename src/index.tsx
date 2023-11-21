@@ -49,7 +49,16 @@ class Sequel {
               const form = document.getElementById(`mktoForm_${marketoFormId}`);
               if (form) form.style.display = "none";
 
-              renderApp(<MarketoRegistrationSuccess />);
+              renderApp(
+                <MarketoRegistrationSuccess
+                  onOpenEvent={() =>
+                    Sequel.renderEvent({
+                      eventId: sequelEventId,
+                      joinCode: registeredAttendeee.joinCode,
+                    })
+                  }
+                />
+              );
             };
             completeRegistration();
             return false;
