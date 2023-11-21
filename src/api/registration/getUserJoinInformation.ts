@@ -1,0 +1,30 @@
+import axios from "axios";
+import { ApiConfig } from "@src/api/apiConfig";
+
+interface UserJoinInformationRequest {
+  eventId: string;
+  joinCode: string;
+}
+
+interface UserJoinInformationResponse {
+  uid: string;
+  name: string;
+  email: string;
+  join_url: string;
+  joinCode: string;
+  authToken?: string;
+  metadata?: unknown;
+}
+
+export const getUserJoinInformation = async ({
+  eventId,
+  joinCode,
+}: UserJoinInformationRequest): Promise<UserJoinInformationResponse> => {
+  const configUrl = `${ApiConfig.GetApiUrl()}/api/v3/events/${eventId}/join/${joinCode}`;
+  const response = await axios.get(configUrl, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data: UserJoinInformationResponse = await response.data;
+  return data;
+};
