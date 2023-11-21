@@ -44,7 +44,7 @@ export async function getUserJoinInformation(
   eventId: string,
   joinCode: string
 ): Promise<RegisteredAttendeeResponse> {
-  const configUrl = `https://api.introvoke.com/api/v3/events/${eventId}/join/${joinCode}`;
+  const configUrl = `https://stg-api.introvoke.com/api/v3/events/${eventId}/join/${joinCode}`;
   const response = await fetch(configUrl, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
@@ -60,7 +60,7 @@ export function registerAttendee(
   companyId: string
 ) {
   fetch(
-    "http://localhost:8000/api/v3/events/registrant/marketo",
+    "https://stg-api.introvoke.com/api/v3/events/registrant/marketo",
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -77,6 +77,47 @@ export function registerAttendee(
     if (info && info.joinCode) {
       setSequelCookie(info.joinCode);
     }
+
+    // Create header div
+const headerDiv = document.createElement('div');
+headerDiv.className = 'mb-8 flex w-full flex-col gap-2 px-9';
+
+// Create h1 element for title
+const h1 = document.createElement('h1');
+h1.className = 'z-10 text-2xl font-bold';
+h1.textContent = "Registration confirmed!";
+
+// Create p element for description
+const descriptionParagraph = document.createElement('p');
+descriptionParagraph.className = 'z-10 text-sm font-normal text-gray-400';
+descriptionParagraph.textContent = "Congratulations! You have successfully registered for this event. Please check your email for a confirmation message.";
+
+// Append elements to header div
+headerDiv.appendChild(h1);
+headerDiv.appendChild(descriptionParagraph);
+
+// Create poweredBy div if showPoweredBy is true
+const poweredByDiv = document.createElement('div');
+poweredByDiv.className = 'sticky bottom-0 z-10 mt-auto flex w-full items-center justify-center bg-white px-2 pb-6 pt-3';
+
+  const poweredByLink = document.createElement('a');
+  poweredByLink.href = 'https://www.sequel.io/?utm_source=powered-by&utm_medium=chat-logo';
+  poweredByLink.target = '_blank';
+  poweredByLink.rel = 'noopener noreferrer';
+  poweredByLink.className = 'h-[14px] w-[130px]';
+
+  const poweredByImage = document.createElement('img');
+  poweredByImage.src = "https://embed.sequel.io/static/media/powered-by-sequel.34d21aa1d644c4617949.jpg";
+  poweredByImage.alt = 'Powered by Sequel';
+  poweredByImage.className = 'h-full w-full';
+
+  poweredByLink.appendChild(poweredByImage);
+  poweredByDiv.appendChild(poweredByLink);
+  document.body.appendChild(headerDiv);
+  document.body.appendChild(poweredByDiv);
+
+  const form = document.getElementById(`mktoForm_${formId}`) as HTMLFormElement;
+  form.style.display = 'none';
 
     return false;
   }).catch((error) => {
