@@ -26,6 +26,7 @@ export const registerMarketoAttendee = async ({
     name,
     email,
     formId,
+    url: window.location.href.split("?")[0],
     companyId,
   });
   const data: RegisterMarketoAttendeeResponse = await response.data;

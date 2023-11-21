@@ -35,7 +35,7 @@ class Sequel {
       onDocumentReady(() => {
         window.MktoForms2?.loadForm(marketoUrl, marketoId, marketoFormId);
         window.MktoForms2?.whenReady((e) => {
-          e.onSuccess(async (registrant) => {
+          e.onSuccess((registrant) => {
             const completeRegistration = async () => {
               const registeredAttendeee =
                 await registrationApi.registerMarketoAttendee({
