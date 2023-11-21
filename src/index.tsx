@@ -36,22 +36,27 @@ class Sequel {
         window.MktoForms2?.loadForm(marketoUrl, marketoId, marketoFormId);
         window.MktoForms2?.whenReady((e) => {
           e.onSuccess(async (registrant) => {
-            const registeredAttendeee =
-              await registrationApi.registerMarketoAttendee({
-                name: `${registrant.FirstName} ${registrant.LastName}`,
-                email: registrant.Email,
-                formId: marketoFormId,
-                companyId: sequelCompanyId,
-              });
-            setSequelJoinCodeCookie(registeredAttendeee.joinCode);
+            const completeRegistration = async () => {
+              const registeredAttendeee =
+                await registrationApi.registerMarketoAttendee({
+                  name: `${registrant.FirstName} ${registrant.LastName}`,
+                  email: registrant.Email,
+                  formId: marketoFormId,
+                  companyId: sequelCompanyId,
+                });
+              setSequelJoinCodeCookie(registeredAttendeee.joinCode);
 
-            (
-              document.getElementById(
-                `mktoForm_${marketoFormId}`
-              ) as HTMLFormElement
-            ).style.display = "none";
+              (
+                document.getElementById(
+                  `mktoForm_${marketoFormId}`
+                ) as HTMLFormElement
+              ).style.display = "none";
 
-            renderApp(<MarketoRegistrationSuccess />);
+              renderApp(<MarketoRegistrationSuccess />);
+
+              return false;
+            };
+            return completeRegistration();
           });
         });
       });

@@ -3,13 +3,6 @@ import axios from "axios";
 
 rax.attach();
 
-// Check staging for introvoke/stellar and vercel domains
-const STAGING_REGEX =
-  /^https?:\/\/(stg-\w+\.(introvoke.com|getstellar.io|sequel.io))|(stg-(introvoke|stellar|sequel)-\w+\.vercel.app)/i;
-// Check staging for introvoke/stellar and vercel domains, plus vercel preview deployments
-const DEV_REGEX =
-  /^https?:\/\/(dev-\w+\.(introvoke.com|getstellar.io|sequel.io))|((.+-(introvoke|stellar|sequel))|(dev-(introvoke|stellar|sequel)-\w+)\.vercel\.app)/i;
-
 interface AppSyncConfigType {
   aws_appsync_graphqlEndpoint: string;
   aws_appsync_region: string;
@@ -75,52 +68,42 @@ const AppSyncConfig: Endpoints<AppSyncConfigType> = {
 };
 
 const getCurrentEndpoint = <T>(endpoints: Endpoints<T>) => {
-  if (process.env.NODE_ENV === "test") {
-    return endpoints.TEST;
+  switch (import.meta.env.VITE_APP_ENV) {
+    case "test":
+      return endpoints.TEST;
+    case "stg":
+      return endpoints.STAGING;
+    case "prod":
+      return endpoints.PRODUCTION;
+    default:
+      return endpoints.DEV;
   }
-
-  const origin = window.location.origin;
-
-  // Check staging specific regex first as the dev one can match on `stg-introvoke`
-  if (STAGING_REGEX.test(origin)) {
-    return endpoints.STAGING;
-  }
-
-  if (
-    process.env.NODE_ENV === "development" ||
-    origin.includes("localhost") ||
-    DEV_REGEX.test(origin)
-  ) {
-    return endpoints.DEV;
-  }
-
-  return endpoints.PRODUCTION;
 };
 
 const GetAnalyticsUrl = (): string => {
-  if (process.env.REACT_APP_ANALYTICS_ENDPOINT) {
-    return process.env.REACT_APP_ANALYTICS_ENDPOINT;
+  if (import.meta.env.REACT_APP_ANALYTICS_ENDPOINT) {
+    return import.meta.env.REACT_APP_ANALYTICS_ENDPOINT;
   }
   return getCurrentEndpoint(AnalyticsEndpoints);
 };
 
 const GetApiUrl = (): string => {
-  if (process.env.REACT_APP_API_ENDPOINT) {
-    return process.env.REACT_APP_API_ENDPOINT;
+  if (import.meta.env.REACT_APP_API_ENDPOINT) {
+    return import.meta.env.REACT_APP_API_ENDPOINT;
   }
   return getCurrentEndpoint(ApiEndpoints);
 };
 
 const GetDemoSiteUrl = () => {
-  if (process.env.REACT_APP_DEMO_ENDPOINT) {
-    return process.env.REACT_APP_DEMO_ENDPOINT;
+  if (import.meta.env.REACT_APP_DEMO_ENDPOINT) {
+    return import.meta.env.REACT_APP_DEMO_ENDPOINT;
   }
   return getCurrentEndpoint(DemoAppEndpoints);
 };
 
 const GetEmbedUrl = () => {
-  if (process.env.REACT_APP_EMBED_ENDPOINT) {
-    return process.env.REACT_APP_EMBED_ENDPOINT;
+  if (import.meta.env.REACT_APP_EMBED_ENDPOINT) {
+    return import.meta.env.REACT_APP_EMBED_ENDPOINT;
   }
   return getCurrentEndpoint(EmbedEndpoints);
 };
@@ -172,13 +155,14 @@ const isAnalyticsApiAvailable = () =>
  */
 const GetAppSyncConfig = (): AppSyncConfigType => {
   if (
-    process.env.REACT_APP_AWS_APPSYNC_GRAPHQL &&
-    process.env.REACT_APP_AWS_APPSYNC_REGION
+    import.meta.env.REACT_APP_AWS_APPSYNC_GRAPHQL &&
+    import.meta.env.REACT_APP_AWS_APPSYNC_REGION
   ) {
     return {
       // NOTE: This config comes from the aws-exports.js file
-      aws_appsync_graphqlEndpoint: process.env.REACT_APP_AWS_APPSYNC_GRAPHQL,
-      aws_appsync_region: process.env.REACT_APP_AWS_APPSYNC_REGION,
+      aws_appsync_graphqlEndpoint: import.meta.env
+        .REACT_APP_AWS_APPSYNC_GRAPHQL,
+      aws_appsync_region: import.meta.env.REACT_APP_AWS_APPSYNC_REGION,
       aws_appsync_authenticationType: "AWS_LAMBDA",
     };
   }

@@ -23,14 +23,10 @@ export const registerMarketoAttendee = async ({
 }: RegisterMarketoAttendeeRequest): Promise<RegisterMarketoAttendeeResponse> => {
   const configUrl = `${ApiConfig.GetApiUrl()}/api/v3/events/registrant/marketo`;
   const response = await axios.post(configUrl, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-    data: {
-      name,
-      email,
-      formId,
-      companyId,
-    },
+    name,
+    email,
+    formId,
+    companyId,
   });
   const data: RegisterMarketoAttendeeResponse = await response.data;
   return data;

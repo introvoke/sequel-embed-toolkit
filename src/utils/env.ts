@@ -6,6 +6,6 @@ export type Environment = "dev" | "test" | "stg" | "prod";
  * @returns The current environment related to our applications
  */
 export const getEnvironment = () =>
-  process.env.NODE_ENV === "test"
+  import.meta.env.NODE_ENV === "test"
     ? "test"
-    : (process.env.NEXT_PUBLIC_ENVIRONMENT as Environment);
+    : (import.meta.env.NEXT_PUBLIC_ENVIRONMENT as Environment);
