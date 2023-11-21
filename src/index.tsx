@@ -4,6 +4,7 @@ import { getValidatedJoinCode } from "@src/utils/user";
 import registrationApi from "@src/api/registration";
 import { MarketoRegistrationSuccess } from "./routes/MarketoRegistrationSuccess";
 import { EmbedIframe } from "./routes/EmbedIframe";
+import { getEvent } from "./api/event/getEvent";
 
 interface RenderMarketoFormParams {
   marketoUrl: string;
@@ -26,10 +27,11 @@ class Sequel {
     sequelCompanyId,
     sequelEventId,
   }: RenderMarketoFormParams) => {
-    // done this
     const joinCode = await getValidatedJoinCode({
       eventId: sequelEventId,
     });
+
+    const event = await getEvent(sequelEventId);
 
     if (!joinCode) {
       onDocumentReady(() => {
@@ -51,6 +53,8 @@ class Sequel {
 
               renderApp(
                 <MarketoRegistrationSuccess
+                  event={event}
+                  joinCode={registeredAttendeee.joinCode}
                   onOpenEvent={() =>
                     Sequel.renderEvent({
                       eventId: sequelEventId,

@@ -19,14 +19,14 @@ interface Endpoints<T = string> {
 const ApiEndpoints: Endpoints = {
   PRODUCTION: "https://api.introvoke.com",
   STAGING: "https://stg-api.introvoke.com",
-  DEV: "https://dev-api.introvoke.com",
+  DEV: "http://localhost:8000",
   TEST: "https://test-api.introvoke.com",
 };
 
 const EmbedEndpoints: Endpoints = {
   PRODUCTION: "https://embed.sequel.io",
   STAGING: "https://stg-embed.sequel.io",
-  DEV: "https://dev-embed.sequel.io",
+  DEV: "https://embed.sequel.io",
   TEST: "https://test-embed.sequel.io",
 };
 

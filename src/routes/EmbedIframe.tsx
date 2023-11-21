@@ -10,6 +10,7 @@ export const EmbedIframe = ({ eventId, joinCode }: EmbedIframeProps) => {
   return (
     <iframe
       allowFullScreen
+      style={{height: "80vh", borderRadius: "12px", border: "1px solid #dbdfec", boxShadow: "3px 3px 10px 0 rgb(20 20 43 / 4%)" }}
       frameBorder="0"
       allow="camera *; microphone *; autoplay; display-capture *"
       className=""
