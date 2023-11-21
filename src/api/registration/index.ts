@@ -1,5 +1,5 @@
 import { getUserJoinInformation } from "./getUserJoinInformation";
-import { registerMarketoAttendee } from "./registerMarketoAttendee.ts";
+import { registerMarketoAttendee } from "./registerMarketoAttendee";
 
 export default {
   getUserJoinInformation,
