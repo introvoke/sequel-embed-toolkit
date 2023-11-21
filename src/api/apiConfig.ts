@@ -30,6 +30,13 @@ const ApiEndpoints: Endpoints = {
   TEST: "https://test-api.introvoke.com",
 };
 
+const EmbedEndpoints: Endpoints = {
+  PRODUCTION: "https://embed.sequel.io",
+  STAGING: "https://stg-embed.sequel.io",
+  DEV: "https://dev-embed.sequel.io",
+  TEST: "https://test-embed.sequel.io",
+};
+
 const AnalyticsEndpoints: Endpoints = {
   PRODUCTION: "https://analytics.introvoke.com",
   STAGING: "https://stg-analytics.introvoke.com",
@@ -111,6 +118,13 @@ const GetDemoSiteUrl = () => {
   return getCurrentEndpoint(DemoAppEndpoints);
 };
 
+const GetEmbedUrl = () => {
+  if (process.env.REACT_APP_EMBED_ENDPOINT) {
+    return process.env.REACT_APP_EMBED_ENDPOINT;
+  }
+  return getCurrentEndpoint(EmbedEndpoints);
+};
+
 /**
  * Makes an HTTP request to a resource URL to validate whether the endpoint
  * returns a successful response
@@ -176,6 +190,7 @@ export const ApiConfig = {
   GetApiUrl,
   GetAnalyticsUrl,
   GetDemoSiteUrl,
+  GetEmbedUrl,
   GetAppSyncConfig,
   isAnalyticsApiAvailable,
   isApiAvailable,

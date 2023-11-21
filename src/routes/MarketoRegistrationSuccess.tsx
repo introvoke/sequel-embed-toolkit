@@ -24,6 +24,7 @@ export const MarketoRegistrationSuccess = () => {
           </p>
         </div>
         <div className="flex-col flex gap-2">
+          {/** need to render event :thinking: */}
           <Button variant="primary" className="w-full">
             Join Session
           </Button>

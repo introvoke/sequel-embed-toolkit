@@ -13,14 +13,12 @@ export const onDocumentReady = (callback: () => void) => {
 };
 
 let appRoot: Root;
-export const renderApp = (App: React.ComponentType) => {
+export const renderApp = (app: React.ReactNode) => {
   appRoot?.unmount();
   appRoot = createRoot(document.getElementById("sequel_root")!);
   appRoot.render(
     <React.StrictMode>
-      <Providers>
-        <App />
-      </Providers>
+      <Providers>{app}</Providers>
     </React.StrictMode>
   );
 };
