@@ -46,17 +46,13 @@ class Sequel {
                 });
               setSequelJoinCodeCookie(registeredAttendeee.joinCode);
 
-              (
-                document.getElementById(
-                  `mktoForm_${marketoFormId}`
-                ) as HTMLFormElement
-              ).style.display = "none";
+              const form = document.getElementById(`mktoForm_${marketoFormId}`);
+              if (form) form.style.display = "none";
 
               renderApp(<MarketoRegistrationSuccess />);
-
-              return false;
             };
-            return completeRegistration();
+            completeRegistration();
+            return false;
           });
         });
       });
