@@ -1,25 +1,29 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
+  <body>
+    <p class="text-7xl">Testing</p>
+    <br /><br />
+    <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
+    <form id="mktoForm_1024"></form>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite + TS</title>
-</head>
+    <div id="sequel_root"></div>
+    <script type="module" src="/src/index.tsx"></script>
 
-<body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.ts"></script>
-  <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
-  <form id="mktoForm_1024"></form>
-  <script type="module">
-    // Wait for the DOM to be fully loaded
-    document.addEventListener('DOMContentLoaded', () => {
-      // Call your function here
-      renderMarketoOfSequelForm("//882-TRU-959.mktoweb.com", "882-TRU-959", "1024", "d5907d53-e996-4db5-9575-6b9c17b0df1e", "4f82ab5f-0e92-4534-95a5-bb45a15caecb");
-    });
-  </script>
-</body>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+          Sequel.renderMarketoSequelRegistration({
+            marketoUrl: "//882-TRU-959.mktoweb.com",
+            marketoId: "882-TRU-959",
+            marketoFormId: "1024",
+            sequelCompanyId: "d5907d53-e996-4db5-9575-6b9c17b0df1e",
+            sequelEventId: "4f82ab5f-0e92-4534-95a5-bb45a15caecb"
+          })
+        });
+    </script>
+  </body>
 </html>
