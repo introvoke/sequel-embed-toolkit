@@ -1,12 +1,17 @@
 import { Button, FeaturedIcon } from "@introvoke/react";
 import CheckVerifiedIcon from "@introvoke/react/icons/CheckVerified01";
-import CalendarPlusIcon from "@introvoke/react/icons/CalendarPlus02";
+import { Event } from "@src/api/event/event";
+import AddToCalendar from "@src/components/AddToCalendar";
 
 interface MarketoRegistrationSuccessProps {
+  event: Event;
+  joinCode: string;
   onOpenEvent: () => void;
 }
 
 export const MarketoRegistrationSuccess = ({
+  event,
+  joinCode,
   onOpenEvent,
 }: MarketoRegistrationSuccessProps) => {
   return (
@@ -31,16 +36,10 @@ export const MarketoRegistrationSuccess = ({
         </div>
         <div className="flex-col flex gap-2">
           {/** need to render event :thinking: */}
-          <Button variant="primary" className="w-full" onClick={onOpenEvent}>
+          <Button variant="primary" className="max-w-[180px]" onClick={onOpenEvent}>
             Join Session
           </Button>
-          <Button
-            variant="secondary"
-            className="w-full"
-            startIcon={CalendarPlusIcon}
-          >
-            Add to Calendar
-          </Button>
+          <AddToCalendar event={event} joinCode={joinCode} />
         </div>
       </div>
     </div>
