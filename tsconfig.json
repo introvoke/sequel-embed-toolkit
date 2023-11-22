@@ -15,7 +15,9 @@
     "jsx": "react-jsx",
     "baseUrl": "./src",
     "paths": {
-      "@src/*": ["./*"]
+      "@src/*": ["./*"],
+      "react": ["./node_modules/preact/compat/"],
+      "react-dom": ["./node_modules/preact/compat/"]
     },
     /* Linting */
     "strict": true,

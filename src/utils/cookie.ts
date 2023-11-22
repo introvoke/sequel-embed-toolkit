@@ -1,4 +1,4 @@
-import Cookies from "cookie-js";
+import Cookies from "js-cookie";
 
 export function getSequelJoinCodeCookie(): string | null {
   return Cookies.get("sequel") ?? null;

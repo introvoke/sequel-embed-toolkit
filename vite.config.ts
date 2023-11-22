@@ -9,6 +9,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@src": path.resolve(__dirname, "./src"),
+      react: "preact/compat",
+      "react-dom/test-utils": "preact/test-utils",
+      "react-dom": "preact/compat",
     },
   },
   optimizeDeps: {

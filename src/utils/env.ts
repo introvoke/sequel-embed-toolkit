@@ -8,4 +8,4 @@ export type Environment = "dev" | "test" | "stg" | "prod";
 export const getEnvironment = () =>
   import.meta.env.NODE_ENV === "test"
     ? "test"
-    : (import.meta.env.NEXT_PUBLIC_ENVIRONMENT as Environment);
+    : (import.meta.env.VITE_APP_ENV as Environment);
