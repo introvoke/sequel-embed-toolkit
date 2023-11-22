@@ -2,12 +2,18 @@ import { Button } from "@src/components/Button";
 import { FeaturedIcon } from "@src/components/FeaturedIcon";
 import CheckVerifiedIcon from "@src/components/CheckVerified01";
 import CalendarPlusIcon from "@src/components/CalendarPlus02";
+import { Event } from "@src/api/event/event";
+import AddToCalendarButton from "@src/components/AddToCalendarButton";
 
 interface MarketoRegistrationSuccessProps {
+  event: Event;
+  joinCode: string;
   onOpenEvent: () => void;
 }
 
 export const MarketoRegistrationSuccess = ({
+  event,
+  joinCode,
   onOpenEvent,
 }: MarketoRegistrationSuccessProps) => {
   return (
@@ -35,13 +41,15 @@ export const MarketoRegistrationSuccess = ({
           <Button variant="primary" className="w-full" onClick={onOpenEvent}>
             Join Session
           </Button>
-          <Button
+          <AddToCalendarButton
             variant="secondary"
             className="w-full"
             startIcon={CalendarPlusIcon}
+            event={event}
+            joinCode={joinCode}
           >
             Add to Calendar
-          </Button>
+          </AddToCalendarButton>
         </div>
       </div>
     </div>

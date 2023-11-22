@@ -7,7 +7,6 @@ interface RegisterMarketoAttendeeRequest {
   formId: string;
   companyId: string;
 }
-
 interface RegisterMarketoAttendeeResponse {
   joinUrl: string;
   authToken: string;

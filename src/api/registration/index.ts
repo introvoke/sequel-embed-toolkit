@@ -3,5 +3,5 @@ import { registerMarketoAttendee } from "./registerMarketoAttendee";
 
 export default {
   getUserJoinInformation,
-  registerMarketoAttendee,
+  registerMarketoAttendee
 };
