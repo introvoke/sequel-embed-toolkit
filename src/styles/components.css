@@ -1,0 +1,52 @@
+/* go with the lowest values to not hurt user experience */
+@supports not (container-type: inline-size) {
+  .sequel-video-player-controls {
+    bottom: -3px;
+    padding: 8px;
+  }
+
+  .sequel-video-player-logo {
+    height: 17.5px;
+    width: 70px;
+  }
+}
+
+.sequel-video-player-controls-duration-slider {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.sequel-video-player-controls-volume-slider {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.sequel-video-player-controls-slider .sequel-slider-thumb {
+  height: 12px;
+  width: 12px;
+  border-color: white;
+  background-color: var(--primary-color-700);
+}
+.sequel-video-player-controls-slider
+  .sequel-slider-track[data-orientation="horizontal"] {
+  height: 4px;
+}
+
+.sequel-video-player-controls-slider
+  .sequel-slider-track[data-orientation="vertical"] {
+  width: 4px;
+}
+
+.sequel-video-player-controls-slider .sequel-slider-track {
+  background-color: theme(colors[white] / 30%);
+}
+
+.sequel-video-player-controls-slider .sequel-slider-visited {
+  background-color: theme(colors[primary].700);
+}
+
+.sequel-video-player-controls-slider span {
+  pointer-events: none;
+  touch-action: none;
+  user-select: none;
+}

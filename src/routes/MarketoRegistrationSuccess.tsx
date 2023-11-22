@@ -1,6 +1,7 @@
-import { Button, FeaturedIcon } from "@introvoke/react";
-import CheckVerifiedIcon from "@introvoke/react/icons/CheckVerified01";
-import CalendarPlusIcon from "@introvoke/react/icons/CalendarPlus02";
+import { Button } from "@src/components/Button";
+import { FeaturedIcon } from "@src/components/FeaturedIcon";
+import CheckVerifiedIcon from "@src/components/CheckVerified01";
+import CalendarPlusIcon from "@src/components/CalendarPlus02";
 
 interface MarketoRegistrationSuccessProps {
   onOpenEvent: () => void;

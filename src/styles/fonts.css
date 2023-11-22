@@ -1,0 +1,126 @@
+@font-face {
+  font-family: "Sequel Grotesk";
+  src:
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684844/fonts/SequelGrotesk-Regular_dt7ntq.woff2")
+      format("woff2"),
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/SequelGrotesk-Regular_jhbahz.woff")
+      format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sequel Grotesk";
+  src:
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/SequelGrotesk-Medium_pscxii.woff2")
+      format("woff2"),
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/SequelGrotesk-Medium_dkwsix.woff")
+      format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sequel Grotesk";
+  src:
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/SequelGrotesk-Semibold_qdsdk4.woff2")
+      format("woff2"),
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684844/fonts/SequelGrotesk-Semibold_cy9dq9.woff")
+      format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sequel Grotesk";
+  src:
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684844/fonts/SequelGrotesk-Bold_dpiagg.woff2")
+      format("woff2"),
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/SequelGrotesk-Bold_xkhxtc.woff")
+      format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src:
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/Inter-Regular_u6t3u2.woff2")
+      format("woff2"),
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/Inter-Regular_adm1t7.woff")
+      format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src:
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/Inter-Medium_lobxzk.woff2")
+      format("woff2"),
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/Inter-Medium_jaaprb.woff")
+      format("woff");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src:
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/Inter-SemiBold_vdwuui.woff2")
+      format("woff2"),
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/Inter-SemiBold_nggceo.woff")
+      format("woff");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Inter";
+  src:
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/Inter-Bold_tvwuaq.woff2")
+      format("woff2"),
+    url("https://res.cloudinary.com/introvoke/raw/upload/v1691684843/fonts/Inter-Bold_mcahvq.woff")
+      format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
+* {
+  font-family: var(--font-family-body);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-display);
+}
+
+.text-xxs,
+.text-xs,
+.text-sm,
+.text-base,
+.text-lg,
+.text-xl {
+  font-family: var(--font-family-body);
+}
+
+.text-2xl,
+.text-3xl,
+.text-4xl,
+.text-5xl,
+.text-6xl,
+.text-7xl {
+  font-family: var(--font-family-display);
+}

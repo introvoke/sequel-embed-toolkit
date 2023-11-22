@@ -1,7 +1,4 @@
-import * as rax from "retry-axios";
 import axios from "axios";
-
-rax.attach();
 
 interface AppSyncConfigType {
   aws_appsync_graphqlEndpoint: string;

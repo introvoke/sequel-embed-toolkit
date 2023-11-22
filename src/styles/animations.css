@@ -1,0 +1,19 @@
+@keyframes loader-left-circle {
+  50% {
+    transform: scale(1.25) translateX(9px);
+    @apply bg-primary-500;
+  }
+  100% {
+    transform: scale(1) translateX(20px);
+  }
+}
+
+@keyframes loader-right-circle {
+  50% {
+    transform: scale(0.875) translateX(-10px);
+    @apply bg-primary-900;
+  }
+  100% {
+    transform: scale(1) translateX(-20px);
+  }
+}
