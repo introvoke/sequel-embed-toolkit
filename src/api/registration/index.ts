@@ -1,7 +1,8 @@
 import { getUserJoinInformation } from "./getUserJoinInformation";
-import { registerMarketoAttendee } from "./registerMarketoAttendee";
+import { registerMarketoAttendee, registerUser } from "./registerMarketoAttendee";
 
 export default {
   getUserJoinInformation,
+  registerUser,
   registerMarketoAttendee
 };

@@ -40,14 +40,23 @@ class Sequel {
       );
       return;
     }
-    let htmlForm = document.getElementById(`mktoForm_${formId}`);
+
+    let sequelRoot = document.getElementById(`sequel_root`);
+    if (!sequelRoot) {
+      console.error(
+        "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
+      );
+      return;
+    }
+
+    let htmlForm = document.getElementById(`mktoForm`);
     if (!htmlForm) {
-      const form = document.body.appendChild(document.createElement("form"));
+      const form = sequelRoot.appendChild(document.createElement("form"));
       form.id = `mktoForm_${formId}`;
       htmlForm = form;
     }
 
-    if (!joinCode) {
+    if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
         if (loadMarketoForm) {
           if (
@@ -71,11 +80,10 @@ class Sequel {
           e.onSuccess((registrant) => {
             const completeRegistration = async () => {
               const registeredAttendeee =
-                await registrationApi.registerMarketoAttendee({
+                await registrationApi.registerUser({
                   name: `${registrant.FirstName} ${registrant.LastName}`,
                   email: registrant.Email,
-                  formId: formId,
-                  companyId: event.organizerUid,
+                  eventId: sequelEventId,
                 });
               setSequelJoinCodeCookie(sequelEventId, registeredAttendeee.joinCode);
               if (htmlForm) {
@@ -103,7 +111,7 @@ class Sequel {
     } else {
       Sequel.renderEvent({
         eventId: sequelEventId,
-        joinCode,
+        joinCode: joinCode || "",
       });
     }
   };

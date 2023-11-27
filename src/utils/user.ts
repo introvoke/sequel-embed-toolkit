@@ -10,7 +10,7 @@ export const getValidatedJoinCode = async ({
   eventId,
 }: ValidatedJoinCodeParams): Promise<string | null> => {
   const joinCode = getURLParameter("joinCode") || getSequelJoinCodeCookie(eventId);
-  if (joinCode) {
+  if (joinCode && joinCode !== "undefined") {
     const userInfo = await registrationApi.getUserJoinInformation({
       eventId,
       joinCode,

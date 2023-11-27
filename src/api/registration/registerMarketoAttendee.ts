@@ -1,6 +1,11 @@
 import axios from "axios";
 import { ApiConfig } from "@src/api/apiConfig";
 
+interface RegisterUserRequest {
+  name: string;
+  email: string;
+  eventId: string;
+}
 interface RegisterMarketoAttendeeRequest {
   name: string;
   email: string;
@@ -13,6 +18,21 @@ interface RegisterMarketoAttendeeResponse {
   joinCode: string;
   email: string;
 }
+
+export const registerUser = async ({
+  name,
+  email,
+  eventId
+}: RegisterUserRequest): Promise<RegisterMarketoAttendeeResponse> => {
+  const configUrl = `${ApiConfig.GetApiUrl()}/api/v3/events/${eventId}/registrant`;
+  const response = await axios.post(configUrl, {
+    name,
+    email,
+    resendInvite: true
+  });
+  const data: RegisterMarketoAttendeeResponse = await response.data;
+  return data;
+};
 
 export const registerMarketoAttendee = async ({
   name,

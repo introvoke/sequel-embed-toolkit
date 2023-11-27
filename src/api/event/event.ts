@@ -5,6 +5,7 @@ export interface Registration {
     marketoFormUrl?: string;
     marketoMunchkinId?: string;
     marketoBaseUrl?: string;
+    outsideOfAppEnabled?: boolean;
   }
   
   export interface Event {
