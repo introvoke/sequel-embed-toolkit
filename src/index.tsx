@@ -52,9 +52,9 @@ class Sequel {
     let htmlForm = document.getElementById(`mktoForm`);
     if (!htmlForm) {
       const form = sequelRoot.appendChild(document.createElement("form"));
-      form.id = `mktoForm_${formId}`;
       htmlForm = form;
     }
+    htmlForm.id = `mktoForm_${formId}`;
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
