@@ -51,10 +51,14 @@ class Sequel {
 
     let htmlForm = document.getElementById(`mktoForm`);
     if (!htmlForm) {
-      const form = sequelRoot.appendChild(document.createElement("form"));
-      htmlForm = form;
+      console.error(
+        "The Marketo element was not found. Please add a div with id `mktoForm` to your html."
+      );
+      return;
     }
-    htmlForm.id = `mktoForm_${formId}`;
+
+    const form = htmlForm.appendChild(document.createElement("form"));
+    form.id = `mktoForm_${formId}`;
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
@@ -86,18 +90,20 @@ class Sequel {
                   eventId: sequelEventId,
                 });
               setSequelJoinCodeCookie(sequelEventId, registeredAttendeee.joinCode);
-
               renderAppInsideDocument(
                 <MarketoRegistrationSuccess
                   event={event}
                   joinCode={registeredAttendeee.joinCode}
                   onOpenEvent={() =>
-                    Sequel.renderEvent({
-                      eventId: sequelEventId,
-                      joinCode: registeredAttendeee.joinCode,
-                    })
+                    {
+                      htmlForm?.remove();
+                      Sequel.renderEvent({
+                        eventId: sequelEventId,
+                        joinCode: registeredAttendeee.joinCode,
+                      })
+                    }
                   }
-                />, htmlForm
+                />, form
               );
             };
             completeRegistration();
@@ -106,6 +112,7 @@ class Sequel {
         });
       });
     } else {
+      htmlForm.remove();
       Sequel.renderEvent({
         eventId: sequelEventId,
         joinCode: joinCode || "",
