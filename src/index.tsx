@@ -1,5 +1,5 @@
 import { setSequelJoinCodeCookie } from "@src/utils/cookie";
-import { onDocumentReady, renderApp } from "@src/utils/dom";
+import { onDocumentReady, renderApp, renderAppInsideDocument } from "@src/utils/dom";
 import { getValidatedJoinCode } from "@src/utils/user";
 import registrationApi from "@src/api/registration";
 import { MarketoRegistrationSuccess } from "./routes/MarketoRegistrationSuccess";
@@ -86,11 +86,8 @@ class Sequel {
                   eventId: sequelEventId,
                 });
               setSequelJoinCodeCookie(sequelEventId, registeredAttendeee.joinCode);
-              if (htmlForm) {
-                htmlForm.style.display = "none";
-              }
-              
-              renderApp(
+
+              renderAppInsideDocument(
                 <MarketoRegistrationSuccess
                   event={event}
                   joinCode={registeredAttendeee.joinCode}
@@ -100,7 +97,7 @@ class Sequel {
                       joinCode: registeredAttendeee.joinCode,
                     })
                   }
-                />
+                />, htmlForm
               );
             };
             completeRegistration();

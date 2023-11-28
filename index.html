@@ -1,23 +1,29 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React + TS</title>
-  </head>
-  <body>
-    <p class="text-7xl">Testing</p>
-    <br /><br />
-    <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
 
-    <script type="module" src="/src/index.tsx"></script>
-    <div id="sequel_root"></div>
-    <script>
-        document.addEventListener('DOMContentLoaded', (event) => {
-          Sequel.renderSequelWithMarketoFrame({
-            sequelEventId: "4f82ab5f-0e92-4534-95a5-bb45a15caecb"
-          })
-        });
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite + React + TS</title>
+</head>
+
+<body>
+
+  <br /><br />
+  <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
+
+  <script type="module" src="/src/index.tsx"></script>
+  <div id="sequel_root"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+      Sequel.renderSequelWithMarketoFrame({
+        sequelEventId: "4f82ab5f-0e92-4534-95a5-bb45a15caecb"
+      })
+    });
+  </script>
+
+  <p class="text-7xl">Session below iframe</p>
+  <form id="mktoForm"></form>
+</body>
+
 </html>
