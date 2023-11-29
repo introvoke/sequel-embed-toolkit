@@ -22,3 +22,13 @@ export const renderApp = (app: React.ReactNode) => {
     </React.StrictMode>
   );
 };
+
+export const renderAppInsideDocument = (app: React.ReactNode, document: any) => {
+  appRoot?.unmount();
+  appRoot = createRoot(document!);
+  appRoot.render(
+    <React.StrictMode>
+      <Providers>{app}</Providers>
+    </React.StrictMode>
+  );
+};

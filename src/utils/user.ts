@@ -9,13 +9,13 @@ interface ValidatedJoinCodeParams {
 export const getValidatedJoinCode = async ({
   eventId,
 }: ValidatedJoinCodeParams): Promise<string | null> => {
-  const joinCode = getURLParameter("joinCode") || getSequelJoinCodeCookie();
-  if (joinCode) {
+  const joinCode = getURLParameter("joinCode") || getSequelJoinCodeCookie(eventId);
+  if (joinCode && joinCode !== "undefined") {
     const userInfo = await registrationApi.getUserJoinInformation({
       eventId,
       joinCode,
     });
-    setSequelJoinCodeCookie(userInfo.joinCode);
+    setSequelJoinCodeCookie(eventId, userInfo.joinCode);
     return userInfo.joinCode;
   }
   return null;
