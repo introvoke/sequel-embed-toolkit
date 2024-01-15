@@ -31,7 +31,7 @@ export const MarketoRegistrationSuccess = ({
             Registration confirmed!
           </h2>
           <p className="text-sm text-gray-400">
-            Congratulations! You have successfully registered for this event.
+            Congratulations! You have successfully registered for <b>{event.name}</b>.
             Please check your email for a confirmation message or simply join
             the event by clicking below.
           </p>
