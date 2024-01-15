@@ -1,3 +1,5 @@
+declare module 'add-to-calendar-button';
+
 interface Window {
   Sequel: typeof Sequel;
   MktoForms2?: {

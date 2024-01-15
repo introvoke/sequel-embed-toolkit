@@ -9,21 +9,20 @@
     <p class="text-7xl">Testing</p>
     <br /><br />
     <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
-    <form id="mktoForm_1024"></form>
 
-    <div id="sequel_root"></div>
     <script type="module" src="/src/index.tsx"></script>
-
+    <div id="sequel_root"></div>
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
-          Sequel.renderMarketoSequelRegistration({
-            marketoUrl: "//882-TRU-959.mktoweb.com",
-            marketoId: "882-TRU-959",
-            marketoFormId: "1024",
-            sequelCompanyId: "d5907d53-e996-4db5-9575-6b9c17b0df1e",
+          Sequel.renderSequelWithMarketoFrame({
             sequelEventId: "4f82ab5f-0e92-4534-95a5-bb45a15caecb"
           })
         });
     </script>
+        <script>
+          document.addEventListener('DOMContentLoaded', (event) => {
+            Sequel.renderThankYouPage();
+          });
+      </script>
   </body>
 </html>

@@ -4,13 +4,11 @@ import { getValidatedJoinCode } from "@src/utils/user";
 import registrationApi from "@src/api/registration";
 import { MarketoRegistrationSuccess } from "./routes/MarketoRegistrationSuccess";
 import { EmbedIframe } from "./routes/EmbedIframe";
+import { getEvent } from "./api/event/getEvent";
 
 interface RenderMarketoFormParams {
-  marketoUrl: string;
-  marketoId: string;
-  marketoFormId: string;
-  sequelCompanyId: string;
   sequelEventId: string;
+  loadMarketoForm?: boolean;
 }
 
 interface RenderEventParams {
@@ -19,38 +17,118 @@ interface RenderEventParams {
 }
 
 class Sequel {
-  static renderMarketoSequelRegistration = async ({
-    marketoUrl,
-    marketoId,
-    marketoFormId,
-    sequelCompanyId,
+  static renderThankYouPage = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has("eventId") || !urlParams.has("joinCode")) {
+      console.error(
+        "The Sequel script is set to render the thank you page but the event id or join code was not found in the url. Please double check the url."
+      );
+      return;
+    }
+
+    const event = await getEvent(urlParams.get("eventId") || "");
+    if (!event) {
+      console.error(
+        "Sequel event not found. Please double check the event id."
+      );
+      return;
+    }
+
+    const joinCode = urlParams.get("joinCode") || "";
+
+    renderApp(
+      <MarketoRegistrationSuccess
+        event={event}
+        joinCode={joinCode}
+        onOpenEvent={() => {
+          const location =
+            event.registration?.customUrl || `https://embed.sequel.io/event/${event.uid}`;
+          const joinUrl = `${location}?joinCode=${joinCode}`;
+          window.location.href = joinUrl;
+        }}
+      />
+    );
+  };
+
+  static renderSequelWithMarketoFrame = async ({
     sequelEventId,
+    loadMarketoForm = true,
   }: RenderMarketoFormParams) => {
-    // done this
     const joinCode = await getValidatedJoinCode({
       eventId: sequelEventId,
     });
 
-    if (!joinCode) {
+    const event = await getEvent(sequelEventId);
+    if (!event) {
+      console.error(
+        "Sequel event not found. Please double check the event id."
+      );
+      return;
+    }
+
+    const formId = event.registration?.marketoFormId;
+    if (!formId) {
+      console.error(
+        "The Sequel script is set to render the Marketo form but the event does not have a Marketo form id. Please double check the event information in the Sequel dashboard."
+      );
+      return;
+    }
+
+    let sequelRoot = document.getElementById(`sequel_root`);
+    if (!sequelRoot) {
+      console.error(
+        "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
+      );
+      return;
+    }
+
+    let htmlForm = document.getElementById(`mktoForm`);
+    if (!htmlForm) {
+      const form = sequelRoot.appendChild(document.createElement("form"));
+      htmlForm = form;
+    }
+    htmlForm.id = `mktoForm_${formId}`;
+
+    if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
-        window.MktoForms2?.loadForm(marketoUrl, marketoId, marketoFormId);
+        if (loadMarketoForm) {
+          if (
+            !event?.registration?.marketoFormId ||
+            !event.registration?.marketoBaseUrl ||
+            !event.registration?.marketoMunchkinId
+          ) {
+            console.error(
+              "The Sequel script is set to render the Marketo form but the event does not have a Marketo form id, base url, or munchkin id. Please double check the event information in the Sequel dashboard."
+            );
+          } else {
+            window.MktoForms2?.loadForm(
+              event.registration?.marketoBaseUrl,
+              event.registration?.marketoMunchkinId,
+              event.registration?.marketoFormId
+            );
+          }
+        }
+
         window.MktoForms2?.whenReady((e) => {
           e.onSuccess((registrant) => {
             const completeRegistration = async () => {
-              const registeredAttendeee =
-                await registrationApi.registerMarketoAttendee({
-                  name: `${registrant.FirstName} ${registrant.LastName}`,
-                  email: registrant.Email,
-                  formId: marketoFormId,
-                  companyId: sequelCompanyId,
-                });
-              setSequelJoinCodeCookie(registeredAttendeee.joinCode);
-
-              const form = document.getElementById(`mktoForm_${marketoFormId}`);
-              if (form) form.style.display = "none";
+              const registeredAttendeee = await registrationApi.registerUser({
+                name: `${registrant.FirstName} ${registrant.LastName}`,
+                email: registrant.Email,
+                eventId: sequelEventId,
+              });
+              setSequelJoinCodeCookie(
+                sequelEventId,
+                registeredAttendeee.joinCode
+              );
+              if (htmlForm) {
+                htmlForm.style.display = "none";
+              }
 
               renderApp(
                 <MarketoRegistrationSuccess
+                  event={event}
+                  joinCode={registeredAttendeee.joinCode}
                   onOpenEvent={() =>
                     Sequel.renderEvent({
                       eventId: sequelEventId,
@@ -68,7 +146,7 @@ class Sequel {
     } else {
       Sequel.renderEvent({
         eventId: sequelEventId,
-        joinCode,
+        joinCode: joinCode || "",
       });
     }
   };

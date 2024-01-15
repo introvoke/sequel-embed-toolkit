@@ -1,9 +1,9 @@
 import Cookies from "js-cookie";
 
-export function getSequelJoinCodeCookie(): string | null {
-  return Cookies.get("sequel") ?? null;
+export function getSequelJoinCodeCookie(eventId: string): string | null {
+  return Cookies.get(`sequel-${eventId}`) ?? null;
 }
 
-export function setSequelJoinCodeCookie(joinCode: string): string {
-  return Cookies.set("sequel", joinCode, { secure: true, expires: 31 }) ?? "";
+export function setSequelJoinCodeCookie(eventId: string, joinCode: string): string {
+  return Cookies.set(`sequel-${eventId}`, joinCode, { secure: true, expires: 31 }) ?? "";
 }
