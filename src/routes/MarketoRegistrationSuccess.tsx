@@ -1,7 +1,9 @@
-import { Button } from "@src/components/Button";
-import { FeaturedIcon } from "@src/components/FeaturedIcon";
-import CheckVerifiedIcon from "@src/components/CheckVerified01";
-import CalendarPlusIcon from "@src/components/CalendarPlus02";
+import {
+  Button,
+  CalendarPlus01,
+  CheckVerified01,
+  FeaturedIcon,
+} from "@introvoke/react";
 import { Event } from "@src/api/event/event";
 import AddToCalendarButton from "@src/components/AddToCalendarButton";
 
@@ -22,7 +24,7 @@ export const MarketoRegistrationSuccess = ({
         decoration="circles"
         color="success"
         variant="square"
-        icon={CheckVerifiedIcon}
+        icon={CheckVerified01}
         className="mb-3 z-1 relative"
       />
       <div className="relative z-10 flex flex-col gap-4">
@@ -31,9 +33,9 @@ export const MarketoRegistrationSuccess = ({
             Registration confirmed!
           </h2>
           <p className="text-sm text-gray-400">
-            Congratulations! You have successfully registered for <b>{event.name}</b>.
-            Please check your email for a confirmation message or simply join
-            the event by clicking below.
+            Congratulations! You have successfully registered for{" "}
+            <b>{event.name}</b>. Please check your email for a confirmation
+            message or simply join the event by clicking below.
           </p>
         </div>
         <div className="flex-col flex gap-2">
@@ -44,7 +46,7 @@ export const MarketoRegistrationSuccess = ({
           <AddToCalendarButton
             variant="secondary"
             className="w-full"
-            startIcon={CalendarPlusIcon}
+            startIcon={CalendarPlus01}
             event={event}
             joinCode={joinCode}
           >

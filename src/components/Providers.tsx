@@ -1,5 +1,5 @@
 import root from "react-shadow";
-import { ThemeProvider as TailwindThemeProvider } from "@src/styles/ThemeProvider";
+import { ThemeProvider as TailwindThemeProvider } from "@introvoke/react";
 
 import css from "@src/index.css?inline";
 import useStateRef from "@src/hooks/useStateRef";

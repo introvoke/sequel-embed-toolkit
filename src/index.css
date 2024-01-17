@@ -1,5 +1,5 @@
-@import "./styles/fonts.css";
-@import "./styles/components.css";
+@import "@introvoke/react/styles/fonts.css";
+@import "@introvoke/react/styles/components.css";
 
 @tailwind base;
 @tailwind components;
