@@ -1,5 +1,5 @@
 import { setSequelJoinCodeCookie } from "@src/utils/cookie";
-import { onDocumentReady, renderApp } from "@src/utils/dom";
+import { onDocumentReady, renderApp, renderAppInsideDocument } from "@src/utils/dom";
 import { getValidatedJoinCode } from "@src/utils/user";
 import registrationApi from "@src/api/registration";
 import { MarketoRegistrationSuccess } from "./routes/MarketoRegistrationSuccess";
@@ -84,10 +84,14 @@ class Sequel {
 
     let htmlForm = document.getElementById(`mktoForm`);
     if (!htmlForm) {
-      const form = sequelRoot.appendChild(document.createElement("form"));
-      htmlForm = form;
+      console.error(
+        "The Marketo element was not found. Please add a div with id `mktoForm` to your html."
+      );
+      return;
     }
-    htmlForm.id = `mktoForm_${formId}`;
+
+    const form = htmlForm.appendChild(document.createElement("form"));
+    form.id = `mktoForm_${formId}`;
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
@@ -112,30 +116,27 @@ class Sequel {
         window.MktoForms2?.whenReady((e) => {
           e.onSuccess((registrant) => {
             const completeRegistration = async () => {
-              const registeredAttendeee = await registrationApi.registerUser({
-                name: `${registrant.FirstName} ${registrant.LastName}`,
-                email: registrant.Email,
-                eventId: sequelEventId,
-              });
-              setSequelJoinCodeCookie(
-                sequelEventId,
-                registeredAttendeee.joinCode
-              );
-              if (htmlForm) {
-                htmlForm.style.display = "none";
-              }
-
-              renderApp(
+              const registeredAttendeee =
+                await registrationApi.registerUser({
+                  name: `${registrant.FirstName} ${registrant.LastName}`,
+                  email: registrant.Email,
+                  eventId: sequelEventId,
+                });
+              setSequelJoinCodeCookie(sequelEventId, registeredAttendeee.joinCode);
+              renderAppInsideDocument(
                 <MarketoRegistrationSuccess
                   event={event}
                   joinCode={registeredAttendeee.joinCode}
                   onOpenEvent={() =>
-                    Sequel.renderEvent({
-                      eventId: sequelEventId,
-                      joinCode: registeredAttendeee.joinCode,
-                    })
+                    {
+                      htmlForm?.remove();
+                      Sequel.renderEvent({
+                        eventId: sequelEventId,
+                        joinCode: registeredAttendeee.joinCode,
+                      })
+                    }
                   }
-                />
+                />, form
               );
             };
             completeRegistration();
@@ -144,6 +145,7 @@ class Sequel {
         });
       });
     } else {
+      htmlForm.remove();
       Sequel.renderEvent({
         eventId: sequelEventId,
         joinCode: joinCode || "",
