@@ -17,6 +17,39 @@ interface RenderEventParams {
 }
 
 class Sequel {
+  static renderThankYouPage = async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has("eventId") || !urlParams.has("joinCode")) {
+      console.error(
+        "The Sequel script is set to render the thank you page but the event id or join code was not found in the url. Please double check the url."
+      );
+      return;
+    }
+
+    const event = await getEvent(urlParams.get("eventId") || "");
+    if (!event) {
+      console.error(
+        "Sequel event not found. Please double check the event id."
+      );
+      return;
+    }
+
+    const joinCode = urlParams.get("joinCode") || "";
+
+    renderApp(
+      <MarketoRegistrationSuccess
+        event={event}
+        joinCode={joinCode}
+        onOpenEvent={() => {
+          const location =
+            event.registration?.customUrl || `https://embed.sequel.io/event/${event.uid}`;
+          const joinUrl = `${location}?joinCode=${joinCode}`;
+          window.location.href = joinUrl;
+        }}
+      />
+    );
+  };
+
   static renderSequelWithMarketoFrame = async ({
     sequelEventId,
     loadMarketoForm = true,

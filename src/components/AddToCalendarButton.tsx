@@ -16,10 +16,8 @@ const AddToCalendarButton = ({
     joinCode,
     ...props
   }: AddToCalendarButtonProps) => {
-    const location =
-      event.registration?.customUrl ||
-      window.location.origin + window.location.pathname;
-    const joinUrl = !joinCode ? location : `${location}?joinCode=${joinCode}`;
+    const location = event.registration?.customUrl || `https://embed.sequel.io/event/${event.uid}`;
+    const joinUrl = `${location}?joinCode=${joinCode}`;
     const startDateToTimezone = utcToZonedTime(event.startDate, event.timezone);
     const endDateToTimezone = utcToZonedTime(event.endDate, event.timezone);
   
