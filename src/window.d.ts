@@ -11,7 +11,7 @@ interface Window {
     whenReady: (
       callback: (e: {
         onSuccess: (
-          e: ({ FirstName: string, LastName: string, Email: string }) => void
+          e: (registrant: {FirstName: string, LastName: string, Email: string }, followUpUrl: string) => void
         ) => void;
       }) => void
     ) => void;

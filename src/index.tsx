@@ -1,5 +1,9 @@
 import { setSequelJoinCodeCookie } from "@src/utils/cookie";
-import { onDocumentReady, renderApp, renderAppInsideDocument } from "@src/utils/dom";
+import {
+  onDocumentReady,
+  renderApp,
+  renderAppInsideDocument,
+} from "@src/utils/dom";
 import { getValidatedJoinCode } from "@src/utils/user";
 import registrationApi from "@src/api/registration";
 import { MarketoRegistrationSuccess } from "./routes/MarketoRegistrationSuccess";
@@ -8,6 +12,7 @@ import { getEvent } from "./api/event/getEvent";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
+  renderAddToCalendar?: boolean;
   loadMarketoForm?: boolean;
 }
 
@@ -42,7 +47,8 @@ class Sequel {
         joinCode={joinCode}
         onOpenEvent={() => {
           const location =
-            event.registration?.customUrl || `https://embed.sequel.io/event/${event.uid}`;
+            event.registration?.customUrl ||
+            `https://embed.sequel.io/event/${event.uid}`;
           const joinUrl = `${location}?joinCode=${joinCode}`;
           window.location.href = joinUrl;
         }}
@@ -52,6 +58,7 @@ class Sequel {
 
   static renderSequelWithMarketoFrame = async ({
     sequelEventId,
+    renderAddToCalendar = false,
     loadMarketoForm = true,
   }: RenderMarketoFormParams) => {
     const joinCode = await getValidatedJoinCode({
@@ -114,31 +121,45 @@ class Sequel {
         }
 
         window.MktoForms2?.whenReady((e) => {
-          e.onSuccess((registrant) => {
+          e.onSuccess((registrant: any, followUpUrl: string) => {
             const completeRegistration = async () => {
-              const registeredAttendeee =
-                await registrationApi.registerUser({
-                  name: `${registrant.FirstName} ${registrant.LastName}`,
-                  email: registrant.Email,
-                  eventId: sequelEventId,
-                });
-              setSequelJoinCodeCookie(sequelEventId, registeredAttendeee.joinCode);
-              renderAppInsideDocument(
-                <MarketoRegistrationSuccess
-                  event={event}
-                  joinCode={registeredAttendeee.joinCode}
-                  onOpenEvent={() =>
-                    {
+              const registeredAttendeee = await registrationApi.registerUser({
+                name: `${registrant.FirstName} ${registrant.LastName}`,
+                email: registrant.Email,
+                eventId: sequelEventId,
+              });
+              setSequelJoinCodeCookie(
+                sequelEventId,
+                registeredAttendeee.joinCode
+              );
+              if (!renderAddToCalendar) {
+                if (followUpUrl) {
+                  window.location.href = followUpUrl;
+                } else {
+                  htmlForm?.remove();
+                  Sequel.renderEvent({
+                    eventId: sequelEventId,
+                    joinCode: registeredAttendeee.joinCode,
+                  });
+                }
+              } else {
+                renderAppInsideDocument(
+                  <MarketoRegistrationSuccess
+                    event={event}
+                    joinCode={registeredAttendeee.joinCode}
+                    onOpenEvent={() => {
                       htmlForm?.remove();
                       Sequel.renderEvent({
                         eventId: sequelEventId,
                         joinCode: registeredAttendeee.joinCode,
-                      })
-                    }
-                  }
-                />, form
-              );
+                      });
+                    }}
+                  />,
+                  form
+                );
+              }
             };
+
             completeRegistration();
             return false;
           });
