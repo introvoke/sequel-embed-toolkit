@@ -21,6 +21,21 @@ interface RenderEventParams {
   joinCode: string;
 }
 
+// Helper function to remove the element and its parent if the parent is empty
+const removeElementAndParentIfEmpty = (element: HTMLElement | null) => {
+  if (!element) return;
+
+  const parentElement = element.parentElement;
+
+  // Remove the element
+  element.remove();
+
+  // Check if the parent has no other child elements and remove it if true
+  if (parentElement && parentElement.childElementCount === 0) {
+    parentElement.remove();
+  }
+};
+
 class Sequel {
   static renderThankYouPage = async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -136,7 +151,7 @@ class Sequel {
                 if (followUpUrl) {
                   window.location.href = followUpUrl;
                 } else {
-                  htmlForm?.remove();
+                  removeElementAndParentIfEmpty(htmlForm);
                   Sequel.renderEvent({
                     eventId: sequelEventId,
                     joinCode: registeredAttendeee.joinCode,
@@ -148,7 +163,7 @@ class Sequel {
                     event={event}
                     joinCode={registeredAttendeee.joinCode}
                     onOpenEvent={() => {
-                      htmlForm?.remove();
+                      removeElementAndParentIfEmpty(htmlForm);
                       Sequel.renderEvent({
                         eventId: sequelEventId,
                         joinCode: registeredAttendeee.joinCode,
@@ -166,7 +181,7 @@ class Sequel {
         });
       });
     } else {
-      htmlForm.remove();
+      removeElementAndParentIfEmpty(htmlForm);
       Sequel.renderEvent({
         eventId: sequelEventId,
         joinCode: joinCode || "",
