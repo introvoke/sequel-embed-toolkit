@@ -1,4 +1,3 @@
-import registrationApi from "@src/api/registration";
 import { getSequelJoinCodeCookie, setSequelJoinCodeCookie } from "./cookie";
 import { getURLParameter } from "./url";
 
@@ -11,12 +10,8 @@ export const getValidatedJoinCode = async ({
 }: ValidatedJoinCodeParams): Promise<string | null> => {
   const joinCode = getURLParameter("joinCode") || getURLParameter("joincode") || getSequelJoinCodeCookie(eventId);
   if (joinCode && joinCode !== "undefined") {
-    const userInfo = await registrationApi.getUserJoinInformation({
-      eventId,
-      joinCode,
-    });
-    setSequelJoinCodeCookie(eventId, userInfo.joinCode);
-    return userInfo.joinCode;
+    setSequelJoinCodeCookie(eventId, joinCode);
+    return joinCode;
   }
   return null;
 };
