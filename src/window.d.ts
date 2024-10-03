@@ -1,7 +1,19 @@
 declare module 'add-to-calendar-button';
 
+interface HubSpotForms {
+  create: (options: {
+    portalId: string;
+    formId: string;
+    target: string;
+    onFormSubmitted?: (formData: any) => void;
+  }) => void;
+}
+
 interface Window {
   Sequel: typeof Sequel;
+  hbspt?: {
+    forms: HubSpotForms;
+  };
   MktoForms2?: {
     loadForm: (
       marketoUrl: string,

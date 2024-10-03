@@ -11,12 +11,14 @@
 
   <br /><br />
   <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
+  <script src="https://js.hsforms.net/forms/v2.js"></script>
+
 
   <script type="module" src="/src/index.tsx"></script>
   <div id="sequel_root"></div>
   <script>
     document.addEventListener('DOMContentLoaded', (event) => {
-      Sequel.renderSequelWithMarketoFrame({
+      Sequel.renderSequelWithHubspotFrame({
         sequelEventId: "4f82ab5f-0e92-4534-95a5-bb45a15caecb"
       })
     });
@@ -24,6 +26,7 @@
 
   <p class="text-7xl">Session below iframe</p>
   <div id="mktoForm"></div>
+  <div id="hubspotForm"></div>
 </body>
 
 </html>

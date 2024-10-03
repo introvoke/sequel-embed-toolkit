@@ -16,6 +16,12 @@ interface RenderMarketoFormParams {
   loadMarketoForm?: boolean;
 }
 
+interface RenderHubspotFormParams {
+  sequelEventId: string;
+  renderAddToCalendar?: boolean;
+  loadHubspotForm?: boolean;
+}
+
 interface RenderEventParams {
   eventId: string;
   joinCode: string;
@@ -69,6 +75,118 @@ class Sequel {
         }}
       />
     );
+  };
+
+  static renderSequelWithHubspotFrame = async ({
+    sequelEventId,
+    renderAddToCalendar = false,
+    loadHubspotForm = true,
+  }: RenderHubspotFormParams) => {
+    const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
+    const event = await getEvent(sequelEventId);
+
+
+//     <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+// <script>
+//   hbspt.forms.create({
+//     region: "na1",
+//     portalId: "5876265",
+//     formId: "8b2d955c-7616-489c-8cc1-4c2499e3fb35"
+//   });
+// </script>
+  
+    if (!event) {
+      console.error("Sequel event not found. Please double check the event id.");
+      return;
+    }
+  
+    // const hubspotFormId = event.registration?.hubspotFormId;
+    const hubspotFormId = "8b2d955c-7616-489c-8cc1-4c2499e3fb35";
+    if (!hubspotFormId) {
+      console.error(
+        "The Sequel script is set to render the HubSpot form but the event does not have a HubSpot form id. Please double check the event information in the Sequel dashboard."
+      );
+      return;
+    }
+  
+    let sequelRoot = document.getElementById(`sequel_root`);
+    if (!sequelRoot) {
+      console.error(
+        "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
+      );
+      return;
+    }
+  
+    let htmlForm = document.getElementById(`hubspotForm`);
+    if (!htmlForm) {
+      console.error(
+        "The HubSpot element was not found. Please add a div with id `hubspotForm` to your html."
+      );
+      return;
+    }
+  
+    const form = htmlForm.appendChild(document.createElement("form"));
+    form.id = `hubspotForm_${hubspotFormId}`;
+  
+    if (!joinCode && event.registration?.outsideOfAppEnabled) {
+      onDocumentReady(() => {
+        if (loadHubspotForm) {
+          window.hbspt?.forms?.create({
+           // portalId: event.registration?.hubspotPortalId,
+            portalId: "5876265",
+            formId: hubspotFormId,
+            target: `#hubspotForm_${hubspotFormId}`,
+          });
+
+          window.addEventListener('message', eventSubmission => {
+            if(eventSubmission.data.type === 'hsFormCallback' && eventSubmission.data.eventName === 'onFormSubmitted') {
+                const completeRegistration = async (data: any) => {
+                  const registeredAttendeee = await registrationApi.registerUser({
+                    name: `${data.submissionValues.firstname} ${data.submissionValues.lastname}`,
+                    email: data.submissionValues.email,
+                    eventId: sequelEventId,
+                  });
+                  setSequelJoinCodeCookie(
+                    sequelEventId,
+                    registeredAttendeee.joinCode
+                  );
+                  if (!renderAddToCalendar) {
+                    removeElementAndParentIfEmpty(htmlForm);
+                    Sequel.renderEvent({
+                      eventId: sequelEventId,
+                      joinCode: registeredAttendeee.joinCode,
+                    });
+                  } else {
+                    renderAppInsideDocument(
+                      <MarketoRegistrationSuccess
+                        event={event}
+                        joinCode={registeredAttendeee.joinCode}
+                        onOpenEvent={() => {
+                          removeElementAndParentIfEmpty(htmlForm);
+                          Sequel.renderEvent({
+                            eventId: sequelEventId,
+                            joinCode: registeredAttendeee.joinCode,
+                          });
+                        }}
+                      />,
+                      form
+                    );
+                  }
+                };
+
+                completeRegistration(eventSubmission.data.data);
+
+            }
+         });
+        }
+      });
+    } else {
+      removeElementAndParentIfEmpty(htmlForm);
+      Sequel.renderEvent({
+        eventId: sequelEventId,
+        joinCode: joinCode || "",
+      });
+    }
   };
 
   static renderSequelWithMarketoFrame = async ({
