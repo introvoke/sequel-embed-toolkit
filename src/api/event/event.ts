@@ -5,6 +5,8 @@ export interface Registration {
     marketoFormUrl?: string;
     marketoMunchkinId?: string;
     marketoBaseUrl?: string;
+    hubspotPortalId?: string;
+    hubspotFormId?: string;
     outsideOfAppEnabled?: boolean;
   }
   

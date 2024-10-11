@@ -84,27 +84,24 @@ class Sequel {
   }: RenderHubspotFormParams) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
-
-
-//     <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
-// <script>
-//   hbspt.forms.create({
-//     region: "na1",
-//     portalId: "5876265",
-//     formId: "8b2d955c-7616-489c-8cc1-4c2499e3fb35"
-//   });
-// </script>
   
     if (!event) {
       console.error("Sequel event not found. Please double check the event id.");
       return;
     }
   
-    // const hubspotFormId = event.registration?.hubspotFormId;
-    const hubspotFormId = "8b2d955c-7616-489c-8cc1-4c2499e3fb35";
+    const hubspotFormId = event.registration?.hubspotFormId;
     if (!hubspotFormId) {
       console.error(
         "The Sequel script is set to render the HubSpot form but the event does not have a HubSpot form id. Please double check the event information in the Sequel dashboard."
+      );
+      return;
+    }
+
+    const hubspotPortalId = event.registration?.hubspotPortalId;
+    if (!hubspotPortalId) {
+      console.error(
+        "The Sequel script is set to render the HubSpot form but the event does not have a HubSpot portal id. Please double check the event information in the Sequel dashboard."
       );
       return;
     }
@@ -132,8 +129,7 @@ class Sequel {
       onDocumentReady(() => {
         if (loadHubspotForm) {
           window.hbspt?.forms?.create({
-           // portalId: event.registration?.hubspotPortalId,
-            portalId: "5876265",
+            portalId: hubspotPortalId,
             formId: hubspotFormId,
             target: `#hubspotForm_${hubspotFormId}`,
           });
