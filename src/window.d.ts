@@ -5,7 +5,10 @@ interface HubSpotForms {
     portalId: string;
     formId: string;
     target: string;
-    onFormSubmitted?: (formData: any) => void;
+    onFormSubmitted?: (form: any, formData: any) => void;
+    onFormSubmit?: (form: any, data: any) => void;
+    onFormReady?: (form: any) => void;
+    onBeforeFormSubmit?: (form: any, data: any) => void;
   }) => void;
 }
 

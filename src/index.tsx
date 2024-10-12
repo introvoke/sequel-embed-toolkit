@@ -132,48 +132,50 @@ class Sequel {
             portalId: hubspotPortalId,
             formId: hubspotFormId,
             target: `#hubspotForm_${hubspotFormId}`,
+            onFormSubmit: async (form, data) => {
+              const getFieldValue = (fieldName: string) => {
+                const field = data.find((field: { name: string; value: string }) => field.name === fieldName);
+                return field ? field.value : '';
+              };
+
+              const firstName = getFieldValue("firstname");
+              const lastName = getFieldValue("lastname");
+              const email = getFieldValue("email");
+
+              const registeredAttendeee = await registrationApi.registerUser({
+                name: `${firstName} ${lastName}`,
+                email: email,
+                eventId: sequelEventId,
+              });
+              setSequelJoinCodeCookie(
+                sequelEventId,
+                registeredAttendeee.joinCode
+              );
+              if (!renderAddToCalendar) {
+                removeElementAndParentIfEmpty(htmlForm);
+                Sequel.renderEvent({
+                  eventId: sequelEventId,
+                  joinCode: registeredAttendeee.joinCode,
+                });
+              } else {
+                renderAppInsideDocument(
+                  <MarketoRegistrationSuccess
+                    event={event}
+                    joinCode={registeredAttendeee.joinCode}
+                    onOpenEvent={() => {
+                      removeElementAndParentIfEmpty(htmlForm);
+                      Sequel.renderEvent({
+                        eventId: sequelEventId,
+                        joinCode: registeredAttendeee.joinCode,
+                      });
+                    }}
+                  />,
+                  form
+                );
+              }
+              return false;
+            },
           });
-
-          window.addEventListener('message', eventSubmission => {
-            if(eventSubmission.data.type === 'hsFormCallback' && eventSubmission.data.eventName === 'onFormSubmitted') {
-                const completeRegistration = async (data: any) => {
-                  const registeredAttendeee = await registrationApi.registerUser({
-                    name: `${data.submissionValues.firstname} ${data.submissionValues.lastname}`,
-                    email: data.submissionValues.email,
-                    eventId: sequelEventId,
-                  });
-                  setSequelJoinCodeCookie(
-                    sequelEventId,
-                    registeredAttendeee.joinCode
-                  );
-                  if (!renderAddToCalendar) {
-                    removeElementAndParentIfEmpty(htmlForm);
-                    Sequel.renderEvent({
-                      eventId: sequelEventId,
-                      joinCode: registeredAttendeee.joinCode,
-                    });
-                  } else {
-                    renderAppInsideDocument(
-                      <MarketoRegistrationSuccess
-                        event={event}
-                        joinCode={registeredAttendeee.joinCode}
-                        onOpenEvent={() => {
-                          removeElementAndParentIfEmpty(htmlForm);
-                          Sequel.renderEvent({
-                            eventId: sequelEventId,
-                            joinCode: registeredAttendeee.joinCode,
-                          });
-                        }}
-                      />,
-                      form
-                    );
-                  }
-                };
-
-                completeRegistration(eventSubmission.data.data);
-
-            }
-         });
         }
       });
     } else {
