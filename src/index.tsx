@@ -9,6 +9,7 @@ import registrationApi from "@src/api/registration";
 import { MarketoRegistrationSuccess } from "./routes/MarketoRegistrationSuccess";
 import { EmbedIframe } from "./routes/EmbedIframe";
 import { getEvent } from "./api/event/getEvent";
+import { trackPageView } from "./api/website/website";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -43,6 +44,123 @@ const removeElementAndParentIfEmpty = (element: HTMLElement | null) => {
 };
 
 class Sequel {
+  static companyId: string | null = null;
+  static userId: string | null = null;
+  static sessionId: string | null = null;
+
+static generateId(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+  static init(companyId: string) {
+    if (!companyId) {
+      console.error("Company ID is required for Sequel tracking.");
+      return;
+    }
+    Sequel.companyId = companyId;
+    Sequel.userId = Sequel.getOrCreateUserId();
+    Sequel.sessionId = Sequel.getOrCreateSessionId();
+  }
+
+  // Get or create a unique userId and store it in cookies
+  static getOrCreateUserId(): string {
+    const userId = Sequel.getCookie("sequelUserId");
+    if (userId) return userId;
+
+    const newUserId = `user_${Sequel.generateId()}`;
+    Sequel.setCookie("sequelUserId", newUserId, 365);
+    return newUserId;
+  }
+
+  // Get or create a sessionId and store it in cookies
+  static getOrCreateSessionId(): string {
+    const sessionId = Sequel.getCookie("sequelSessionId");
+    if (sessionId) return sessionId;
+
+    const newSessionId = `session_${Sequel.generateId()}`;
+    Sequel.setCookie("sequelSessionId", newSessionId, 1); // 1-day session
+    return newSessionId;
+  }
+
+  // Set a cookie
+  static setCookie(name: string, value: string, days: number) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${value}; expires=${date.toUTCString()}; path=/`;
+  }
+
+  // Get a cookie value
+  static getCookie(name: string): string | null {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(`${name}=`)) {
+        return cookie.split("=")[1];
+      }
+    }
+    return null;
+  }
+
+  // Send tracking data to the backend
+  static async sendData(eventType: string, data: any) {
+    if (!Sequel.companyId) {
+      console.error(
+        "Company ID is not set. Call Sequel.init() with a valid company ID."
+      );
+      return;
+    }
+
+    const payload = {
+      userId: Sequel.userId,
+      sessionId: Sequel.sessionId,
+      companyId: Sequel.companyId,
+      eventType,
+      timestamp: new Date().toISOString(),
+      ...data,
+    };
+
+    try {
+      const response = await trackPageView(
+        Sequel.companyId,
+        Sequel.userId as string,
+        Sequel.sessionId as string,
+        payload
+      );
+
+      if (response.status !== 200) {
+        console.error("Failed to send event:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error sending event:", error);
+    }
+  }
+
+  // Track page view events
+  static trackPageView() {
+    const data = {
+      pageName: document.title,
+      url: window.location.href,
+      referrer: document.referrer || "Direct",
+      userAgent: navigator.userAgent,
+    };
+    Sequel.sendData("page_view", data);
+  }
+
+  // Initialize website tracking (page views and forms)
+  static trackWebsite() {
+    if (!Sequel.companyId) {
+      console.error(
+        "Company ID is not set. Call Sequel.init() with a valid company ID."
+      );
+      return;
+    }
+    window.addEventListener("load", () => Sequel.trackPageView());
+  }
+
   static renderThankYouPage = async () => {
     const urlParams = new URLSearchParams(window.location.search);
     if (!urlParams.has("eventId") || !urlParams.has("joinCode")) {
@@ -84,12 +202,14 @@ class Sequel {
   }: RenderHubspotFormParams) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
-  
+
     if (!event) {
-      console.error("Sequel event not found. Please double check the event id.");
+      console.error(
+        "Sequel event not found. Please double check the event id."
+      );
       return;
     }
-  
+
     const hubspotFormId = event.registration?.hubspotFormId;
     if (!hubspotFormId) {
       console.error(
@@ -105,7 +225,7 @@ class Sequel {
       );
       return;
     }
-  
+
     let sequelRoot = document.getElementById(`sequel_root`);
     if (!sequelRoot) {
       console.error(
@@ -113,7 +233,7 @@ class Sequel {
       );
       return;
     }
-  
+
     let htmlForm = document.getElementById(`hubspotForm`);
     if (!htmlForm) {
       console.error(
@@ -121,10 +241,10 @@ class Sequel {
       );
       return;
     }
-  
+
     const form = htmlForm.appendChild(document.createElement("form"));
     form.id = `hubspotForm_${hubspotFormId}`;
-  
+
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
         if (loadHubspotForm) {
@@ -134,8 +254,11 @@ class Sequel {
             target: `#hubspotForm_${hubspotFormId}`,
             onFormSubmit: async (form, data) => {
               const getFieldValue = (fieldName: string) => {
-                const field = data.find((field: { name: string; value: string }) => field.name === fieldName);
-                return field ? field.value : '';
+                const field = data.find(
+                  (field: { name: string; value: string }) =>
+                    field.name === fieldName
+                );
+                return field ? field.value : "";
               };
 
               const firstName = getFieldValue("firstname");

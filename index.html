@@ -16,7 +16,13 @@
 
   <script type="module" src="/src/index.tsx"></script>
   <div id="sequel_root"></div>
-  <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({ sequelEventId: "dc8b0d4d-9a3c-4840-ba93-a758840a976b", }) }); </script>
+  <!-- <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({ sequelEventId: "dc8b0d4d-9a3c-4840-ba93-a758840a976b", }) }); </script> -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      Sequel.init("d5907d53-e996-4db5-9575-6b9c17b0df1e"); // Set the company ID
+      Sequel.trackWebsite(); // Start tracking page views and form submissions
+    });
+  </script>
   <p class="text-7xl">Session below iframe</p>
   <div id="mktoForm"></div>
   <div id="hubspotForm"></div>
