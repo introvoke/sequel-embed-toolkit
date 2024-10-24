@@ -72,6 +72,21 @@ class Sequel {
     Sequel.listenForIframeMessages();
   }
 
+  static trackLinkClicks() {
+    document.addEventListener("click", async (event) => {
+      const target = event.target as HTMLAnchorElement;
+      if (target.tagName === "A" && target.href) {
+        const data = {
+          pageName: "Unknown", 
+          url: target.href,
+          referrer: window.location.href,
+          userAgent: navigator.userAgent,
+        };
+        Sequel.sendData("page_view", data);
+      }
+    });
+  }
+
   // Check the URL for joinCode or joincode and call the API to identify the user
   static async checkJoinCode() {
     const urlParams = new URLSearchParams(window.location.search);
