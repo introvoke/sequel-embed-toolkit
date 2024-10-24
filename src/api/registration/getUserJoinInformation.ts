@@ -28,3 +28,15 @@ export const getUserJoinInformation = async ({
   const data: UserJoinInformationResponse = await response.data;
   return data;
 };
+
+export const getUserEmailFromJoinCode = async ({
+  joinCode,
+}: { joinCode: string }): Promise<string> => {
+  const configUrl = `${ApiConfig.GetApiUrl()}/api/v3/events/joinCodeEmail/${joinCode}`;
+  const response = await axios.get(configUrl, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data: string = await response.data;
+  return data;
+};

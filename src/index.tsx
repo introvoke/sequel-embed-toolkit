@@ -9,7 +9,8 @@ import registrationApi from "@src/api/registration";
 import { MarketoRegistrationSuccess } from "./routes/MarketoRegistrationSuccess";
 import { EmbedIframe } from "./routes/EmbedIframe";
 import { getEvent } from "./api/event/getEvent";
-import { trackPageView } from "./api/website/website";
+import { trackIdentify, trackPageView } from "./api/website/website";
+import { getUserEmailFromJoinCode } from "./api/registration/getUserJoinInformation";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -48,13 +49,16 @@ class Sequel {
   static userId: string | null = null;
   static sessionId: string | null = null;
 
-static generateId(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+  static generateId(): string {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  }
 
   static init(companyId: string) {
     if (!companyId) {
@@ -64,6 +68,30 @@ static generateId(): string {
     Sequel.companyId = companyId;
     Sequel.userId = Sequel.getOrCreateUserId();
     Sequel.sessionId = Sequel.getOrCreateSessionId();
+    Sequel.checkJoinCode();
+    Sequel.listenForIframeMessages();
+  }
+
+  // Check the URL for joinCode or joincode and call the API to identify the user
+  static async checkJoinCode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const joinCode = urlParams.get("joinCode") || urlParams.get("joincode");
+
+    if (joinCode) {
+      try {
+        const email = await getUserEmailFromJoinCode({ joinCode });
+        if (email) {
+          console.log(
+            `User identified with joinCode: ${joinCode}, email: ${email}`
+          );
+          Sequel.identify(email); // Send identify event with the email
+        } else {
+          console.error("Failed to retrieve email for joinCode:", joinCode);
+        }
+      } catch (error) {
+        console.error("Error fetching joinCode email:", error);
+      }
+    }
   }
 
   // Get or create a unique userId and store it in cookies
@@ -124,12 +152,20 @@ static generateId(): string {
     };
 
     try {
-      const response = await trackPageView(
-        Sequel.companyId,
-        Sequel.userId as string,
-        Sequel.sessionId as string,
-        payload
-      );
+      const response =
+        eventType === "page_view"
+          ? await trackPageView(
+              Sequel.companyId,
+              Sequel.userId as string,
+              Sequel.sessionId as string,
+              payload
+            )
+          : await trackIdentify(
+              Sequel.companyId,
+              Sequel.userId as string,
+              Sequel.sessionId as string,
+              payload
+            );
 
       if (response.status !== 200) {
         console.error("Failed to send event:", response.statusText);
@@ -194,6 +230,36 @@ static generateId(): string {
       />
     );
   };
+
+  // Identify a user with additional details
+  static identify(
+    email: string,
+    details: {
+      name?: string;
+      phone?: string;
+      companyName?: string;
+      title?: string;
+    } = {}
+  ) {
+    if (!email) {
+      console.error("Email is required to identify a user.");
+      return;
+    }
+    Sequel.sendData("identify", { email, ...details });
+  }
+
+  // Listen for iframe messages and handle registration events
+  static listenForIframeMessages() {
+    window.addEventListener("message", (event) => {
+      if (event.data?.event === "user-registered") {
+        const email = event.data?.data?.email;
+        if (email) {
+          console.log(`User registered with email: ${email}`);
+          Sequel.identify(email); // Send identify event
+        }
+      }
+    });
+  }
 
   static renderSequelWithHubspotFrame = async ({
     sequelEventId,
