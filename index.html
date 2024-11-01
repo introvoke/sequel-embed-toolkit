@@ -1,31 +1,35 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite + React + TS</title>
-</head>
+  <body>
+    <br /><br />
+    <!-- <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
+    <script src="https://js.hsforms.net/forms/v2.js"></script> -->
 
-<body>
-
-  <br /><br />
-  <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
-  <script src="https://js.hsforms.net/forms/v2.js"></script>
-
-
-  <script type="module" src="/src/index.tsx"></script>
-  <div id="sequel_root"></div>
-  <!-- <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({ sequelEventId: "dc8b0d4d-9a3c-4840-ba93-a758840a976b", }) }); </script> -->
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      Sequel.init("d5907d53-e996-4db5-9575-6b9c17b0df1e"); // Set the company ID
-      Sequel.trackWebsite(); // Start tracking page views and form submissions
-    });
-  </script>
-  <p class="text-7xl">Session below iframe</p>
-  <div id="mktoForm"></div>
-  <div id="hubspotForm"></div>
-</body>
-
+    <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+    <script type="module" src="/src/index.tsx"></script>
+    <div id="hubspotForm">
+      <script>
+        hbspt.forms.create({
+          portalId: "5876265",
+          formId: "f9c7b673-caba-45a2-ba23-3e5154cc8f7a"
+        });
+      </script>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", (event) => {
+        Sequel.renderSequelWithHubspotFrame({
+          sequelEventId: "dc8b0d4d-9a3c-4840-ba93-a758840a976b",
+          loadHubspotForm: false,
+        });
+      });
+    </script>
+    <p class="text-7xl">Session below form</p>
+    <div id="sequel_root"></div>
+  </body>
 </html>
