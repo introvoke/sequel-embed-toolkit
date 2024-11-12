@@ -28,7 +28,7 @@ const EmbedEndpoints: Endpoints = {
 };
 
 const AnalyticsEndpoints: Endpoints = {
-  PRODUCTION: "https://analytics.introvoke.com",
+  PRODUCTION: "https://data.sequel.io",
   STAGING: "https://stg-analytics.introvoke.com",
   DEV: "https://dev-analytics.introvoke.com",
   TEST: "https://test-analytics.introvoke.com",

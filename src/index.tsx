@@ -11,6 +11,7 @@ import { EmbedIframe } from "./routes/EmbedIframe";
 import { getEvent } from "./api/event/getEvent";
 import { trackIdentify, trackPageView } from "./api/website/website";
 import { getUserEmailFromJoinCode } from "./api/registration/getUserJoinInformation";
+import Cookies from "js-cookie";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -48,6 +49,7 @@ class Sequel {
   static companyId: string | null = null;
   static userId: string | null = null;
   static sessionId: string | null = null;
+  static hasConsent: boolean = false;
 
   static generateId(): string {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
@@ -66,10 +68,49 @@ class Sequel {
       return;
     }
     Sequel.companyId = companyId;
+    
+    // Check if consent was previously given
+    const consentCookie = Cookies.get('sequel-consent');
+    if (consentCookie === 'true') {
+      // Initialize tracking without setting cookie again
+      Sequel.hasConsent = true;
+      Sequel.userId = Sequel.getOrCreateUserId();
+      Sequel.sessionId = Sequel.getOrCreateSessionId();
+      Sequel.checkJoinCode();
+      Sequel.listenForIframeMessages();
+      Sequel.trackWebsite();
+    }
+  }
+
+  static initializeTracking() {
+    if (Sequel.hasConsent) {
+      return;
+    }
+
+    Sequel.hasConsent = true;
     Sequel.userId = Sequel.getOrCreateUserId();
     Sequel.sessionId = Sequel.getOrCreateSessionId();
     Sequel.checkJoinCode();
     Sequel.listenForIframeMessages();
+    Sequel.trackWebsite();
+    
+    // Store consent cookie only when explicitly initialized
+    Cookies.set('sequel-consent', 'true', { 
+      secure: true, 
+      sameSite: 'strict',
+      expires: 365 // 1 year
+    });
+  }
+
+  static disableTracking() {
+    Sequel.hasConsent = false;
+    Sequel.userId = null;
+    Sequel.sessionId = null;
+    
+    // Clear cookies
+    Cookies.remove('sequel-consent');
+    Cookies.remove('sequelUserId');
+    Cookies.remove('sequelSessionId');
   }
 
   // Check the URL for joinCode or joincode and call the API to identify the user
@@ -135,6 +176,11 @@ class Sequel {
 
   // Send tracking data to the backend
   static async sendData(eventType: string, data: any) {
+    if (!Sequel.hasConsent) {
+      console.debug('Analytics tracking blocked - user consent not given');
+      return;
+    }
+
     if (!Sequel.companyId) {
       console.error(
         "Company ID is not set. Call Sequel.init() with a valid company ID."
@@ -250,15 +296,53 @@ class Sequel {
 
   // Listen for iframe messages and handle registration events
   static listenForIframeMessages() {
+    // Listen for iframe registration events
     window.addEventListener("message", (event) => {
+      // Handle Sequel iframe registration
       if (event.data?.event === "user-registered") {
         const email = event.data?.data?.email;
         if (email) {
-          console.log(`User registered with email: ${email}`);
-          Sequel.identify(email); // Send identify event
+          Sequel.identify(email);
+        }
+      }
+
+      // Handle Marketo form submissions
+      if (event.data?.type === 'mktoForm' && event.data?.eventName === 'formSubmitted') {
+        const formData = event.data?.data?.formData;
+        if (formData) {
+          const email = formData.Email || formData.email;
+
+          if (email) {
+            Sequel.identify(email);
+          }
+        }
+      }
+
+      // Handle HubSpot form submissions
+      if (event.data?.type === 'hsFormCallback' && event.data?.eventName === 'onFormSubmitted') {
+        const submissionValues = event.data.data?.submissionValues;
+        if (submissionValues) {
+          const email = submissionValues.email;
+  
+          if (email) {
+            Sequel.identify(email);
+          }
         }
       }
     });
+
+    // Listen for direct Marketo form submissions via MktoForms2
+    if (window.MktoForms2) {
+      window.MktoForms2.whenReady((form: any) => {
+        form.onSuccess((values: any) => {
+          const email = values.Email || values.email;
+
+          if (email) {
+            Sequel.identify(email);
+          }
+        });
+      });
+    }
   }
 
   static renderSequelWithHubspotFrame = async ({
