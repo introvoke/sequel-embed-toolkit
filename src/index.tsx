@@ -360,6 +360,25 @@ class Sequel {
       return;
     }
 
+    let sequelRoot = document.getElementById(`sequel_root`);
+    if (!sequelRoot) {
+      console.error(
+        "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
+      );
+      return;
+    }
+
+    // If outsideOfAppEnabled is false or we have a joinCode, render Sequel directly
+    if (!event.registration?.outsideOfAppEnabled || joinCode) {
+      let htmlForm = document.getElementById(`hubspotForm`);
+      removeElementAndParentIfEmpty(htmlForm);
+      return Sequel.renderEvent({
+        eventId: sequelEventId,
+        joinCode: joinCode || "",
+      });
+    }
+
+    // Rest of the existing HubSpot form logic for when outsideOfAppEnabled is true
     const hubspotFormId = event.registration?.hubspotFormId || "";
     const hubspotPortalId = event.registration?.hubspotPortalId || "";
     let htmlForm = document.getElementById(`hubspotForm`);
@@ -391,13 +410,6 @@ class Sequel {
       form.id = `hubspotForm_${hubspotFormId}`;
     }
 
-    let sequelRoot = document.getElementById(`sequel_root`);
-    if (!sequelRoot) {
-      console.error(
-        "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
-      );
-      return;
-    }
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
