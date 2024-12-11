@@ -12,6 +12,7 @@ import { getEvent } from "./api/event/getEvent";
 import { trackIdentify, trackPageView } from "./api/website/website";
 import { getUserEmailFromJoinCode } from "./api/registration/getUserJoinInformation";
 import Cookies from "js-cookie";
+import { CountdownIframe } from "./routes/CountdownIframe";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -23,6 +24,7 @@ interface RenderHubspotFormParams {
   sequelEventId: string;
   renderAddToCalendar?: boolean;
   loadHubspotForm?: boolean;
+  renderCountdown?: boolean;
 }
 
 interface RenderEventParams {
@@ -349,6 +351,7 @@ class Sequel {
     sequelEventId,
     renderAddToCalendar = false,
     loadHubspotForm = true,
+    renderCountdown = false,
   }: RenderHubspotFormParams) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
@@ -410,6 +413,11 @@ class Sequel {
       form.id = `hubspotForm_${hubspotFormId}`;
     }
 
+    if (!joinCode && !loadHubspotForm && renderCountdown) {
+      return CountdownIframe({
+        eventId: sequelEventId,
+      });
+    }
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
