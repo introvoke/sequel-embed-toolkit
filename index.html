@@ -14,10 +14,13 @@
     <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
     <script type="module" src="/src/index.tsx"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({ sequelEventId: "540f2f41-bc1e-4d8a-862f-29893ee5db2f", }) });
+      document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({ sequelEventId: "540f2f41-bc1e-4d8a-862f-29893ee5db2f", loadHubspotForm: false, renderCountdown: true }) });
     </script>
     <div id="hubspotForm"> </div>
     <p class="text-7xl">Session below form</p>
     <div id="sequel_root"></div>
+
+    <p class="text-7xl">Countdown below form</p>
+    <div id="sequel_countdown"></div>
   </body>
 </html>
