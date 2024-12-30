@@ -28,7 +28,8 @@ export const registerUser = async ({
   const response = await axios.post(configUrl, {
     name,
     email,
-    resendInvite: true
+    resendInvite: true,
+    ignoreCustomQuestions: true
   });
   const data: RegisterMarketoAttendeeResponse = await response.data;
   return data;
