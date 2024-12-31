@@ -10,8 +10,7 @@ export const CountdownIframe = ({ eventId }: CountdownIframeProps) => {
       console.error(
         "The Sequel countdown element was not found. Please add a div with id `sequel_countdown` to your html."
       );
-      return;
-    }
+    } else {
 
     // Create and render the countdown iframe
     const countdownIframe = document.createElement('iframe');
@@ -31,4 +30,5 @@ export const CountdownIframe = ({ eventId }: CountdownIframeProps) => {
     // Clear any existing content and append the new iframe
     countdownRoot.innerHTML = '';
     countdownRoot.appendChild(countdownIframe);
+    }
 };

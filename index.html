@@ -4,23 +4,33 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vite + React + TS</title>
+    <style>
+      .container {
+        display: flex;
+        gap: 2rem;
+        padding: 2rem;
+      }
+      .column {
+        flex: 1;
+      }
+    </style>
   </head>
 
   <body>
-    <br /><br />
-    <!-- <script src="//882-TRU-959.mktoweb.com/js/forms2/js/forms2.min.js"></script>
-    <script src="https://js.hsforms.net/forms/v2.js"></script> -->
-
     <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
     <script type="module" src="/src/index.tsx"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({ sequelEventId: "540f2f41-bc1e-4d8a-862f-29893ee5db2f", loadHubspotForm: false, renderCountdown: true }) });
-    </script>
-    <div id="hubspotForm"> </div>
-    <p class="text-7xl">Session below form</p>
+    <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({"sequelEventId":"e71328a3-96a0-401f-996e-1ba2b48de196","renderCountdown":true}) }); </script>
+    
+    <div class="container">
+      <div class="column">
+        <div id="sequel_countdown"></div>
+      </div>
+      <div class="column">
+        <div id="hubspotForm"></div>
+      </div>
+
+    </div>
     <div id="sequel_root"></div>
 
-    <p class="text-7xl">Countdown below form</p>
-    <div id="sequel_countdown"></div>
   </body>
 </html>

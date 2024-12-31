@@ -413,8 +413,8 @@ class Sequel {
       form.id = `hubspotForm_${hubspotFormId}`;
     }
 
-    if (!joinCode && !loadHubspotForm && renderCountdown) {
-      return CountdownIframe({
+    if (!joinCode && renderCountdown) {
+      CountdownIframe({
         eventId: sequelEventId,
       });
     }
@@ -450,6 +450,9 @@ class Sequel {
               );
               if (!renderAddToCalendar) {
                 removeElementAndParentIfEmpty(htmlForm);
+                if (document.getElementById('sequel_countdown')) {
+                  removeElementAndParentIfEmpty(document.getElementById('sequel_countdown'));
+                }
                 Sequel.renderEvent({
                   eventId: sequelEventId,
                   joinCode: registeredAttendeee.joinCode,
