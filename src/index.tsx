@@ -242,7 +242,9 @@ class Sequel {
       );
       return;
     }
-    window.addEventListener("load", () => Sequel.trackPageView());
+    
+    // Track the current page view immediately
+    Sequel.trackPageView();
   }
 
   static renderThankYouPage = async () => {
