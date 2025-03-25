@@ -17,7 +17,28 @@
   </head>
 
   <body>
-    <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+    <script>
+      (function() {
+        // Create and insert the Sequel root element
+        const sequelRoot = document.createElement('div');
+        sequelRoot.id = 'sequel_root';
+        sequelRoot.style.width = '100%';
+        document.body.appendChild(sequelRoot);
+        
+        // Load the Sequel toolkit script
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = '/src/index.tsx';
+        script.onload = function() {
+          // Once the script is loaded, initialize and render the Sequel event
+          Sequel.embedSequel({
+            sequelEventId: "e71328a3-96a0-401f-996e-1ba2b48de196"
+          });
+        };
+        document.head.appendChild(script);
+      })();
+    </script>
+    <!-- <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
     <script type="module" src="/src/index.tsx"></script>
     <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({"sequelEventId":"e71328a3-96a0-401f-996e-1ba2b48de196","renderCountdown":true}) }); </script>
     
@@ -30,7 +51,7 @@
       </div>
 
     </div>
-    <div id="sequel_root"></div>
+    <div id="sequel_root"></div> -->
 
   </body>
 </html>
