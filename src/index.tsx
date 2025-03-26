@@ -654,6 +654,35 @@ class Sequel {
     renderApp(<EmbedIframe eventId={eventId} joinCode={joinCode} />);
   };
 
+
+  static embedSequelRegistration = async ({ sequelEventId }: { sequelEventId: string }) => {
+    const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
+    const event = await getEvent(sequelEventId);
+
+    if (!event) {
+      console.error(
+        "Sequel event not found. Please double check the event id."
+      );
+      return;
+    }
+
+    let sequelRoot = document.getElementById(`sequel_root`);
+    if (!sequelRoot) {
+      console.error(
+        "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
+      );
+      return;
+    }
+    sequelRoot.style.marginTop = "100px";
+    sequelRoot.style.padding = "20px";
+
+    // Simply render the Sequel event with the joinCode if it exists
+    Sequel.renderEvent({
+      eventId: sequelEventId,
+      joinCode: joinCode || "",
+    });
+  };
+
   static embedSequel = async ({ sequelEventId }: { sequelEventId: string }) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
@@ -672,6 +701,8 @@ class Sequel {
       );
       return;
     }
+    sequelRoot.style.marginTop = "100px";
+    sequelRoot.style.padding = "20px";
 
     // Simply render the Sequel event with the joinCode if it exists
     Sequel.renderEvent({
