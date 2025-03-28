@@ -17,7 +17,7 @@
   </head>
 
   <body>
-    <script>
+    <!-- <script>
       (function() {
         // Create and insert the Sequel root element
         const sequelRoot = document.createElement('div');
@@ -37,21 +37,29 @@
         };
         document.head.appendChild(script);
       })();
-    </script>
-    <!-- <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+    </script> -->
     <script type="module" src="/src/index.tsx"></script>
-    <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({"sequelEventId":"e71328a3-96a0-401f-996e-1ba2b48de196","renderCountdown":true}) }); </script>
-    
+    <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({"sequelEventId":"636294a0-abf1-47c1-9ee9-d392942f9b83","loadHubspotForm":false}) }); </script>
     <div class="container">
       <div class="column">
         <div id="sequel_countdown"></div>
       </div>
       <div class="column">
-        <div id="hubspotForm"></div>
+        <div id="hubspotForm">
+          <script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/embed/v2.js"></script>
+          <script>
+            hbspt.forms.create({
+              portalId: "5876265",
+              formId: "2bc267f6-2731-4ead-a799-a9e54a653fa0",
+              region: "na1"
+            });
+          </script>
+        </div>
+        
       </div>
 
     </div>
-    <div id="sequel_root"></div> -->
+    <div id="sequel_root"></div>
 
   </body>
 </html>

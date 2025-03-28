@@ -481,7 +481,12 @@ class Sequel {
           window.addEventListener('message', async (eventSubmission) => {
             if (eventSubmission.data.type === 'hsFormCallback' && eventSubmission.data.eventName === 'onFormSubmitted') {
               const submissionValues = eventSubmission.data.data.submissionValues;
-              
+              const submittedFormId = eventSubmission.data.data.formGuid;
+
+              if (hubspotFormId && submittedFormId !== hubspotFormId) {
+                return;
+              }
+
               const firstName = submissionValues.firstname || '';
               const lastName = submissionValues.lastname || '';
               const email = submissionValues.email || '';
