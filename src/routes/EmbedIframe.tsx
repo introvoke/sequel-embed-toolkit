@@ -3,10 +3,11 @@ import { ApiConfig } from "@src/api/apiConfig";
 interface EmbedIframeProps {
   eventId: string;
   joinCode: string;
+  hybrid?: boolean;
 }
 
-export const EmbedIframe = ({ eventId, joinCode }: EmbedIframeProps) => {
-  const iframeUrl = `${ApiConfig.GetEmbedUrl()}/event/${eventId}?joinCode=${joinCode}`;
+export const EmbedIframe = ({ eventId, joinCode, hybrid }: EmbedIframeProps) => {
+  const iframeUrl = `${ApiConfig.GetEmbedUrl()}/event/${eventId}?joinCode=${joinCode}&hybrid=${hybrid}`;
   return (
     <iframe
       allowFullScreen

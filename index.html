@@ -17,29 +17,21 @@
   </head>
 
   <body>
-    <!-- <script>
-      (function() {
-        // Create and insert the Sequel root element
-        const sequelRoot = document.createElement('div');
-        sequelRoot.id = 'sequel_root';
-        sequelRoot.style.width = '100%';
-        document.body.appendChild(sequelRoot);
-        
-        // Load the Sequel toolkit script
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.src = '/src/index.tsx';
-        script.onload = function() {
-          // Once the script is loaded, initialize and render the Sequel event
-          Sequel.embedSequel({
-            sequelEventId: "e71328a3-96a0-401f-996e-1ba2b48de196"
-          });
-        };
-        document.head.appendChild(script);
-      })();
-    </script> -->
+      <script>
+        (function() {
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.src = '/src/index.tsx';
+          script.onload = function() {
+            Sequel.embedSequelRegistration({
+              sequelEventId: "723b6d9d-238c-48e5-84f7-17bb2d97fe02"
+            });
+          };
+          document.head.appendChild(script);
+        })();
+      </script>
     <script type="module" src="/src/index.tsx"></script>
-    <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({"sequelEventId":"636294a0-abf1-47c1-9ee9-d392942f9b83","loadHubspotForm":false}) }); </script>
+    <!-- <script> document.addEventListener('DOMContentLoaded', (event) => { Sequel.renderSequelWithHubspotFrame({"sequelEventId":"636294a0-abf1-47c1-9ee9-d392942f9b83","loadHubspotForm":false}) }); </script>
     <div class="container">
       <div class="column">
         <div id="sequel_countdown"></div>
@@ -58,7 +50,7 @@
         
       </div>
 
-    </div>
+    </div> -->
     <div id="sequel_root"></div>
 
   </body>

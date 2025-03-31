@@ -30,6 +30,7 @@ interface RenderHubspotFormParams {
 interface RenderEventParams {
   eventId: string;
   joinCode: string;
+  hybrid?: boolean;
 }
 
 // Helper function to remove the element and its parent if the parent is empty
@@ -655,8 +656,8 @@ class Sequel {
     }
   };
 
-  static renderEvent = async ({ eventId, joinCode }: RenderEventParams) => {
-    renderApp(<EmbedIframe eventId={eventId} joinCode={joinCode} />);
+  static renderEvent = async ({ eventId, joinCode, hybrid }: RenderEventParams) => {
+    renderApp(<EmbedIframe eventId={eventId} joinCode={joinCode} hybrid={hybrid} />);
   };
 
 
@@ -678,13 +679,13 @@ class Sequel {
       );
       return;
     }
-    sequelRoot.style.marginTop = "100px";
-    sequelRoot.style.padding = "20px";
+
 
     // Simply render the Sequel event with the joinCode if it exists
     Sequel.renderEvent({
       eventId: sequelEventId,
       joinCode: joinCode || "",
+      hybrid: true,
     });
   };
 
