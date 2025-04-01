@@ -6,14 +6,15 @@ import {
 } from "@src/utils/dom";
 import { getValidatedJoinCode } from "@src/utils/user";
 import registrationApi from "@src/api/registration";
-import { MarketoRegistrationSuccess } from "./routes/MarketoRegistrationSuccess";
-import { EmbedIframe } from "./routes/EmbedIframe";
-import { getEvent } from "./api/event/getEvent";
-import { trackIdentify, trackPageView } from "./api/website/website";
-import { getUserEmailFromJoinCode } from "./api/registration/getUserJoinInformation";
+import { MarketoRegistrationSuccess } from "@src/routes/MarketoRegistrationSuccess";
+import { EmbedIframe } from "@src/routes/EmbedIframe";
+import { getEvent } from "@src/api/event/getEvent";
+import { trackIdentify, trackPageView } from "@src/api/website/website";
+import { getUserEmailFromJoinCode } from "@src/api/registration/getUserJoinInformation";
 import Cookies from "js-cookie";
-import { CountdownIframe } from "./routes/CountdownIframe";
-
+import { CountdownIframe } from "@src/routes/CountdownIframe";
+import type { Agenda } from "@src/api/event/event";
+import { AgendaContainer } from "@src/routes/AgendaContainer";
 interface RenderMarketoFormParams {
   sequelEventId: string;
   renderAddToCalendar?: boolean;
@@ -31,6 +32,7 @@ interface RenderEventParams {
   eventId: string;
   joinCode: string;
   hybrid?: boolean;
+  agenda?: Agenda;
   isPopup?: boolean;
 }
 
@@ -72,10 +74,10 @@ class Sequel {
       return;
     }
     Sequel.companyId = companyId;
-    
+
     // Check if consent was previously given
-    const consentCookie = Cookies.get('sequel-consent');
-    if (consentCookie === 'true') {
+    const consentCookie = Cookies.get("sequel-consent");
+    if (consentCookie === "true") {
       // Initialize tracking without setting cookie again
       Sequel.hasConsent = true;
       Sequel.userId = Sequel.getOrCreateUserId();
@@ -97,12 +99,12 @@ class Sequel {
     Sequel.checkJoinCode();
     Sequel.listenForIframeMessages();
     Sequel.trackWebsite();
-    
+
     // Store consent cookie only when explicitly initialized
-    Cookies.set('sequel-consent', 'true', { 
-      secure: true, 
-      sameSite: 'strict',
-      expires: 365 // 1 year
+    Cookies.set("sequel-consent", "true", {
+      secure: true,
+      sameSite: "strict",
+      expires: 365, // 1 year
     });
   }
 
@@ -110,11 +112,11 @@ class Sequel {
     Sequel.hasConsent = false;
     Sequel.userId = null;
     Sequel.sessionId = null;
-    
+
     // Clear cookies
-    Cookies.remove('sequel-consent');
-    Cookies.remove('sequelUserId');
-    Cookies.remove('sequelSessionId');
+    Cookies.remove("sequel-consent");
+    Cookies.remove("sequelUserId");
+    Cookies.remove("sequelSessionId");
   }
 
   // Check the URL for joinCode or joincode and call the API to identify the user
@@ -181,7 +183,7 @@ class Sequel {
   // Send tracking data to the backend
   static async sendData(eventType: string, data: any) {
     if (!Sequel.hasConsent) {
-      console.debug('Analytics tracking blocked - user consent not given');
+      console.debug("Analytics tracking blocked - user consent not given");
       return;
     }
 
@@ -311,7 +313,10 @@ class Sequel {
       }
 
       // Handle Marketo form submissions
-      if (event.data?.type === 'mktoForm' && event.data?.eventName === 'formSubmitted') {
+      if (
+        event.data?.type === "mktoForm" &&
+        event.data?.eventName === "formSubmitted"
+      ) {
         const formData = event.data?.data?.formData;
         if (formData) {
           const email = formData.Email || formData.email;
@@ -323,11 +328,14 @@ class Sequel {
       }
 
       // Handle HubSpot form submissions
-      if (event.data?.type === 'hsFormCallback' && event.data?.eventName === 'onFormSubmitted') {
+      if (
+        event.data?.type === "hsFormCallback" &&
+        event.data?.eventName === "onFormSubmitted"
+      ) {
         const submissionValues = event.data.data?.submissionValues;
         if (submissionValues) {
           const email = submissionValues.email;
-  
+
           if (email) {
             Sequel.identify(email);
           }
@@ -403,7 +411,7 @@ class Sequel {
         );
         return;
       }
-  
+
       if (!hubspotPortalId) {
         console.error(
           "The Sequel script is set to render the HubSpot form but the event does not have a HubSpot portal id. Please double check the event information in the Sequel dashboard."
@@ -452,8 +460,10 @@ class Sequel {
               );
               if (!renderAddToCalendar) {
                 removeElementAndParentIfEmpty(htmlForm);
-                if (document.getElementById('sequel_countdown')) {
-                  removeElementAndParentIfEmpty(document.getElementById('sequel_countdown'));
+                if (document.getElementById("sequel_countdown")) {
+                  removeElementAndParentIfEmpty(
+                    document.getElementById("sequel_countdown")
+                  );
                 }
                 Sequel.renderEvent({
                   eventId: sequelEventId,
@@ -480,21 +490,27 @@ class Sequel {
           });
         } else {
           // Listen for HubSpot form submission via postMessage
-          window.addEventListener('message', async (eventSubmission) => {
-            if (eventSubmission.data.type === 'hsFormCallback' && eventSubmission.data.eventName === 'onFormSubmitted') {
-              const submissionValues = eventSubmission.data.data.submissionValues;
+          window.addEventListener("message", async (eventSubmission) => {
+            if (
+              eventSubmission.data.type === "hsFormCallback" &&
+              eventSubmission.data.eventName === "onFormSubmitted"
+            ) {
+              const submissionValues =
+                eventSubmission.data.data.submissionValues;
               const submittedFormId = eventSubmission.data.data.formGuid;
 
               if (hubspotFormId && submittedFormId !== hubspotFormId) {
                 return;
               }
 
-              const firstName = submissionValues.firstname || '';
-              const lastName = submissionValues.lastname || '';
-              const email = submissionValues.email || '';
+              const firstName = submissionValues.firstname || "";
+              const lastName = submissionValues.lastname || "";
+              const email = submissionValues.email || "";
 
               if (!firstName || !lastName || !email) {
-                console.error("The HubSpot form was submitted but the first name, last name, or email was not found for Sequel to register the user. Please double check the form fields.");
+                console.error(
+                  "The HubSpot form was submitted but the first name, last name, or email was not found for Sequel to register the user. Please double check the form fields."
+                );
                 return;
               }
 
@@ -503,7 +519,10 @@ class Sequel {
                 email: email,
                 eventId: sequelEventId,
               });
-              setSequelJoinCodeCookie(sequelEventId, registeredAttendeee.joinCode);
+              setSequelJoinCodeCookie(
+                sequelEventId,
+                registeredAttendeee.joinCode
+              );
               if (!renderAddToCalendar) {
                 removeElementAndParentIfEmpty(htmlForm);
                 Sequel.renderEvent({
@@ -657,16 +676,32 @@ class Sequel {
     }
   };
 
-  static renderEvent = async ({ eventId, joinCode, hybrid, isPopup }: RenderEventParams & { isPopup?: boolean }) => {
-    renderApp(<EmbedIframe eventId={eventId} joinCode={joinCode} hybrid={hybrid} isPopup={isPopup} />);
+  static renderEvent = async ({
+    eventId,
+    joinCode,
+    hybrid,
+    isPopup,
+    agenda,
+  }: RenderEventParams & { isPopup?: boolean }) => {
+    renderApp(
+      <div className="flex flex-col gap-4">
+        <EmbedIframe
+          eventId={eventId}
+          joinCode={joinCode}
+          hybrid={hybrid}
+          isPopup={isPopup}
+        />
+        {agenda && <AgendaContainer agenda={agenda} />}
+      </div>
+    );
   };
 
-  static embedSequelRegistration = async ({ 
-    sequelEventId, 
-    isPopup = false 
-  }: { 
-    sequelEventId: string, 
-    isPopup?: boolean 
+  static embedSequelRegistration = async ({
+    sequelEventId,
+    isPopup = false,
+  }: {
+    sequelEventId: string;
+    isPopup?: boolean;
   }) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
@@ -701,6 +736,7 @@ class Sequel {
       joinCode: joinCode || "",
       hybrid: true,
       isPopup: isPopup,
+      agenda: event.agenda,
     });
   };
 
@@ -730,6 +766,26 @@ class Sequel {
       eventId: sequelEventId,
       joinCode: joinCode || "",
     });
+  };
+
+  static renderEmbedAgenda = async ({ eventId }: { eventId: string }) => {
+    const event = await getEvent(eventId);
+
+    if (!event) {
+      console.error(
+        "Sequel event not found. Please double check the event id."
+      );
+      return;
+    }
+
+    if (!event.agenda) {
+      console.error(
+        "The Sequel event does not have an agenda. Please double check the event information in the Sequel dashboard."
+      );
+      return;
+    }
+
+    renderApp(<AgendaContainer agenda={event.agenda} />);
   };
 }
 
