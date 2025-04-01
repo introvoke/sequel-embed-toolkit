@@ -31,6 +31,7 @@ interface RenderEventParams {
   eventId: string;
   joinCode: string;
   hybrid?: boolean;
+  isPopup?: boolean;
 }
 
 // Helper function to remove the element and its parent if the parent is empty
@@ -656,12 +657,17 @@ class Sequel {
     }
   };
 
-  static renderEvent = async ({ eventId, joinCode, hybrid }: RenderEventParams) => {
-    renderApp(<EmbedIframe eventId={eventId} joinCode={joinCode} hybrid={hybrid} />);
+  static renderEvent = async ({ eventId, joinCode, hybrid, isPopup }: RenderEventParams & { isPopup?: boolean }) => {
+    renderApp(<EmbedIframe eventId={eventId} joinCode={joinCode} hybrid={hybrid} isPopup={isPopup} />);
   };
 
-
-  static embedSequelRegistration = async ({ sequelEventId }: { sequelEventId: string }) => {
+  static embedSequelRegistration = async ({ 
+    sequelEventId, 
+    isPopup = false 
+  }: { 
+    sequelEventId: string, 
+    isPopup?: boolean 
+  }) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
 
@@ -680,12 +686,21 @@ class Sequel {
       return;
     }
 
+    // Apply special styling for popup mode
+    if (isPopup) {
+      // Set styles for the sequel_root element
+      sequelRoot.style.margin = "0";
+      sequelRoot.style.padding = "0";
+      sequelRoot.style.width = "100%";
+      sequelRoot.style.overflow = "hidden";
+    }
 
     // Simply render the Sequel event with the joinCode if it exists
     Sequel.renderEvent({
       eventId: sequelEventId,
       joinCode: joinCode || "",
       hybrid: true,
+      isPopup: isPopup,
     });
   };
 

@@ -13,6 +13,39 @@
       .column {
         flex: 1;
       }
+      
+      /* Popup styles */
+      .popup-container {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+      }
+      
+      .popup {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        width: 600px;
+        max-width: 90%;
+        max-height: 80%;
+        overflow: auto;
+        position: relative;
+      }
+      
+      .popup-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        cursor: pointer;
+        font-size: 20px;
+      }
     </style>
   </head>
 
@@ -24,7 +57,8 @@
           script.src = '/src/index.tsx';
           script.onload = function() {
             Sequel.embedSequelRegistration({
-              sequelEventId: "723b6d9d-238c-48e5-84f7-17bb2d97fe02"
+              sequelEventId: "723b6d9d-238c-48e5-84f7-17bb2d97fe02",
+              isPopup: true
             });
           };
           document.head.appendChild(script);
@@ -51,7 +85,27 @@
       </div>
 
     </div> -->
-    <div id="sequel_root"></div>
+    
+    <!-- Popup trigger button -->
+    <button id="openPopupBtn">Open Registration</button>
+    
+    <!-- Popup container -->
+    <div class="popup-container" id="popupContainer">
+      <div class="popup">
+        <span class="popup-close" id="closePopupBtn">&times;</span>
+        <div id="sequel_root"></div>
+      </div>
+    </div>
 
+    <script>
+      // Popup functionality
+      document.getElementById('openPopupBtn').addEventListener('click', function() {
+        document.getElementById('popupContainer').style.display = 'flex';
+      });
+      
+      document.getElementById('closePopupBtn').addEventListener('click', function() {
+        document.getElementById('popupContainer').style.display = 'none';
+      });
+    </script>
   </body>
 </html>
