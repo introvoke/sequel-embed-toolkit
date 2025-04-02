@@ -684,7 +684,7 @@ class Sequel {
     agenda,
   }: RenderEventParams & { isPopup?: boolean }) => {
     renderApp(
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-20">
         <EmbedIframe
           eventId={eventId}
           joinCode={joinCode}
@@ -765,6 +765,7 @@ class Sequel {
     Sequel.renderEvent({
       eventId: sequelEventId,
       joinCode: joinCode || "",
+      agenda: event.agenda,
     });
   };
 

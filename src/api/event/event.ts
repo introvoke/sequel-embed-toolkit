@@ -26,6 +26,7 @@ export type AgendaBlock = {
   heading: string;
   content: string;
   coverImage?: string;
+  list?: string[];
 };
 
 export type AgendaScheduleItem = {

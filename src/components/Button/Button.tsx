@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn, cva, type VariantProps } from "@src/styles/utils";
-import LoaderIcon from "@src/components/LoaderIcon";
+import LoaderIcon from "@src/components/icons/LoaderIcon";
 import { IconWrapper, type IconWrapperProps } from "../IconWrapper";
 
 const iconVariants = cva("", {

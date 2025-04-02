@@ -4,7 +4,7 @@ import { useEffect } from "react";
 const AgendaWidget: React.FC = () => {
   useEffect(() => {
     window.Sequel.renderEmbedAgenda({
-      eventId: "723b6d9d-238c-48e5-84f7-17bb2d97fe02",
+      eventId: "55ff41fa-55ff-4bf5-8012-1190dac93cb9",
     });
   }, []);
 

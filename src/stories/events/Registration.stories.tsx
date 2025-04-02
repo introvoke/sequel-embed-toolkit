@@ -10,7 +10,6 @@ const RegistrationPopup: React.FC<{ isPopup: boolean }> = ({ isPopup }) => {
       sequelEventId: "723b6d9d-238c-48e5-84f7-17bb2d97fe02",
       isPopup,
     });
-    console.log(window.Sequel);
   }, []);
 
   return (
