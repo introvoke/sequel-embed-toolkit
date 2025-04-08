@@ -54,11 +54,11 @@
         (function() {
           const script = document.createElement('script');
           script.type = 'module';
-          script.src = '/src/index.tsx';
+          script.src = 'https://prod-assets.sequelvideo.com/uploads/toolkit/sequel-website.js';
           script.onload = function() {
             Sequel.embedSequelRegistration({
               sequelEventId: "723b6d9d-238c-48e5-84f7-17bb2d97fe02",
-              isPopup: true
+              hybrid: true
             });
           };
           document.head.appendChild(script);

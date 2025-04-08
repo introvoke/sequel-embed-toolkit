@@ -22,8 +22,8 @@ export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup }: EmbedIframeP
     : {
         height: "90vh", 
         borderRadius: "12px", 
-        border: "1px solid #dbdfec", 
-        boxShadow: "3px 3px 10px 0 rgb(20 20 43 / 4%)"
+        border: hybrid ? "none" : "1px solid #dbdfec", 
+        boxShadow: hybrid ? "none" : "3px 3px 10px 0 rgb(20 20 43 / 4%)"
       };
   
   return (
