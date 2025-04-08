@@ -1,3 +1,14 @@
+.sequel-iframe-hybrid {
+  min-height: 780px;
+}
+
+@media (max-height: 840px) {
+  .sequel-iframe-hybrid {
+    min-height: calc(100vh - 80px);
+    min-height: calc(100dvh - 80px);
+  }
+}
+
 /* go with the lowest values to not hurt user experience */
 @supports not (container-type: inline-size) {
   .sequel-video-player-controls {

@@ -8,7 +8,7 @@ interface EmbedIframeProps {
 
 export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup }: EmbedIframeProps & { isPopup?: boolean }) => {
   const iframeUrl = `${ApiConfig.GetEmbedUrl()}/event/${eventId}?joinCode=${joinCode}&hybrid=${hybrid}`;
-  
+
   const iframeStyle = isPopup 
     ? {
         height: "80vh",
@@ -20,18 +20,22 @@ export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup }: EmbedIframeP
         padding: "0"
       }
     : {
-        height: "90vh", 
         borderRadius: "12px", 
         border: hybrid ? "none" : "1px solid #dbdfec", 
-        boxShadow: hybrid ? "none" : "3px 3px 10px 0 rgb(20 20 43 / 4%)"
+        boxShadow: hybrid ? "none" : "3px 3px 10px 0 rgb(20 20 43 / 4%)",
       };
+
+      const iframeClassName = isPopup 
+      ? "sequel-iframe-popup" 
+      : `sequel-iframe${hybrid ? " sequel-iframe-hybrid" : ""}`;
+    
   
   return (
     <iframe
       allowFullScreen
       style={iframeStyle}
       allow="camera *; microphone *; autoplay; display-capture *"
-      className={isPopup ? "sequel-iframe-popup" : "sequel-iframe"}
+      className={iframeClassName}
       title="Sequel event"
       width="100%"
       src={iframeUrl}
