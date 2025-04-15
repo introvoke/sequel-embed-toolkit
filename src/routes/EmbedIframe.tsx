@@ -7,7 +7,18 @@ interface EmbedIframeProps {
 }
 
 export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup }: EmbedIframeProps & { isPopup?: boolean }) => {
-  const iframeUrl = `${ApiConfig.GetEmbedUrl()}/event/${eventId}?joinCode=${joinCode}&hybrid=${hybrid}`;
+  // Get current URL search parameters
+  const searchParams = new URLSearchParams(window.location.search);
+  
+  // Create base URL with required parameters
+  const baseUrl = `${ApiConfig.GetEmbedUrl()}/event/${eventId}?joinCode=${joinCode}&hybrid=${hybrid}`;
+  
+  // Add all other search parameters
+  const iframeUrl = Array.from(searchParams.entries()).reduce((url, [key, value]) => {
+    // Skip parameters that are already included in the base URL
+    if (key === 'joinCode' || key === 'hybrid') return url;
+    return `${url}&${key}=${value}`;
+  }, baseUrl);
 
   const iframeStyle = isPopup 
     ? {
@@ -25,10 +36,9 @@ export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup }: EmbedIframeP
         boxShadow: hybrid ? "none" : "3px 3px 10px 0 rgb(20 20 43 / 4%)",
       };
 
-      const iframeClassName = isPopup 
-      ? "sequel-iframe-popup" 
-      : `sequel-iframe${hybrid ? " sequel-iframe-hybrid" : ""}`;
-    
+  const iframeClassName = isPopup 
+    ? "sequel-iframe-popup" 
+    : `sequel-iframe${hybrid ? " sequel-iframe-hybrid" : ""}`;
   
   return (
     <iframe
