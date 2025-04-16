@@ -2,6 +2,10 @@
   min-height: 780px;
 }
 
+.sequel-iframe {
+  height: 90vh;
+}
+
 @media (max-height: 840px) {
   .sequel-iframe-hybrid {
     min-height: calc(100vh - 80px);

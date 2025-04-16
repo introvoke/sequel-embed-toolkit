@@ -38,7 +38,7 @@ export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup }: EmbedIframeP
 
   const iframeClassName = isPopup 
     ? "sequel-iframe-popup" 
-    : `sequel-iframe${hybrid ? " sequel-iframe-hybrid" : ""}`;
+    : `sequel-iframe${hybrid ? "-hybrid" : ""}`;
   
   return (
     <iframe
