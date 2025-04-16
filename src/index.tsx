@@ -756,6 +756,11 @@ class Sequel {
     });
   };
 
+  static getHubspotFormId = async ({ sequelEventId }: { sequelEventId: string }) => {
+    const event = await getEvent(sequelEventId);
+    return event.registration?.hubspotFormId;
+  }
+
   static embedSequel = async ({ sequelEventId }: { sequelEventId: string }) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
