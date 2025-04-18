@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { isAfter, isBefore } from "date-fns";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useIntervalEffect } from "@react-hookz/web";
 
 import { EventAgendaScheduleItem } from "@src/api/event/event";
@@ -35,14 +35,27 @@ export const useGroupedSchedule = (schedule: EventAgendaScheduleItem[]) => {
 export const useCurrentTimeScheduleItems = (
   schedule: EventAgendaScheduleItem[],
   now: Date
-) =>
-  useMemo(
-    () =>
-      schedule.filter((item) => {
-        return isAfter(now, item.startDate) && isBefore(now, item.endDate);
-      }),
-    [schedule, now]
-  );
+) => {
+  const prevRef = useRef<EventAgendaScheduleItem[]>([]);
+
+  // this is so that we dont cause re-renders with the same results from the .filter as that creates a new array
+  return useMemo(() => {
+    const next = schedule.filter(
+      (item) => isAfter(now, item.startDate) && isBefore(now, item.endDate)
+    );
+
+    const prev = prevRef.current;
+    const unchanged =
+      prev.length === next.length && prev.every((item, i) => item === next[i]);
+
+    if (unchanged) {
+      return prev;
+    }
+
+    prevRef.current = next;
+    return next;
+  }, [schedule, now]);
+};
 
 export const useCurrentPageSchedule = (
   schedule: EventAgendaScheduleItem[],
@@ -107,7 +120,8 @@ export const useManageAgendaRedirect = (
   const { data: eventStatus } = useQuery<EventStatusResponse>({
     queryKey: ["eventStatus", currentPageSchedule?.eventId],
     queryFn: async () => {
-      return { isStreamLive: Math.random() < 0.1 };
+      const isStreamLive = Math.random() < 0.1;
+      return { isStreamLive };
     },
     enabled: waitingToRedirect && !!currentPageSchedule?.eventId,
     refetchInterval: (query) => (query.state.data?.isStreamLive ? 3000 : false),
@@ -124,11 +138,9 @@ export const useManageAgendaRedirect = (
       const targetUrl = new URL(itemsScheduledForNow[0].url);
       targetUrl.search = window.location.search;
       window.location.href = targetUrl.toString();
+      setHasBeenOnPageWhilstScheduled(false);
+      setWaitingToRedirect(false);
       // setUrl(targetUrl.toString());
     }
   }, [eventStatus, itemsScheduledForNow]);
-
-  useEffect(() => {
-    setHasBeenOnPageWhilstScheduled(false);
-  }, [currentPageSchedule]);
 };

@@ -6,13 +6,12 @@ import {
 } from "./hooks";
 
 import { Agenda } from "@src/components/Agenda";
-
 export const AgendaContainer = ({ agenda }: { agenda: EventAgenda }) => {
   const { heading, subheading, schedule } = agenda;
   const now = useCurrentTime();
   const groupedSchedule = useGroupedSchedule(schedule);
   // const [url, setUrl] = useState<string>(groupedSchedule[0][0].url);
-  useManageAgendaRedirect(schedule, now);
+  useManageAgendaRedirect(schedule, now); //) url, setUrl);
 
   return (
     <>

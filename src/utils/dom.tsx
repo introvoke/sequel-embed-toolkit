@@ -17,18 +17,21 @@ export const renderApp = (app: React.ReactNode) => {
   appRoot?.unmount();
   appRoot = createRoot(document.getElementById("sequel_root")!);
   appRoot.render(
-    <React.StrictMode>
-      <Providers>{app}</Providers>
-    </React.StrictMode>
+    // <React.StrictMode>
+    <Providers>{app}</Providers>
+    // </React.StrictMode>
   );
 };
 
-export const renderAppInsideDocument = (app: React.ReactNode, document: any) => {
+export const renderAppInsideDocument = (
+  app: React.ReactNode,
+  document: any
+) => {
   appRoot?.unmount();
   appRoot = createRoot(document!);
   appRoot.render(
-    <React.StrictMode>
-      <Providers>{app}</Providers>
-    </React.StrictMode>
+    // <React.StrictMode>
+    <Providers>{app}</Providers>
+    // </React.StrictMode>
   );
 };
