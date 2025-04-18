@@ -110,7 +110,7 @@ export const useManageAgendaRedirect = (
       return { isStreamLive: Math.random() < 0.1 };
     },
     enabled: waitingToRedirect && !!currentPageSchedule?.eventId,
-    refetchInterval: (query) => (query.state.data?.isStreamLive ? 300 : false),
+    refetchInterval: (query) => (query.state.data?.isStreamLive ? 3000 : false),
   });
 
   useEffect(() => {
