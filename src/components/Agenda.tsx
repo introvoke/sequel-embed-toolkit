@@ -1,50 +1,50 @@
-import { cn } from "@src/styles/utils";
-import type { Agenda, AgendaScheduleItem } from "../api/event/event";
+import { isBefore, isAfter, formatDistanceToNowStrict } from "date-fns";
 
-import { differenceInMinutes } from "date-fns";
+import { cn } from "@src/styles/utils";
 import { IconWrapper } from "@src/components/IconWrapper";
 import ClockStopwatch from "@src/components/icons/ClockStopwatch";
 import Signal01 from "@src/components/icons/Signal01";
 import Check from "@src/components/icons/Check";
+import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
+import { Button } from "./Button";
 
-interface AgendaItemProps {
-  item: AgendaScheduleItem;
+const getStatus = (
+  now: Date,
+  start: Date,
+  end: Date
+): { label: string; status: "upcoming" | "live" | "ended" } => {
+  if (isBefore(now, start)) {
+    return {
+      label: `Live in: ${formatDistanceToNowStrict(start)}`,
+      status: "upcoming",
+    };
+  }
+  if (isAfter(now, end)) {
+    return { label: "Ended", status: "ended" };
+  }
+  return { label: "Live now", status: "live" };
+};
+
+interface AgendaItemsProps {
+  items: EventAgendaScheduleItem[];
+  now: Date;
 }
 
-function getTimeLabel(startDate: Date, endDate: Date): string {
-  const now = new Date();
-
-  if (now >= startDate && now <= endDate) {
-    return "Live";
-  }
-
-  if (now < startDate) {
-    const diff = differenceInMinutes(startDate, now);
-    const hours = Math.floor(diff / 60);
-    const minutes = diff % 60;
-
-    if (hours > 0) {
-      return `Live in ${hours} hour${hours > 1 ? "s" : ""}${
-        minutes > 0 ? `, ${minutes} minute${minutes > 1 ? "s" : ""}` : ""
-      }`;
-    } else {
-      return `Live in ${diff} minute${diff !== 1 ? "s" : ""}`;
-    }
-  }
-
-  return "Ended";
-}
-
-export const AgendaItem = ({ item }: AgendaItemProps) => {
-  const label = getTimeLabel(item.startDate, item.endDate);
-  const isLive = label === "Live";
+function AgendaItems({ items, now }: AgendaItemsProps) {
+  const [first] = items;
+  const { label, status } = getStatus(
+    now,
+    new Date(first.startDate),
+    new Date(first.endDate)
+  );
+  const isLive = status === "live";
 
   return (
     <div className="flex flex-col md:flex-row gap-2 md:gap-0">
       <div className="flex flex-1 flex-col gap-1 md:gap-2 md:max-w-[300px] md:w-[20%] md:min-w-[100px] max-w-full w-full min-w-full">
         <h2 className="flex items-center flex-row font-bold text-[24px] leading-[120%] text-[#010D39] relative">
           <div className="absolute -left-[18px] h-1.5 w-1.5 bg-[#FF1B15] rounded-full z-1"></div>
-          {item.title}
+          {first.title}
         </h2>
         <span
           className={cn(
@@ -58,7 +58,7 @@ export const AgendaItem = ({ item }: AgendaItemProps) => {
       </div>
 
       <div className="flex flex-col gap-8 flex-1">
-        {item.blocks.map((block, index) => (
+        {items.map((block, index) => (
           <div
             key={index}
             className={cn(
@@ -66,10 +66,10 @@ export const AgendaItem = ({ item }: AgendaItemProps) => {
               block.coverImage
                 ? "md:pr-40 lg:pr-[200px] pb-[110px] md:pb-6"
                 : "",
-              item.blocks.length > 1 ? "bg-[#F8F9FF]" : "bg-[#E6EFFF]"
+              items.length > 1 ? "bg-[#F8F9FF]" : "bg-[#E6EFFF]"
             )}
           >
-            <div className={cn("flex-1 flex-col flex gap-4")}>
+            <div className="flex-col flex gap-4  items-start">
               <div className="flex flex-col gap-0.5">
                 {block.supheading && (
                   <p className="text-[16px] font-medium leading-[120%] text-[#010D39]">
@@ -81,7 +81,6 @@ export const AgendaItem = ({ item }: AgendaItemProps) => {
                 </h3>
               </div>
               <p className="text-[16px] text-[#010D39] mt-2">{block.content}</p>
-
               {block.list && (
                 <div className="flex flex-col gap-1">
                   {block.list.map((item, index) => (
@@ -99,6 +98,17 @@ export const AgendaItem = ({ item }: AgendaItemProps) => {
                   ))}
                 </div>
               )}
+              {isLive && items.length > 1 && (
+                <Button
+                  onClick={() => {
+                    const url = new URL(items[0].url);
+                    url.search = window.location.search;
+                    window.location.href = url.toString();
+                  }}
+                >
+                  Join Now
+                </Button>
+              )}
             </div>
 
             {block.coverImage && (
@@ -115,48 +125,68 @@ export const AgendaItem = ({ item }: AgendaItemProps) => {
       </div>
     </div>
   );
-};
-
-const AgendaHeader = ({
-  heading,
-  subheading,
-}: Pick<Agenda, "heading" | "subheading">) => {
-  return (
-    <div className="flex flex-col gap-2 text-center max-w-[720px] mx-auto text-[#010D39]">
-      <h1 className="text-4xl font-bold">{heading}</h1>
-      <p className="text-sm text-gray-500">{subheading}</p>
-    </div>
-  );
-};
-
-interface AgendaScheduleProps {
-  schedule: AgendaScheduleItem[];
 }
 
-const AgendaSchedule = ({ schedule }: AgendaScheduleProps) => {
+AgendaItems.displayName = "Agenda.Items";
+
+function AgendaHeader({
+  heading,
+  subheading,
+}: Pick<EventAgenda, "heading" | "subheading">) {
+  return (
+    <header className="flex flex-col gap-2 text-center max-w-[720px] mx-auto text-[#010D39]">
+      <h2 className="text-4xl font-bold">{heading}</h2>
+      <p className="text-sm text-gray-500">{subheading}</p>
+    </header>
+  );
+}
+AgendaHeader.displayName = "Agenda.Header";
+
+interface AgendaScheduleProps {
+  schedule: Array<EventAgendaScheduleItem[]>;
+  now: Date;
+}
+
+function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
   return (
     <div className="mx-auto w-full mt-8 flex flex-col gap-12">
       <div className="flex flex-col gap-12 relative pl-4">
         <div className="absolute left-0 top-0 bottom-0 border-r border-dashed border-[#3F486B50] z-0"></div>
-        {schedule.map((item, index) => (
-          <AgendaItem key={index} item={item} />
+        {schedule.map((items, index) => (
+          <AgendaItems key={index} items={items} now={now} />
         ))}
       </div>
     </div>
   );
-};
+}
+AgendaScheduleContainer.displayName = "Agenda.Schedule";
 
-export const AgendaContainer = ({ agenda }: { agenda: Agenda }) => {
+interface AgendaContainerProps {
+  heading: string;
+  subheading: string;
+  schedule: Array<EventAgendaScheduleItem[]>;
+  now: Date;
+}
+
+function AgendaContainer({
+  heading,
+  subheading,
+  schedule,
+  now,
+}: AgendaContainerProps) {
   return (
-    <div className="w-full px-4 max-w-[1200px] mx-auto font-figtree [&_*]:font-figtree">
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link
-        href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
-        rel="stylesheet"
-      />
-      <AgendaHeader heading={agenda.heading} subheading={agenda.subheading} />
-      <AgendaSchedule schedule={agenda.schedule} />
-    </div>
+    <section className="w-full px-4 max-w-[1200px] mx-auto font-figtree [&_*]:font-figtree">
+      <AgendaHeader heading={heading} subheading={subheading} />
+      <AgendaScheduleContainer schedule={schedule} now={now} />
+    </section>
   );
-};
+}
+
+AgendaContainer.displayName = "Agenda.Container";
+
+export const Agenda = Object.assign(AgendaContainer, {
+  Container: AgendaContainer,
+  Header: AgendaHeader,
+  Schedule: AgendaScheduleContainer,
+  Items: AgendaItems,
+});

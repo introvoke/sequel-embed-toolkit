@@ -13,8 +13,9 @@ import { trackIdentify, trackPageView } from "@src/api/website/website";
 import { getUserEmailFromJoinCode } from "@src/api/registration/getUserJoinInformation";
 import Cookies from "js-cookie";
 import { CountdownIframe } from "@src/routes/CountdownIframe";
-import type { Agenda } from "@src/api/event/event";
-import { AgendaContainer } from "@src/routes/AgendaContainer";
+import type { EventAgenda } from "@src/api/event/event";
+import { AgendaContainer } from "@src/routes/agenda/AgendaContainer";
+
 interface RenderMarketoFormParams {
   sequelEventId: string;
   renderAddToCalendar?: boolean;
@@ -32,7 +33,7 @@ interface RenderEventParams {
   eventId: string;
   joinCode: string;
   hybrid?: boolean;
-  agenda?: Agenda;
+  agenda?: EventAgenda;
   isPopup?: boolean;
 }
 
@@ -732,14 +733,19 @@ class Sequel {
 
     // Add event listener for registration redirect
     window.addEventListener("message", (e) => {
-      if (e.data.event === 'user-registered' && e.data.data.redirectUrl && e.data.data.joinCode && e.data.data.eventId) {
+      if (
+        e.data.event === "user-registered" &&
+        e.data.data.redirectUrl &&
+        e.data.data.joinCode &&
+        e.data.data.eventId
+      ) {
         const { eventId, joinCode, redirectUrl } = e.data.data;
-        
+
         // Handle URLs that might already have query parameters
         const url = new URL(redirectUrl);
         url.searchParams.append("joinCode", joinCode);
         url.searchParams.append("eventId", eventId);
-        
+
         setTimeout(() => {
           window.location.href = url.toString();
         }, 3000);
@@ -756,10 +762,14 @@ class Sequel {
     });
   };
 
-  static getHubspotFormId = async ({ sequelEventId }: { sequelEventId: string }) => {
+  static getHubspotFormId = async ({
+    sequelEventId,
+  }: {
+    sequelEventId: string;
+  }) => {
     const event = await getEvent(sequelEventId);
     return event.registration?.hubspotFormId;
-  }
+  };
 
   static embedSequel = async ({ sequelEventId }: { sequelEventId: string }) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
