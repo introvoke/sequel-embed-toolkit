@@ -120,7 +120,8 @@ export const useManageAgendaRedirect = (
   const { data: eventStatus } = useQuery<EventStatusResponse>({
     queryKey: ["eventStatus", currentPageSchedule?.eventId],
     queryFn: async () => {
-      const isStreamLive = Math.random() < 0.1;
+      const isStreamLive = Math.random() < 0.3;
+      // console.log("isStreamLive", isStreamLive);
       return { isStreamLive };
     },
     enabled: waitingToRedirect && !!currentPageSchedule?.eventId,
@@ -138,6 +139,7 @@ export const useManageAgendaRedirect = (
       const targetUrl = new URL(itemsScheduledForNow[0].url);
       targetUrl.search = window.location.search;
       window.location.href = targetUrl.toString();
+      // console.log("REDIRECTING TO", targetUrl.toString());
       setHasBeenOnPageWhilstScheduled(false);
       setWaitingToRedirect(false);
       // setUrl(targetUrl.toString());
