@@ -11,6 +11,7 @@ export const AgendaContainer = ({ agenda }: { agenda: EventAgenda }) => {
   const { heading, subheading, schedule } = agenda;
   const now = useCurrentTime();
   const groupedSchedule = useGroupedSchedule(schedule);
+  // const [url, setUrl] = useState<string>(groupedSchedule[0][0].url);
   useManageAgendaRedirect(schedule, now);
 
   return (
@@ -21,6 +22,7 @@ export const AgendaContainer = ({ agenda }: { agenda: EventAgenda }) => {
         href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap"
         rel="stylesheet"
       />
+      {/* {url} */}
       <Agenda.Container
         heading={heading}
         subheading={subheading}

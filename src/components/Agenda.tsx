@@ -7,6 +7,7 @@ import Signal01 from "@src/components/icons/Signal01";
 import Check from "@src/components/icons/Check";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
+import Stop from "./icons/Stop";
 
 const getStatus = (
   now: Date,
@@ -38,6 +39,7 @@ function AgendaItems({ items, now }: AgendaItemsProps) {
     new Date(first.endDate)
   );
   const isLive = status === "live";
+  const isEnded = status === "ended";
 
   return (
     <div className="flex flex-col md:flex-row gap-2 md:gap-0">
@@ -48,11 +50,15 @@ function AgendaItems({ items, now }: AgendaItemsProps) {
         </h2>
         <span
           className={cn(
-            "text-[16px] flex flex-row items-center gap-2",
-            isLive ? "text-[#FF1B15]" : "text-[#010D39]"
+            "text-[16px] flex flex-row items-center gap-2 text-[#010D39]",
+            isLive && "text-[#FF1B15]",
+            isEnded && "text-[#0094FF]"
           )}
         >
-          <IconWrapper size="md" icon={isLive ? Signal01 : ClockStopwatch} />
+          <IconWrapper
+            size="md"
+            icon={isLive ? Signal01 : isEnded ? Stop : ClockStopwatch}
+          />
           <span>{label}</span>
         </span>
       </div>

@@ -44,15 +44,16 @@ export const useCurrentTimeScheduleItems = (
     [schedule, now]
   );
 
-export const useCurrentPageSchedule = (schedule: EventAgendaScheduleItem[]) =>
+export const useCurrentPageSchedule = (
+  schedule: EventAgendaScheduleItem[],
+  url: string
+) =>
   useMemo(
     () =>
       schedule.find((item) => {
-        return item.url
-          .split("//")[1]
-          .startsWith(window.location.href.split("//")[1]);
+        return url.split("//")[1].startsWith(item.url.split("//")[1]);
       }),
-    [schedule]
+    [schedule, url]
   );
 
 interface EventStatusResponse {
@@ -62,8 +63,13 @@ interface EventStatusResponse {
 export const useManageAgendaRedirect = (
   schedule: EventAgendaScheduleItem[],
   now: Date
+  // url: string,
+  // setUrl: (url: string) => void
 ) => {
-  const currentPageSchedule = useCurrentPageSchedule(schedule);
+  const currentPageSchedule = useCurrentPageSchedule(
+    schedule,
+    window.location.href
+  );
   const itemsScheduledForNow = useCurrentTimeScheduleItems(schedule, now);
 
   const [hasBeenOnPageWhilstScheduled, setHasBeenOnPageWhilstScheduled] =
@@ -101,7 +107,7 @@ export const useManageAgendaRedirect = (
   const { data: eventStatus } = useQuery<EventStatusResponse>({
     queryKey: ["eventStatus", currentPageSchedule?.eventId],
     queryFn: async () => {
-      return { isStreamLive: Math.random() < 0.86 };
+      return { isStreamLive: Math.random() < 0.1 };
     },
     enabled: waitingToRedirect && !!currentPageSchedule?.eventId,
     refetchInterval: (query) => (query.state.data?.isStreamLive ? 300 : false),
@@ -118,6 +124,11 @@ export const useManageAgendaRedirect = (
       const targetUrl = new URL(itemsScheduledForNow[0].url);
       targetUrl.search = window.location.search;
       window.location.href = targetUrl.toString();
+      // setUrl(targetUrl.toString());
     }
   }, [eventStatus, itemsScheduledForNow]);
+
+  useEffect(() => {
+    setHasBeenOnPageWhilstScheduled(false);
+  }, [currentPageSchedule]);
 };
