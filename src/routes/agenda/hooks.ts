@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { isAfter, isBefore } from "date-fns";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useIntervalEffect } from "@react-hookz/web";
 
 import { EventAgendaScheduleItem } from "@src/api/event/event";

@@ -6,7 +6,6 @@ import {
 } from "./hooks";
 
 import { Agenda } from "@src/components/Agenda";
-import { useState } from "react";
 export const AgendaContainer = ({ agenda }: { agenda: EventAgenda }) => {
   const { heading, subheading, schedule } = agenda;
   const now = useCurrentTime();
