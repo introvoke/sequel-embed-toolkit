@@ -26,7 +26,7 @@ export const quickNewStubbedAgenda: EventAgenda = {
         "How leading companies are harnessing creativity to move faster, engage with precision, and drive revenue.",
       ],
       coverImage:
-        "https://stage-assets.sequelvideo.com/store/96decb66-07a9-4be2-2903-4e507615bcff/1132cc9f-a06c-4266-a529-3a48f26642fc.png",
+        "https://res.cloudinary.com/introvoke/image/upload/v1745359956/ZI%20headshots/henry_alpa4u.png",
     },
     {
       title: "Main Session",
@@ -61,7 +61,7 @@ export const quickNewStubbedAgenda: EventAgenda = {
         "The AI-Driven GTM Workflow",
       ],
       coverImage:
-        "https://stage-assets.sequelvideo.com/store/96decb66-07a9-4be2-2903-4e507615bcff/c0378de5-b1d7-4235-b637-9b831582646d.png",
+        "https://res.cloudinary.com/introvoke/image/upload/v1745359956/ZI%20headshots/dominik-facher_rbh3x8.png",
     },
     {
       title: "Main Session",
@@ -79,7 +79,7 @@ export const quickNewStubbedAgenda: EventAgenda = {
         "Maximize rep productivity with AI-powered automation",
       ],
       coverImage:
-        "https://stage-assets.sequelvideo.com/store/96decb66-07a9-4be2-2903-4e507615bcff/5e1ab63f-d218-49fb-a557-b9549a7daff5.png",
+        "https://res.cloudinary.com/introvoke/image/upload/v1745360057/ZI%20headshots/james-roth_cdsyvj.png",
     },
     {
       title: "Breakout Session 1",
@@ -87,10 +87,10 @@ export const quickNewStubbedAgenda: EventAgenda = {
       endDate: addSeconds(baseTime, 50),
       eventId: "c7f88320-15b0-4ece-91a5-793503ddfdcb",
       url: "https://www.zoominfo.com/live/gtm25-breakout-1",
-      supheading: "Virtual Customer Presenter: Sourcing now",
+      supheading: "Keith Pearce, CMO Gainsight, and Marilee Bear, CRO at Gainsight",
       heading: "From Cold to Closed, How to Turn Whitespace Into Wins",
       content:
-        "Gain high-impact strategies, rewrite traditional playbooks, and architect your GTM motion to stay ahead — this must attend session is designed for all sales and marketing leaders. Join us to learn how to:",
+        "Join Keith Pearce, CMO at Gainsight, and Marilee Bear, CRO at Gainsight, for this must-attend session designed for sales and marketing leaders. Gain high-impact strategies, rewrite traditional playbooks, and architect your GTM motion to stay ahead. Join us and learn how to:",
       list: [
         "Find high-value accounts with real-time data & intent signals",
         "Automate execution for precision targeting across marketing & sales",
@@ -199,10 +199,10 @@ export const newStubbedAgenda: EventAgenda = {
       endDate: new Date("2025-05-07T20:30:00.000+00:00"),
       eventId: "c7f88320-15b0-4ece-91a5-793503ddfdcb",
       url: "https://www.zoominfo.com/live/gtm25-breakout-1",
-      supheading: "Virtual Customer Presenter: Sourcing now",
+      supheading: "Keith Pearce, CMO Gainsight, and Marilee Bear, CRO at Gainsight",
       heading: "From Cold to Closed, How to Turn Whitespace Into Wins",
       content:
-        "Gain high-impact strategies, rewrite traditional playbooks, and architect your GTM motion to stay ahead — this must attend session is designed for all sales and marketing leaders. Join us to learn how to:",
+        "Join Keith Pearce, CMO at Gainsight, and Marilee Bear, CRO at Gainsight, for this must-attend session designed for sales and marketing leaders. Gain high-impact strategies, rewrite traditional playbooks, and architect your GTM motion to stay ahead. Join us and learn how to:",
       list: [
         "Find high-value accounts with real-time data & intent signals",
         "Automate execution for precision targeting across marketing & sales",
