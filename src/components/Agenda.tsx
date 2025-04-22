@@ -68,7 +68,7 @@ function AgendaItems({ items, now }: AgendaItemsProps) {
           <div
             key={index}
             className={cn(
-              "flex flex-col gap-4 rounded-lg p-4 md:p-6 relative",
+              "flex flex-col gap-4 p-4 md:p-6 relative",
               block.coverImage
                 ? "md:pr-40 lg:pr-[200px] pb-[110px] md:pb-6"
                 : "",
@@ -122,7 +122,7 @@ function AgendaItems({ items, now }: AgendaItemsProps) {
                 <img
                   src={block.coverImage}
                   alt={block.heading}
-                  className="object-contain w-full h-auto rounded-md"
+                  className="object-contain w-full h-auto "
                 />
               </div>
             )}
