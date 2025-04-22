@@ -18,10 +18,15 @@ export interface Event {
   timezone: string;
   registration?: Registration;
   organizerUid: string;
-  agenda?: Agenda;
+  agenda?: EventAgenda;
 }
 
-export type AgendaBlock = {
+export type EventAgendaScheduleItem = {
+  title: string;
+  startDate: Date;
+  endDate: Date;
+  eventId: string;
+  url: string;
   supheading: string;
   heading: string;
   content: string;
@@ -29,15 +34,8 @@ export type AgendaBlock = {
   list?: string[];
 };
 
-export type AgendaScheduleItem = {
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  blocks: AgendaBlock[];
-};
-
-export type Agenda = {
+export type EventAgenda = {
   heading: string;
   subheading: string;
-  schedule: AgendaScheduleItem[];
+  schedule: EventAgendaScheduleItem[];
 };
