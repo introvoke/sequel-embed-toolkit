@@ -7,7 +7,6 @@ import Signal01 from "@src/components/icons/Signal01";
 import Check from "@src/components/icons/Check";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
-import Stop from "./icons/Stop";
 
 const getStatus = (
   now: Date,
@@ -57,7 +56,7 @@ function AgendaItems({ items, now }: AgendaItemsProps) {
         >
           <IconWrapper
             size="md"
-            icon={isLive ? Signal01 : isEnded ? Stop : ClockStopwatch}
+            icon={isLive ? Signal01 : isEnded ? Check : ClockStopwatch}
           />
           <span>{label}</span>
         </span>
@@ -104,15 +103,15 @@ function AgendaItems({ items, now }: AgendaItemsProps) {
                   ))}
                 </div>
               )}
-              {isLive && items.length > 1 && (
-                <Button
+              {(isLive || isEnded) && (
+                <Button className=" bg-[#FF1B15] text-white"
                   onClick={() => {
                     const url = new URL(items[0].url);
                     url.search = window.location.search;
                     window.location.href = url.toString();
                   }}
                 >
-                  Join Now
+                  {isEnded ? "Watch Replay" : "Join Now"}
                 </Button>
               )}
             </div>
