@@ -135,7 +135,7 @@ export const getEvent = async (eventId: string): Promise<Event> => {
   const response = await axios.get(configUrl);
   const data: Event = await response.data;
   const url = new URL(window.location.href);
-  const isTestMode = url.searchParams.get("testMode") === "true";
+  const isTestMode = url.searchParams.get("fakeAgenda") === "true";
   const useCustomDuration = url.searchParams.get("customDuration") ? parseInt(url.searchParams.get("customDuration") || "0") : 0;
   if (generateAgenda(false).schedule.some((item) => item.eventId === eventId)) {
     return {

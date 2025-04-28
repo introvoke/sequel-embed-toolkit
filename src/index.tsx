@@ -707,11 +707,24 @@ class Sequel {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const testMode = searchParams.get("testMode");
+
+
     if (!event) {
       console.error(
         "Sequel event not found. Please double check the event id."
       );
       return;
+    }
+
+    if (testMode) {
+      const keynoteUrl = "https://www.zoominfo.com/live/gtm25-keynote";
+      if (keynoteUrl) {
+        const targetUrl = new URL(keynoteUrl);
+        targetUrl.search = window.location.search;
+        window.location.href = targetUrl.toString();
+      }
     }
 
     let sequelRoot = document.getElementById(`sequel_root`);
