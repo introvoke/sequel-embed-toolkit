@@ -24,6 +24,11 @@ export function BreakoutChoiceModal({
     return now >= start && now <= end;
   };
 
+  const hasBreakoutEnded = (breakout: EventAgendaScheduleItem) => {
+    const end = new Date(breakout.endDate);
+    return now >= end;
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg max-w-[850px] w-full mx-4 relative max-h-[80vh] flex-col flex ">
@@ -87,7 +92,11 @@ export function BreakoutChoiceModal({
                   onClick={() => onSelect(breakout.url)}
                   disabled={!isLive}
                 >
-                  {isLive ? "Join Now" : "Not Started Yet"}
+                  {isLive
+                    ? "Join Now"
+                    : hasBreakoutEnded(breakout)
+                    ? "View Replay"
+                    : "Not Started Yet"}
                 </Button>
               </div>
             );
