@@ -90,7 +90,7 @@ export function BreakoutChoiceModal({
                 <Button
                   className="bg-[#FF1B15] hover:enabled:bg-[#FF1B15]/80 focus-visible:enabled:bg-[#FF1B15]/80 active:enabled:bg-[#FF1B15]/80 text-white self-start"
                   onClick={() => onSelect(breakout.url)}
-                  disabled={!isLive}
+                  disabled={!isLive && !hasBreakoutEnded(breakout)}
                 >
                   {isLive
                     ? "Join Now"
