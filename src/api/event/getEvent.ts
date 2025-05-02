@@ -11,14 +11,14 @@ const SESSION_DURATIONS = {
   BREAKOUT_2: 24 * 60 + 5, // 24 minutes 5 seconds
 };
 
-// const SESSION_DURATIONS = {
-//   KEYNOTE: 3, // 20 minutes 37 seconds
-//   TODD: 3, // 21 minutes 5 seconds
-//   DOMINIK: 3, // 19 minutes 19 seconds
-//   JAMES: 3, // 14 minutes 48 seconds
-//   BREAKOUT_1: 60 * 5, // 33 minutes 49 seconds
-//   BREAKOUT_2: 60 * 5, // 24 minutes 5 seconds
-// };
+const SESSION_DURATIONS_SPEEDY = {
+  KEYNOTE: 3, // 20 minutes 37 seconds
+  TODD: 3, // 21 minutes 5 seconds
+  DOMINIK: 3, // 19 minutes 19 seconds
+  JAMES: 3, // 14 minutes 48 seconds
+  BREAKOUT_1: 60 * 5, // 33 minutes 49 seconds
+  BREAKOUT_2: 60 * 5, // 24 minutes 5 seconds
+};
 
 const CLOUDINARY_BASE_URL =
   "https://res.cloudinary.com/introvoke/image/upload/c_limit,w_200,h_200,q_auto/";
@@ -33,7 +33,10 @@ export const IMAGES = {
   TOBY: `${CLOUDINARY_BASE_URL}v1746181403/pwjgkv24ta1ujh3tgphw.png`,
 } as const;
 
-const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
+const generateAgenda = (
+  useQuickDates: boolean = false,
+  speedMode = false
+): EventAgenda => {
   const baseTime = useQuickDates
     ? new Date("2025-05-02T16:30:00.000+00:00")
     : new Date("2025-05-07T18:00:00.000+00:00");
@@ -47,6 +50,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
     return nextTime;
   };
 
+  const DURATIONS = speedMode ? SESSION_DURATIONS_SPEEDY : SESSION_DURATIONS;
   return {
     heading: "The Future of Go-to-Market Starts Here",
     subheading:
@@ -55,7 +59,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
       {
         title: "Keynote",
         startDate: getNextTime(0),
-        endDate: getNextTime(SESSION_DURATIONS.KEYNOTE),
+        endDate: getNextTime(DURATIONS.KEYNOTE),
         eventId: "55ff41fa-55ff-4bf5-8012-1190dac93cb9",
         url: "https://www.zoominfo.com/live/gtm25-keynote",
         supheading: "Henry Schuck, CEO & Founder ZoomInfo",
@@ -72,7 +76,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
       {
         title: "Main Session",
         startDate: getNextTime(0),
-        endDate: getNextTime(SESSION_DURATIONS.TODD),
+        endDate: getNextTime(DURATIONS.TODD),
         eventId: "8ea595c1-99df-4609-a475-fbc351935b54",
         url: "https://www.zoominfo.com/live/gtm25-ai-b2b-sales",
         supheading: "Todd Horst, Partner McKinsey & Company",
@@ -90,7 +94,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
       {
         title: "Main Session",
         startDate: getNextTime(0),
-        endDate: getNextTime(SESSION_DURATIONS.DOMINIK),
+        endDate: getNextTime(DURATIONS.DOMINIK),
         eventId: "91eb98d4-6cb9-4a91-ada0-8344d66a084f",
         url: "https://www.zoominfo.com/live/gtm25-intelligence-platform",
         supheading: "Dominik Facher, CPO ZoomInfo",
@@ -107,7 +111,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
       {
         title: "Main Session",
         startDate: getNextTime(0),
-        endDate: getNextTime(SESSION_DURATIONS.JAMES),
+        endDate: getNextTime(DURATIONS.JAMES),
         eventId: "988e550e-b3be-4fc4-b659-6782cd70f9a2",
         url: "https://www.zoominfo.com/live/gtm25-revenue-growth",
         supheading: "James Roth, CRO ZoomInfo",
@@ -124,9 +128,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
       {
         title: "Breakout Sessions",
         startDate: new Date(currentTime),
-        endDate: new Date(
-          currentTime.getTime() + SESSION_DURATIONS.BREAKOUT_1 * 1000
-        ),
+        endDate: new Date(currentTime.getTime() + DURATIONS.BREAKOUT_1 * 1000),
         eventId: "c7f88320-15b0-4ece-91a5-793503ddfdcb",
         url: "https://www.zoominfo.com/live/gtm25-breakout-1",
         supheading:
@@ -143,9 +145,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
       {
         title: "Breakout Session 2",
         startDate: new Date(currentTime),
-        endDate: new Date(
-          currentTime.getTime() + SESSION_DURATIONS.BREAKOUT_2 * 1000
-        ),
+        endDate: new Date(currentTime.getTime() + DURATIONS.BREAKOUT_2 * 1000),
         eventId: "c4dadc5f-6545-4d38-9692-661f425b0e76",
         url: "https://www.zoominfo.com/live/gtm25-breakout-2",
         supheading: "Toby Carrington, CBO Seismic",
@@ -175,13 +175,14 @@ export const getEvent = async (eventId: string): Promise<Event> => {
   const data: Event = await response.data;
   const url = new URL(window.location.href);
   const isTestMode = url.searchParams.get("testMode") === "true";
+  const isSpeedMode = url.searchParams.get("speedMode") === "true";
 
   if (generateAgenda(false).schedule.some((item) => item.eventId === eventId)) {
     return {
       ...data,
       agenda:
         window.IS_STORYBOOK || isTestMode
-          ? generateAgenda(true)
+          ? generateAgenda(true, isSpeedMode)
           : generateAgenda(false),
     };
   }
