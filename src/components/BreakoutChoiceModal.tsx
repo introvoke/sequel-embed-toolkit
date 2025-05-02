@@ -24,7 +24,7 @@ export function BreakoutChoiceModal({ breakouts, now, onClose, onSelect }: Break
         </p>
         
         <div className="space-y-4">
-          {breakouts.map((breakout, index) => {
+          {breakouts.map((breakout) => {
             const isLive = isBreakoutLive(breakout);
             return (
               <div 
