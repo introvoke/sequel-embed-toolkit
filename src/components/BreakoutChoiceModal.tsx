@@ -26,13 +26,13 @@ export function BreakoutChoiceModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg max-w-3xl w-full mx-4 relative">
+      <div className="bg-white rounded-lg max-w-[850px] w-full mx-4 relative max-h-[80vh] flex-col flex ">
         <IconButton
           icon={XClose}
           onClick={onClose}
           className="absolute top-4 right-4"
         />
-        <div className="px-4 py-3 border-b border-[#D7DAE0]">
+        <div className="px-4 py-3 border-b border-[#D7DAE0] flex-0">
           <h2 className="font-[600] text-[18px] leading-[160%]">
             Choose Your Breakout Session
           </h2>
@@ -42,7 +42,7 @@ export function BreakoutChoiceModal({
           </p>
         </div>
 
-        <div className="p-4 flex flex-row gap-4">
+        <div className="p-4 flex flex-col md:flex-row gap-4 overflow-y-auto">
           {breakouts.map((breakout, index) => {
             const isLive = isBreakoutLive(breakout);
             return (
