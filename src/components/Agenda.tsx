@@ -1,4 +1,5 @@
 import { isBefore, isAfter, formatDistanceToNowStrict } from "date-fns";
+import { useState, useEffect } from "react";
 
 import { cn } from "@src/styles/utils";
 import { IconWrapper } from "@src/components/IconWrapper";
@@ -7,6 +8,7 @@ import Signal01 from "@src/components/icons/Signal01";
 import Check from "@src/components/icons/Check";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
+import { BreakoutChoiceModal } from "./BreakoutChoiceModal";
 
 const getStatus = (
   now: Date,
@@ -28,9 +30,12 @@ const getStatus = (
 interface AgendaItemsProps {
   items: EventAgendaScheduleItem[];
   now: Date;
+  isMainSession: boolean;
+  showReplayButton: boolean;
+  showJoinButton: boolean;
 }
 
-function AgendaItems({ items, now }: AgendaItemsProps) {
+function AgendaItems({ items, now, isMainSession, showReplayButton, showJoinButton }: AgendaItemsProps) {
   const [first] = items;
   const { label, status } = getStatus(
     now,
@@ -39,6 +44,11 @@ function AgendaItems({ items, now }: AgendaItemsProps) {
   );
   const isLive = status === "live";
   const isEnded = status === "ended";
+
+  // Only show buttons if:
+  // 1. For main sessions: when all main sessions are over (showReplayButton)
+  // 2. For breakouts: when main sessions are over and breakouts are not over (showJoinButton)
+  const shouldShowButton = (isMainSession && showReplayButton) || (!isMainSession && showJoinButton);
 
   return (
     <div className="flex flex-col md:flex-row gap-2 md:gap-0">
@@ -103,15 +113,16 @@ function AgendaItems({ items, now }: AgendaItemsProps) {
                   ))}
                 </div>
               )}
-              {(isLive || isEnded) && (
-                <Button className=" bg-[#FF1B15] text-white"
+              {shouldShowButton && (
+                <Button 
+                  className="bg-[#FF1B15] text-white"
                   onClick={() => {
                     const url = new URL(items[0].url);
                     url.search = window.location.search;
                     window.location.href = url.toString();
                   }}
                 >
-                  {isEnded ? "Watch Replay" : "Join Now"}
+                  {isMainSession ? "Watch Replay" : "Join Now"}
                 </Button>
               )}
             </div>
@@ -153,14 +164,75 @@ interface AgendaScheduleProps {
 }
 
 function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
+  const [showBreakoutModal, setShowBreakoutModal] = useState(false);
+  const [hasShownModal, setHasShownModal] = useState(false);
+
+  // Split schedule into main sessions and breakouts
+  const mainSessions = schedule.slice(0, 4);
+  const breakouts = schedule.slice(4);
+
+  // Check if all main sessions are over
+  const allMainSessionsOver = mainSessions.every(sessionGroup => 
+    sessionGroup.every(session => isAfter(now, new Date(session.endDate)))
+  );
+
+  // Check if any breakout is live
+  const hasLiveBreakout = breakouts.some(sessionGroup => 
+    sessionGroup.some(session => {
+      const start = new Date(session.startDate);
+      const end = new Date(session.endDate);
+      return now >= start && now <= end;
+    })
+  );
+
+  // Show modal when main sessions end and it hasn't been shown yet
+  useEffect(() => {
+    if (allMainSessionsOver && !hasShownModal) {
+      setShowBreakoutModal(true);
+      setHasShownModal(true);
+    }
+  }, [allMainSessionsOver, hasShownModal]);
+
+  const handleBreakoutSelect = (url: string) => {
+    const fullUrl = new URL(url);
+    fullUrl.search = window.location.search;
+    window.location.href = fullUrl.toString();
+  };
+
   return (
     <div className="mx-auto w-full mt-8 flex flex-col gap-12">
       <div className="flex flex-col gap-12 relative pl-4">
         <div className="absolute left-0 top-0 bottom-0 border-r border-dashed border-[#3F486B50] z-0"></div>
-        {schedule.map((items, index) => (
-          <AgendaItems key={index} items={items} now={now} />
+        {mainSessions.map((items, index) => (
+          <AgendaItems 
+            key={index} 
+            items={items} 
+            now={now} 
+            isMainSession={true}
+            showReplayButton={allMainSessionsOver}
+            showJoinButton={false}
+          />
+        ))}
+        {breakouts.map((items, index) => (
+          <AgendaItems 
+            key={`breakout-${index}`} 
+            items={items} 
+            now={now} 
+            isMainSession={false}
+            showReplayButton={false}
+            showJoinButton={allMainSessionsOver && hasLiveBreakout}
+          />
         ))}
       </div>
+
+      {showBreakoutModal && (
+        <BreakoutChoiceModal
+          breakouts={breakouts.flat()}
+          now={now}
+          onClose={() => setShowBreakoutModal(false)}
+          onSelect={handleBreakoutSelect}
+        />
+      )}
     </div>
   );
 }

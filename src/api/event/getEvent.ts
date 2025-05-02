@@ -2,9 +2,19 @@ import axios from "axios";
 import { ApiConfig } from "../apiConfig";
 import { EventAgenda, Event } from "./event";
 
-const generateAgenda = (useQuickDates: boolean = false, useCustomDuration: number = 0): EventAgenda => {
-  const baseTime = useQuickDates ? new Date() : new Date("2025-05-07T18:00:00.000+00:00");
-  const duration = useCustomDuration > 0 ? useCustomDuration : 30;
+const SESSION_DURATIONS = {
+  KEYNOTE: 20 * 60 + 37, // 20 minutes 37 seconds
+  TODD: 21 * 60 + 5, // 21 minutes 5 seconds
+  DOMINIK: 19 * 60 + 19, // 19 minutes 19 seconds
+  JAMES: 14 * 60 + 48, // 14 minutes 48 seconds
+  BREAKOUT_1: 33 * 60 + 49, // 33 minutes 49 seconds
+  BREAKOUT_2: 24 * 60 + 5, // 24 minutes 5 seconds
+};
+
+const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
+  const baseTime = useQuickDates 
+    ? new Date("2025-05-02T16:30:00.000+00:00")
+    : new Date("2025-05-07T18:00:00.000+00:00");
   
   let currentTime = baseTime;
   
@@ -23,7 +33,7 @@ const generateAgenda = (useQuickDates: boolean = false, useCustomDuration: numbe
       {
         title: "Keynote",
         startDate: getNextTime(0),
-        endDate: getNextTime(duration),
+        endDate: getNextTime(SESSION_DURATIONS.KEYNOTE),
         eventId: "55ff41fa-55ff-4bf5-8012-1190dac93cb9",
         url: "https://www.zoominfo.com/live/gtm25-keynote",
         supheading: "Henry Schuck, CEO & Founder ZoomInfo",
@@ -40,7 +50,7 @@ const generateAgenda = (useQuickDates: boolean = false, useCustomDuration: numbe
       {
         title: "Main Session",
         startDate: getNextTime(0),
-        endDate: getNextTime(duration),
+        endDate: getNextTime(SESSION_DURATIONS.TODD),
         eventId: "8ea595c1-99df-4609-a475-fbc351935b54",
         url: "https://www.zoominfo.com/live/gtm25-ai-b2b-sales",
         supheading: "Todd Horst, Partner McKinsey & Company",
@@ -57,7 +67,7 @@ const generateAgenda = (useQuickDates: boolean = false, useCustomDuration: numbe
       {
         title: "Main Session",
         startDate: getNextTime(0),
-        endDate: getNextTime(duration),
+        endDate: getNextTime(SESSION_DURATIONS.DOMINIK),
         eventId: "91eb98d4-6cb9-4a91-ada0-8344d66a084f",
         url: "https://www.zoominfo.com/live/gtm25-intelligence-platform",
         supheading: "Dominik Facher, CPO ZoomInfo",
@@ -74,7 +84,7 @@ const generateAgenda = (useQuickDates: boolean = false, useCustomDuration: numbe
       {
         title: "Main Session",
         startDate: getNextTime(0),
-        endDate: getNextTime(duration),
+        endDate: getNextTime(SESSION_DURATIONS.JAMES),
         eventId: "988e550e-b3be-4fc4-b659-6782cd70f9a2",
         url: "https://www.zoominfo.com/live/gtm25-revenue-growth",
         supheading: "James Roth, CRO ZoomInfo",
@@ -91,7 +101,7 @@ const generateAgenda = (useQuickDates: boolean = false, useCustomDuration: numbe
       {
         title: "Breakout Sessions",
         startDate: new Date(currentTime),
-        endDate: new Date(currentTime.getTime() + duration * 1000),
+        endDate: new Date(currentTime.getTime() + SESSION_DURATIONS.BREAKOUT_1 * 1000),
         eventId: "c7f88320-15b0-4ece-91a5-793503ddfdcb",
         url: "https://www.zoominfo.com/live/gtm25-breakout-1",
         supheading: "Keith Pearce, CMO Gainsight, and Marilee Bear, CRO at Gainsight",
@@ -107,7 +117,7 @@ const generateAgenda = (useQuickDates: boolean = false, useCustomDuration: numbe
       {
         title: "Breakout Session 2",
         startDate: new Date(currentTime),
-        endDate: new Date(currentTime.getTime() + duration * 1000),
+        endDate: new Date(currentTime.getTime() + SESSION_DURATIONS.BREAKOUT_2 * 1000),
         eventId: "c4dadc5f-6545-4d38-9692-661f425b0e76",
         url: "https://www.zoominfo.com/live/gtm25-breakout-2",
         supheading: "Toby Carrington, CBO Seismic",
@@ -135,12 +145,12 @@ export const getEvent = async (eventId: string): Promise<Event> => {
   const response = await axios.get(configUrl);
   const data: Event = await response.data;
   const url = new URL(window.location.href);
-  const isTestMode = url.searchParams.get("fakeAgenda") === "true";
-  const useCustomDuration = url.searchParams.get("customDuration") ? parseInt(url.searchParams.get("customDuration") || "0") : 0;
+  const isTestMode = url.searchParams.get("testMode") === "true";
+  
   if (generateAgenda(false).schedule.some((item) => item.eventId === eventId)) {
     return {
       ...data,
-      agenda: window.IS_STORYBOOK || isTestMode ? generateAgenda(true, useCustomDuration) : generateAgenda(false, useCustomDuration),
+      agenda: window.IS_STORYBOOK || isTestMode ? generateAgenda(true) : generateAgenda(false),
     };
   }
 
