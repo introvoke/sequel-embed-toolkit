@@ -38,7 +38,9 @@ const generateAgenda = (
   speedMode = false
 ): EventAgenda => {
   const baseTime = useQuickDates
-    ? new Date("2025-05-02T16:30:00.000+00:00")
+    ? speedMode
+      ? new Date()
+      : new Date("2025-05-02T16:30:00.000+00:00")
     : new Date("2025-05-07T18:00:00.000+00:00");
 
   let currentTime = baseTime;
@@ -175,7 +177,8 @@ export const getEvent = async (eventId: string): Promise<Event> => {
   const data: Event = await response.data;
   const url = new URL(window.location.href);
   const isTestMode = url.searchParams.get("testMode") === "true";
-  const isSpeedMode = url.searchParams.get("speedMode") === "true";
+  const isSpeedMode = true;
+  url.searchParams.get("speedMode") === "true";
 
   if (generateAgenda(false).schedule.some((item) => item.eventId === eventId)) {
     return {

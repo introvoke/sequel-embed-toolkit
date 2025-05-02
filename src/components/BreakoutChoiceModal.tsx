@@ -2,8 +2,8 @@ import { EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
 import { IconButton } from "./IconButton";
 import XClose from "./icons/XClose";
-import Check from "./icons/Check";
 import { IconWrapper } from "./IconWrapper";
+import CheckPurpleZoomInfo from "./icons/CheckPurpleZoomInfo";
 
 interface BreakoutChoiceModalProps {
   breakouts: EventAgendaScheduleItem[];
@@ -73,8 +73,8 @@ export function BreakoutChoiceModal({
                         >
                           <IconWrapper
                             size="md"
-                            icon={Check}
-                            className="text-[#A109BA] mt-0.5"
+                            icon={CheckPurpleZoomInfo}
+                            className="mt-1.5 w-[14px] h-[10px] min-w-[14px] min-h-[10px] mr-1"
                           />
                           <span>{item}</span>
                         </div>

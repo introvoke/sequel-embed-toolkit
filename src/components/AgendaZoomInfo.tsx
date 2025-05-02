@@ -5,6 +5,7 @@ import { IconWrapper } from "@src/components/IconWrapper";
 import ClockStopwatch from "@src/components/icons/ClockStopwatch";
 import Signal01 from "@src/components/icons/Signal01";
 import Check from "@src/components/icons/Check";
+import CheckPurpleZoomInfo from "@src/components/icons/CheckPurpleZoomInfo";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
 import { useEffect, useState } from "react";
@@ -111,9 +112,9 @@ function AgendaItems({
                       key={index}
                     >
                       <IconWrapper
-                        size="md"
-                        icon={Check}
-                        className="text-[#A109BA] mt-0.5"
+                        size="sm"
+                        icon={CheckPurpleZoomInfo}
+                        className="mt-1.5 w-[14px] h-[10px] min-w-[14px] min-h-[10px] mr-1"
                       />
                       <span>{item}</span>
                     </div>
@@ -159,7 +160,7 @@ function AgendaHeader({
   return (
     <header className="flex flex-col gap-2 text-center max-w-[720px] mx-auto text-[#010D39] leading-[120%]">
       <h2 className="text-4xl font-[800]">{heading}</h2>
-      <p className="text-md text-gray-500 leading-[160%]">{subheading}</p>
+      <p className="text-[16px] text-gray-500 leading-[160%]">{subheading}</p>
     </header>
   );
 }
