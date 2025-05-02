@@ -11,13 +11,35 @@ const SESSION_DURATIONS = {
   BREAKOUT_2: 24 * 60 + 5, // 24 minutes 5 seconds
 };
 
+// const SESSION_DURATIONS = {
+//   KEYNOTE: 3, // 20 minutes 37 seconds
+//   TODD: 3, // 21 minutes 5 seconds
+//   DOMINIK: 3, // 19 minutes 19 seconds
+//   JAMES: 3, // 14 minutes 48 seconds
+//   BREAKOUT_1: 60 * 5, // 33 minutes 49 seconds
+//   BREAKOUT_2: 60 * 5, // 24 minutes 5 seconds
+// };
+
+const CLOUDINARY_BASE_URL =
+  "https://res.cloudinary.com/introvoke/image/upload/c_limit,w_200,h_200,q_auto/";
+
+export const IMAGES = {
+  DOMINIK: `${CLOUDINARY_BASE_URL}v1746181372/hs2q4ygyswkfehjylekc.png`,
+  HENRY: `${CLOUDINARY_BASE_URL}v1746181396/ya2qqcdqvlz4atklyhlr.png`,
+  TAL: `${CLOUDINARY_BASE_URL}v1746181346/hs7qjhievo5zzyfe2zjf.png`,
+  TODD: `${CLOUDINARY_BASE_URL}v1746181413/pci5msyzppxpdiipbmiu.png`,
+  JAMES: `${CLOUDINARY_BASE_URL}v1746181386/uwuplj985uvebfrrnx2q.png`,
+  STEPHEN: `${CLOUDINARY_BASE_URL}v1746181363/rqnaasjdy4kgqh5uis95.png`,
+  TOBY: `${CLOUDINARY_BASE_URL}v1746181403/pwjgkv24ta1ujh3tgphw.png`,
+} as const;
+
 const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
-  const baseTime = useQuickDates 
+  const baseTime = useQuickDates
     ? new Date("2025-05-02T16:30:00.000+00:00")
     : new Date("2025-05-07T18:00:00.000+00:00");
-  
+
   let currentTime = baseTime;
-  
+
   const getNextTime = (seconds: number) => {
     const nextTime = new Date(currentTime);
     nextTime.setSeconds(nextTime.getSeconds() + seconds);
@@ -45,7 +67,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
           "How GTM Intelligence transforms disconnected data into real-time execution, removing every obstacle between great ideas and action.",
           "How leading companies are harnessing creativity to move faster, engage with precision, and drive revenue.",
         ],
-        coverImage: "https://res.cloudinary.com/introvoke/image/upload/v1745361439/ZI%20headshots/henry_aaltls.png",
+        coverImage: IMAGES.HENRY,
       },
       {
         title: "Main Session",
@@ -63,6 +85,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
           "What we can learn from early AI adopters",
           "The crucial steps companies must take to build a scalable, competitive AI strategy",
         ],
+        coverImage: IMAGES.TODD,
       },
       {
         title: "Main Session",
@@ -79,7 +102,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
           "Surfacing High-Intent, AI-Prioritized Buyers",
           "The AI-Driven GTM Workflow",
         ],
-        coverImage: "https://res.cloudinary.com/introvoke/image/upload/v1745359956/ZI%20headshots/dominik-facher_rbh3x8.png",
+        coverImage: IMAGES.DOMINIK,
       },
       {
         title: "Main Session",
@@ -96,15 +119,18 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
           "Grow & retain customers with precision engagement",
           "Maximize rep productivity with AI-powered automation",
         ],
-        coverImage: "https://res.cloudinary.com/introvoke/image/upload/v1745360057/ZI%20headshots/james-roth_cdsyvj.png",
+        coverImage: IMAGES.JAMES,
       },
       {
         title: "Breakout Sessions",
         startDate: new Date(currentTime),
-        endDate: new Date(currentTime.getTime() + SESSION_DURATIONS.BREAKOUT_1 * 1000),
+        endDate: new Date(
+          currentTime.getTime() + SESSION_DURATIONS.BREAKOUT_1 * 1000
+        ),
         eventId: "c7f88320-15b0-4ece-91a5-793503ddfdcb",
         url: "https://www.zoominfo.com/live/gtm25-breakout-1",
-        supheading: "Keith Pearce, CMO Gainsight, and Marilee Bear, CRO at Gainsight",
+        supheading:
+          "Keith Pearce, CMO Gainsight, and Marilee Bear, CRO at Gainsight",
         heading: "From Cold to Closed, How to Turn Whitespace Into Wins",
         content:
           "Join Keith Pearce, CMO at Gainsight, and Marilee Bear, CRO at Gainsight, for this must-attend session designed for sales and marketing leaders. Gain high-impact strategies, rewrite traditional playbooks, and architect your GTM motion to stay ahead. Join us and learn how to:",
@@ -117,7 +143,9 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
       {
         title: "Breakout Session 2",
         startDate: new Date(currentTime),
-        endDate: new Date(currentTime.getTime() + SESSION_DURATIONS.BREAKOUT_2 * 1000),
+        endDate: new Date(
+          currentTime.getTime() + SESSION_DURATIONS.BREAKOUT_2 * 1000
+        ),
         eventId: "c4dadc5f-6545-4d38-9692-661f425b0e76",
         url: "https://www.zoominfo.com/live/gtm25-breakout-2",
         supheading: "Toby Carrington, CBO Seismic",
@@ -129,6 +157,7 @@ const generateAgenda = (useQuickDates: boolean = false): EventAgenda => {
           "Prioritize the right accounts using intent data",
           "Scale revenue by automating GTM execution",
         ],
+        coverImage: IMAGES.TOBY,
       },
     ],
   };
@@ -146,11 +175,14 @@ export const getEvent = async (eventId: string): Promise<Event> => {
   const data: Event = await response.data;
   const url = new URL(window.location.href);
   const isTestMode = url.searchParams.get("testMode") === "true";
-  
+
   if (generateAgenda(false).schedule.some((item) => item.eventId === eventId)) {
     return {
       ...data,
-      agenda: window.IS_STORYBOOK || isTestMode ? generateAgenda(true) : generateAgenda(false),
+      agenda:
+        window.IS_STORYBOOK || isTestMode
+          ? generateAgenda(true)
+          : generateAgenda(false),
     };
   }
 

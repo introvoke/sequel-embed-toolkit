@@ -14,7 +14,7 @@ import { getUserEmailFromJoinCode } from "@src/api/registration/getUserJoinInfor
 import Cookies from "js-cookie";
 import { CountdownIframe } from "@src/routes/CountdownIframe";
 import type { EventAgenda } from "@src/api/event/event";
-import { AgendaContainer } from "@src/routes/agenda/AgendaContainer";
+import { ZoomInfoAgendaContainer } from "./routes/agenda/ZoomInfoAgendaContainer";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -692,7 +692,7 @@ class Sequel {
           hybrid={hybrid}
           isPopup={isPopup}
         />
-        {agenda && <AgendaContainer agenda={agenda} />}
+        {agenda && <ZoomInfoAgendaContainer agenda={agenda} />}
       </div>
     );
   };
@@ -709,7 +709,6 @@ class Sequel {
 
     const searchParams = new URLSearchParams(window.location.search);
     const testMode = searchParams.get("testMode");
-
 
     if (!event) {
       console.error(
@@ -830,11 +829,28 @@ class Sequel {
       return;
     }
 
-    renderApp(<AgendaContainer agenda={event.agenda} />);
+    renderApp(<ZoomInfoAgendaContainer agenda={event.agenda} />);
   };
 
-  static handleWebinarRegistration = (formValues: any, form: any, companyId: string) => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  static handleWebinarRegistration = (
+    formValues: any,
+    form: any,
+    companyId: string
+  ) => {
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
     const dates: string[] = [];
 
     // Collect all selected webinar dates
@@ -844,8 +860,12 @@ class Sequel {
 
       // Handle both radio buttons and checkboxes
       if (input && (input as HTMLInputElement).checked) {
-        const disclaimer = document.querySelector(`label[id="Lbl${fieldName}"] .disclaimer`) ||
-                         document.querySelector(`#${fieldName}`)?.closest(".mktoFormRow")?.querySelector(".disclaimer");
+        const disclaimer =
+          document.querySelector(`label[id="Lbl${fieldName}"] .disclaimer`) ||
+          document
+            .querySelector(`#${fieldName}`)
+            ?.closest(".mktoFormRow")
+            ?.querySelector(".disclaimer");
 
         if (disclaimer) {
           const text = disclaimer.textContent?.trim();
@@ -860,7 +880,14 @@ class Sequel {
               const day = parseInt(match[2], 10);
               const year = new Date().getFullYear();
               const date = new Date(year, monthIndex, day);
-              const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+              const formattedDate = `${date.getFullYear()}-${(
+                date.getMonth() + 1
+              )
+                .toString()
+                .padStart(2, "0")}-${date
+                .getDate()
+                .toString()
+                .padStart(2, "0")}`;
               dates.push(formattedDate);
             }
           }
@@ -874,7 +901,7 @@ class Sequel {
       email: formValues.Email,
       formId: form.getId(),
       url: window.location.href.split("?")[0],
-      companyId: companyId
+      companyId: companyId,
     };
 
     // If no dates were found, send one registration without a date
@@ -882,25 +909,25 @@ class Sequel {
       fetch("https://api.introvoke.com/api/v3/events/registrant/marketo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(basePayload)
-      }).catch(error => {
+        body: JSON.stringify(basePayload),
+      }).catch((error) => {
         console.error("Error sending webinar registration:", error);
       });
       return;
     }
 
     // Send a registration for each selected date
-    dates.forEach(date => {
+    dates.forEach((date) => {
       const payload = {
         ...basePayload,
-        date: date
+        date: date,
       };
 
       fetch("https://api.introvoke.com/api/v3/events/registrant/marketo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      }).catch(error => {
+        body: JSON.stringify(payload),
+      }).catch((error) => {
         console.error("Error sending webinar registration:", error);
       });
     });

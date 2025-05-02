@@ -1,5 +1,4 @@
 import { isBefore, isAfter, formatDistanceToNowStrict } from "date-fns";
-import { useState, useEffect } from "react";
 
 import { cn } from "@src/styles/utils";
 import { IconWrapper } from "@src/components/IconWrapper";
@@ -8,6 +7,7 @@ import Signal01 from "@src/components/icons/Signal01";
 import Check from "@src/components/icons/Check";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
+import { useEffect, useState } from "react";
 import { BreakoutChoiceModal } from "./BreakoutChoiceModal";
 
 const getStatus = (
@@ -84,7 +84,7 @@ function AgendaItems({
           <div
             key={index}
             className={cn(
-              "flex flex-col gap-4 p-4 md:p-6 relative",
+              "flex flex-col gap-4 p-4 md:p-6 relative text-[#202B52] rounded-xl",
               block.coverImage
                 ? "md:pr-40 lg:pr-[200px] pb-[110px] md:pb-6"
                 : "",
@@ -94,26 +94,26 @@ function AgendaItems({
             <div className="flex-col flex gap-4  items-start">
               <div className="flex flex-col gap-0.5">
                 {block.supheading && (
-                  <p className="text-[16px] font-medium leading-[120%] text-[#010D39]">
+                  <p className="text-[16px] font-medium leading-[160%]">
                     {block.supheading}
                   </p>
                 )}
-                <h3 className="text-[24px] leading-[120%] font-bold text-[#010D39] font-figtree">
+                <h3 className="text-[24px] leading-[120%] font-bold font-figtree">
                   {block.heading}
                 </h3>
               </div>
-              <p className="text-[16px] text-[#010D39] mt-2">{block.content}</p>
+              <p className="text-[16px] mt- leading-[160%]">{block.content}</p>
               {block.list && (
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 leading-[160%]">
                   {block.list.map((item, index) => (
                     <div
-                      className="text-[16px] text-[#010D39] flex flex-row items-center gap-2"
+                      className="text-[16px] flex flex-row items-start gap-2"
                       key={index}
                     >
                       <IconWrapper
                         size="md"
                         icon={Check}
-                        className="text-[#A109BA]"
+                        className="text-[#A109BA] mt-0.5"
                       />
                       <span>{item}</span>
                     </div>
@@ -157,9 +157,9 @@ function AgendaHeader({
   subheading,
 }: Pick<EventAgenda, "heading" | "subheading">) {
   return (
-    <header className="flex flex-col gap-2 text-center max-w-[720px] mx-auto text-[#010D39]">
-      <h2 className="text-4xl font-bold">{heading}</h2>
-      <p className="text-sm text-gray-500">{subheading}</p>
+    <header className="flex flex-col gap-2 text-center max-w-[720px] mx-auto text-[#010D39] leading-[120%]">
+      <h2 className="text-4xl font-[800]">{heading}</h2>
+      <p className="text-md text-gray-500 leading-[160%]">{subheading}</p>
     </header>
   );
 }
@@ -205,7 +205,6 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
     fullUrl.search = window.location.search;
     window.location.href = fullUrl.toString();
   };
-
   return (
     <div className="mx-auto w-full mt-8 flex flex-col gap-12">
       <div className="flex flex-col gap-12 relative pl-4">
@@ -231,7 +230,6 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
           />
         ))}
       </div>
-
       {showBreakoutModal && (
         <BreakoutChoiceModal
           breakouts={breakouts.flat()}

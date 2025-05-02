@@ -1,5 +1,9 @@
 import { EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
+import { IconButton } from "./IconButton";
+import XClose from "./icons/XClose";
+import Check from "./icons/Check";
+import { IconWrapper } from "./IconWrapper";
 
 interface BreakoutChoiceModalProps {
   breakouts: EventAgendaScheduleItem[];
@@ -8,7 +12,12 @@ interface BreakoutChoiceModalProps {
   onSelect: (url: string) => void;
 }
 
-export function BreakoutChoiceModal({ breakouts, now, onClose, onSelect }: BreakoutChoiceModalProps) {
+export function BreakoutChoiceModal({
+  breakouts,
+  now,
+  onClose,
+  onSelect,
+}: BreakoutChoiceModalProps) {
   const isBreakoutLive = (breakout: EventAgendaScheduleItem) => {
     const start = new Date(breakout.startDate);
     const end = new Date(breakout.endDate);
@@ -17,48 +26,74 @@ export function BreakoutChoiceModal({ breakouts, now, onClose, onSelect }: Break
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-8 max-w-2xl w-full mx-4">
-        <h2 className="text-2xl font-bold mb-4">Choose Your Breakout Session</h2>
-        <p className="text-gray-600 mb-6">
-          The main sessions have concluded. Please select which breakout session you'd like to attend.
-        </p>
-        
-        <div className="space-y-4">
-          {breakouts.map((breakout) => {
+      <div className="bg-white rounded-lg max-w-3xl w-full mx-4 relative">
+        <IconButton
+          icon={XClose}
+          onClick={onClose}
+          className="absolute top-4 right-4"
+        />
+        <div className="px-4 py-3 border-b border-[#D7DAE0]">
+          <h2 className="font-[600] text-[18px] leading-[160%]">
+            Choose Your Breakout Session
+          </h2>
+          <p className="text-[#565E73] text-[14px] leading-[160%]">
+            The main sessions have concluded. Please select which breakout
+            session you'd like to attend.
+          </p>
+        </div>
+
+        <div className="p-4 flex flex-row gap-4">
+          {breakouts.map((breakout, index) => {
             const isLive = isBreakoutLive(breakout);
             return (
-              <div 
-                key={breakout.eventId} 
-                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+              <div
+                key={breakout.eventId}
+                className="p-4 bg-[#F8F9FF] text-[#010D39] rounded-md flex-1 flex flex-col gap-4"
               >
-                <h3 className="font-bold text-lg mb-2">{breakout.heading}</h3>
-                <p className="text-gray-600 mb-2">{breakout.supheading}</p>
-                <div className="flex justify-between items-center">
-                  <span className={`text-sm ${isLive ? 'text-green-600' : 'text-gray-500'}`}>
-                    {isLive ? 'Live Now' : 'Starting Soon'}
-                  </span>
-                  <Button
-                    className="bg-[#FF1B15] text-white"
-                    onClick={() => onSelect(breakout.url)}
-                    disabled={!isLive}
-                  >
-                    {isLive ? 'Join Now' : 'Not Started Yet'}
-                  </Button>
+                <div className="flex-col flex gap-4 flex-1 items-start">
+                  <div className="flex flex-col gap-0.5">
+                    {breakout.supheading && (
+                      <p className="text-[12px] font-medium leading-[120%]">
+                        OPTION {index + 1}
+                      </p>
+                    )}
+                    <h3 className="text-[18px] leading-[120%] font-bold font-figtree">
+                      {breakout.heading}
+                    </h3>
+                  </div>
+                  <p className="text-[14px] leading-[160%]">
+                    {breakout.content}
+                  </p>
+                  {breakout.list && (
+                    <div className="flex flex-col gap-1 leading-[160%]">
+                      {breakout.list.map((item, index) => (
+                        <div
+                          className="text-[14px] flex flex-row items-start gap-2"
+                          key={index}
+                        >
+                          <IconWrapper
+                            size="md"
+                            icon={Check}
+                            className="text-[#A109BA] mt-0.5"
+                          />
+                          <span>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+                <Button
+                  className="bg-[#FF1B15] hover:enabled:bg-[#FF1B15]/80 focus-visible:enabled:bg-[#FF1B15]/80 active:enabled:bg-[#FF1B15]/80 text-white self-start"
+                  onClick={() => onSelect(breakout.url)}
+                  disabled={!isLive}
+                >
+                  {isLive ? "Join Now" : "Not Started Yet"}
+                </Button>
               </div>
             );
           })}
         </div>
-
-        <div className="mt-6 flex justify-end">
-          <Button
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300"
-            onClick={onClose}
-          >
-            Close
-          </Button>
-        </div>
       </div>
     </div>
   );
-} 
+}
