@@ -107,7 +107,7 @@ function AgendaItems({
                 <div className="flex flex-col gap-1 leading-[160%]">
                   {block.list.map((item, index) => (
                     <div
-                      className="text-[16px] flex flex-row items-start gap-2"
+                      className="text-[16px] flex flex-row items-start gap-2 leading-[160%]"
                       key={index}
                     >
                       <IconWrapper
