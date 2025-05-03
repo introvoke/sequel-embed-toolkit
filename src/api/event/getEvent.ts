@@ -3,7 +3,7 @@ import { ApiConfig } from "../apiConfig";
 import { EventAgenda, Event } from "./event";
 
 const SESSION_DURATIONS = {
-  KEYNOTE: 20 * 60 + 37, // 20 minutes 37 seconds
+  KEYNOTE: 22 * 60 + 34, // 22 minutes 34 seconds
   TODD: 21 * 60 + 5, // 21 minutes 5 seconds
   DOMINIK: 19 * 60 + 19, // 19 minutes 19 seconds
   JAMES: 14 * 60 + 48, // 14 minutes 48 seconds
@@ -41,7 +41,7 @@ const generateAgenda = (
   const baseTime = useQuickDates
     ? speedMode
       ? new Date()
-      : new Date("2025-05-02T16:30:00.000+00:00")
+      : new Date("2025-05-05T18:30:00.000+00:00")
     : new Date("2025-05-07T18:00:00.000+00:00");
 
   let currentTime = baseTime;
