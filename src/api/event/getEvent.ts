@@ -31,6 +31,7 @@ export const IMAGES = {
   JAMES: `${CLOUDINARY_BASE_URL}v1746181386/uwuplj985uvebfrrnx2q.png`,
   STEPHEN: `${CLOUDINARY_BASE_URL}v1746181363/rqnaasjdy4kgqh5uis95.png`,
   TOBY: `${CLOUDINARY_BASE_URL}v1746181403/pwjgkv24ta1ujh3tgphw.png`,
+  KEITH_MARILEE: `${CLOUDINARY_BASE_URL}v1746259625/h8pkbjjnzsmj2lahymvb.png`,
 } as const;
 
 const generateAgenda = (
@@ -143,6 +144,7 @@ const generateAgenda = (
           "Automate execution for precision targeting across marketing & sales",
           "Maximize revenue from both new and existing accounts",
         ],
+        coverImage: IMAGES.KEITH_MARILEE,
       },
       {
         title: "Breakout Session 2",
@@ -177,8 +179,8 @@ export const getEvent = async (eventId: string): Promise<Event> => {
   const data: Event = await response.data;
   const url = new URL(window.location.href);
   const isTestMode = url.searchParams.get("testMode") === "true";
-  const isSpeedMode = true;
-  url.searchParams.get("speedMode") === "true";
+  const isSpeedMode =
+    window.IS_STORYBOOK || url.searchParams.get("speedMode") === "true";
 
   if (generateAgenda(false).schedule.some((item) => item.eventId === eventId)) {
     return {

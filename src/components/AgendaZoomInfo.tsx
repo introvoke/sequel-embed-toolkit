@@ -125,7 +125,7 @@ function AgendaItems({
                 <Button
                   className="bg-[#FF1B15] hover:enabled:bg-[#FF1B15]/80 focus-visible:enabled:bg-[#FF1B15]/80 active:enabled:bg-[#FF1B15]/80 text-white"
                   onClick={() => {
-                    const url = new URL(items[0].url);
+                    const url = new URL(block.url);
                     url.search = window.location.search;
                     window.location.href = url.toString();
                   }}
@@ -195,16 +195,25 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
 
   // Show modal when main sessions end and it hasn't been shown yet
   useEffect(() => {
-    if (allMainSessionsOver && !hasShownModal) {
+    if (
+      allMainSessionsOver &&
+      !hasShownModal &&
+      (window.location.href.startsWith(schedule[0][0].url) ||
+        window.IS_STORYBOOK)
+    ) {
       setShowBreakoutModal(true);
       setHasShownModal(true);
     }
   }, [allMainSessionsOver, hasShownModal]);
 
   const handleBreakoutSelect = (url: string) => {
-    const fullUrl = new URL(url);
-    fullUrl.search = window.location.search;
-    window.location.href = fullUrl.toString();
+    if (window.IS_STORYBOOK) {
+      alert(url);
+    } else {
+      const fullUrl = new URL(url);
+      fullUrl.search = window.location.search;
+      window.location.href = fullUrl.toString();
+    }
   };
   return (
     <div className="mx-auto w-full mt-8 flex flex-col gap-12">
