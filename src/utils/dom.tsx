@@ -35,3 +35,14 @@ export const renderAppInsideDocument = (
     // </React.StrictMode>
   );
 };
+
+export function forceLinksToNewTab() {
+  const links = document.getElementsByTagName("a");
+  for (let i = 0; i < links.length; i++) {
+    const link = links[i];
+    if (!link.hasAttribute("target")) {
+      link.setAttribute("target", "_blank");
+      link.setAttribute("rel", "noopener noreferrer");
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { setSequelJoinCodeCookie } from "@src/utils/cookie";
 import {
+  forceLinksToNewTab,
   onDocumentReady,
   renderApp,
   renderAppInsideDocument,
@@ -15,6 +16,7 @@ import Cookies from "js-cookie";
 import { CountdownIframe } from "@src/routes/CountdownIframe";
 import type { EventAgenda } from "@src/api/event/event";
 import { ZoomInfoAgendaContainer } from "./routes/agenda/ZoomInfoAgendaContainer";
+import { isSameDay } from "date-fns";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -717,23 +719,34 @@ class Sequel {
       return;
     }
 
-    if (testMode) {
-      const keynoteUrl = "https://www.zoominfo.com/live/gtm25-keynote";
-      if (keynoteUrl) {
-        const targetUrl = new URL(keynoteUrl);
+    if (!!event.agenda) {
+      const isOnZoomInfoMainPage = window.location.href.startsWith(
+        "https://www.zoominfo.com/gtm25-virtual"
+      );
+
+      const isDayOfEvent = isSameDay(new Date(), new Date(event.startDate));
+
+      if (testMode || (isOnZoomInfoMainPage && joinCode && isDayOfEvent)) {
+        const targetUrl = new URL(
+          "https://www.zoominfo.com/live/gtm25-keynote"
+        );
         targetUrl.search = window.location.search;
         window.location.href = targetUrl.toString();
       }
+
+      if (joinCode && isDayOfEvent) {
+        forceLinksToNewTab();
+        window.addEventListener("DOMContentLoaded", forceLinksToNewTab);
+      }
     }
 
-    let sequelRoot = document.getElementById(`sequel_root`);
+    const sequelRoot = document.getElementById(`sequel_root`);
     if (!sequelRoot) {
       console.error(
         "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
       );
       return;
     }
-
     // Apply special styling for popup mode
     if (isPopup) {
       // Set styles for the sequel_root element

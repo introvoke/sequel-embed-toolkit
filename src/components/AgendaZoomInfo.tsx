@@ -31,7 +31,6 @@ const getStatus = (
 interface AgendaItemsProps {
   items: EventAgendaScheduleItem[];
   now: Date;
-  isMainSession: boolean;
   showReplayButton: boolean;
   showJoinButton: boolean;
 }
@@ -39,7 +38,6 @@ interface AgendaItemsProps {
 function AgendaItems({
   items,
   now,
-  isMainSession,
   showReplayButton,
   showJoinButton,
 }: AgendaItemsProps) {
@@ -55,8 +53,7 @@ function AgendaItems({
   // Only show buttons if:
   // 1. For main sessions: when all main sessions are over (showReplayButton)
   // 2. For breakouts: when main sessions are over and breakouts are not over (showJoinButton)
-  const shouldShowButton =
-    (isMainSession && showReplayButton) || (!isMainSession && showJoinButton);
+  const shouldShowButton = showReplayButton || showJoinButton;
 
   return (
     <div className="flex flex-col md:flex-row gap-2 md:gap-0">
@@ -130,7 +127,7 @@ function AgendaItems({
                     window.location.href = url.toString();
                   }}
                 >
-                  {isMainSession ? "Watch Replay" : "Join Now"}
+                  {showReplayButton ? "Watch Replay" : "Join Now"}
                 </Button>
               )}
             </div>
@@ -201,8 +198,11 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
       (window.location.href.startsWith(schedule[0][0].url) ||
         window.IS_STORYBOOK)
     ) {
-      setShowBreakoutModal(true);
-      setHasShownModal(true);
+      const timeout = setTimeout(() => {
+        setShowBreakoutModal(true);
+        setHasShownModal(true);
+      }, 10000);
+      return () => clearTimeout(timeout);
     }
   }, [allMainSessionsOver, hasShownModal]);
 
@@ -215,6 +215,7 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
       window.location.href = fullUrl.toString();
     }
   };
+
   return (
     <div className="mx-auto w-full mt-8 flex flex-col gap-12">
       <div className="flex flex-col gap-12 relative pl-4">
@@ -224,7 +225,6 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
             key={index}
             items={items}
             now={now}
-            isMainSession={true}
             showReplayButton={allMainSessionsOver}
             showJoinButton={false}
           />
@@ -234,8 +234,7 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
             key={`breakout-${index}`}
             items={items}
             now={now}
-            isMainSession={false}
-            showReplayButton={false}
+            showReplayButton={allMainSessionsOver && !hasLiveBreakout}
             showJoinButton={allMainSessionsOver && hasLiveBreakout}
           />
         ))}

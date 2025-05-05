@@ -95,7 +95,7 @@ export function BreakoutChoiceModal({
                   {isLive
                     ? "Join Now"
                     : hasBreakoutEnded(breakout)
-                    ? "View Replay"
+                    ? "Watch Replay"
                     : "Not Started Yet"}
                 </Button>
               </div>
