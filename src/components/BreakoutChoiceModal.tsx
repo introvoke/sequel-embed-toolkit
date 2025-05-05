@@ -12,6 +12,11 @@ interface BreakoutChoiceModalProps {
   onSelect: (url: string) => void;
 }
 
+const breakoutOptions = [
+  "Option 1: For Sales & Marketing",
+  "Option 2: For RevOps",
+];
+
 export function BreakoutChoiceModal({
   breakouts,
   now,
@@ -57,11 +62,9 @@ export function BreakoutChoiceModal({
               >
                 <div className="flex-col flex gap-4 flex-1 items-start">
                   <div className="flex flex-col gap-0.5">
-                    {breakout.supheading && (
-                      <p className="text-[12px] font-medium leading-[120%]">
-                        OPTION {index + 1}
-                      </p>
-                    )}
+                    <p className="text-[12px] font-medium leading-[120%]">
+                      {breakoutOptions[index] ?? ""}
+                    </p>
                     <h3 className="text-[18px] leading-[120%] font-bold font-figtree">
                       {breakout.heading}
                     </h3>
