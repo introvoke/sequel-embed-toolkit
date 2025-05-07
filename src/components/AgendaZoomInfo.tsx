@@ -1,9 +1,4 @@
-import {
-  isBefore,
-  isAfter,
-  formatDistanceToNowStrict,
-  addMinutes,
-} from "date-fns";
+import { isBefore, isAfter, formatDistanceToNowStrict } from "date-fns";
 
 import { cn } from "@src/styles/utils";
 import { IconWrapper } from "@src/components/IconWrapper";
@@ -13,8 +8,6 @@ import Check from "@src/components/icons/Check";
 import CheckPurpleZoomInfo from "@src/components/icons/CheckPurpleZoomInfo";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
-import { useEffect, useState } from "react";
-import { BreakoutChoiceModal } from "./BreakoutChoiceModal";
 
 const getStatus = (
   now: Date,
@@ -174,8 +167,8 @@ interface AgendaScheduleProps {
 }
 
 function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
-  const [showBreakoutModal, setShowBreakoutModal] = useState(false);
-  const [hasShownModal, setHasShownModal] = useState(false);
+  // const [showBreakoutModal, setShowBreakoutModal] = useState(false);
+  // const [hasShownModal, setHasShownModal] = useState(false);
 
   // Split schedule into main sessions and breakouts
   const mainSessions = schedule.slice(0, 4);
@@ -196,80 +189,80 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
   );
 
   // Show modal when main sessions end and it hasn't been shown yet
-  useEffect(() => {
-    if (
-      allMainSessionsOver &&
-      !hasShownModal &&
-      (window.location.href.startsWith(schedule[0][0].url) ||
-        window.IS_STORYBOOK)
-    ) {
-      const timeout = setTimeout(() => {
-        setShowBreakoutModal(true);
-        setHasShownModal(true);
-      }, 10000);
-      return () => clearTimeout(timeout);
-    }
-  }, [allMainSessionsOver, hasShownModal]);
+  // useEffect(() => {
+  //   if (
+  //     allMainSessionsOver &&
+  //     !hasShownModal &&
+  //     (window.location.href.startsWith(schedule[0][0].url) ||
+  //       window.IS_STORYBOOK)
+  //   ) {
+  //     const timeout = setTimeout(() => {
+  //       setShowBreakoutModal(true);
+  //       setHasShownModal(true);
+  //     }, 10000);
+  //     return () => clearTimeout(timeout);
+  //   }
+  // }, [allMainSessionsOver, hasShownModal]);
 
-  const handleRedirect = () => {
-    if (window.IS_STORYBOOK) {
-      alert(
-        "https://www.zoominfo.com/gtm-reconnect?camp_id=7017y000014ZTpHAAW"
-      );
-      return;
-    }
-    const url = new URL(
-      "https://www.zoominfo.com/gtm-reconnect?camp_id=7017y000014ZTpHAAW"
-    );
-    url.search +=
-      (url.search ? "&" : "?") + window.location.search.substring(1);
-    window.location.href = url.toString();
-  };
+  // const handleRedirect = () => {
+  //   if (window.IS_STORYBOOK) {
+  //     alert(
+  //       "https://www.zoominfo.com/gtm-reconnect?camp_id=7017y000014ZTpHAAW"
+  //     );
+  //     return;
+  //   }
+  //   const url = new URL(
+  //     "https://www.zoominfo.com/gtm-reconnect?camp_id=7017y000014ZTpHAAW"
+  //   );
+  //   url.search +=
+  //     (url.search ? "&" : "?") + window.location.search.substring(1);
+  //   window.location.href = url.toString();
+  // };
 
-  const isFirstBreakoutOver = isAfter(now, new Date(breakouts[0][0].endDate));
-  const isSecondBreakoutOver = isAfter(now, new Date(breakouts[0][1].endDate));
-  const isOnFirstBreakout = window.location.href.startsWith(
-    breakouts[0][0].url
-  );
-  const isOnSecondBreakout = window.location.href.startsWith(
-    breakouts[0][1].url
-  );
+  // const isFirstBreakoutOver = isAfter(now, new Date(breakouts[0][0].endDate));
+  // const isSecondBreakoutOver = isAfter(now, new Date(breakouts[0][1].endDate));
+  // const isOnFirstBreakout = window.location.href.startsWith(
+  //   breakouts[0][0].url
+  // );
+  // const isOnSecondBreakout = window.location.href.startsWith(
+  //   breakouts[0][1].url
+  // );
 
-  useEffect(() => {
-    if (isFirstBreakoutOver && (isOnFirstBreakout || window.IS_STORYBOOK)) {
-      // only do this if the breakout finished wihtin the past 3 minutes
-      const breakoutEnd = new Date(breakouts[0][0].endDate);
-      if (isBefore(now, addMinutes(breakoutEnd, 3))) {
-        const timeout = setTimeout(() => {
-          handleRedirect();
-        }, 10000);
-        return () => clearTimeout(timeout);
-      }
-    }
-  }, [isFirstBreakoutOver, isOnFirstBreakout]);
+  // useEffect(() => {
+  //   if (isFirstBreakoutOver && (isOnFirstBreakout || window.IS_STORYBOOK)) {
+  //     // only do this if the breakout finished wihtin the past 3 minutes
+  //     const breakoutEnd = new Date(breakouts[0][0].endDate);
+  //     if (isBefore(now, addMinutes(breakoutEnd, 3))) {
+  //       const timeout = setTimeout(() => {
+  //         handleRedirect();
+  //       }, 10000);
+  //       return () => clearTimeout(timeout);
+  //     }
+  //   }
+  // }, [isFirstBreakoutOver, isOnFirstBreakout]);
 
-  useEffect(() => {
-    if (isSecondBreakoutOver && isOnSecondBreakout) {
-      // only do this if the breakout finished wihtin the past 3 minutes
-      const breakoutEnd = new Date(breakouts[0][1].endDate);
-      if (isBefore(now, addMinutes(breakoutEnd, 3))) {
-        const timeout = setTimeout(() => {
-          handleRedirect();
-        }, 10000);
-        return () => clearTimeout(timeout);
-      }
-    }
-  }, [isSecondBreakoutOver, isOnSecondBreakout]);
+  // useEffect(() => {
+  //   if (isSecondBreakoutOver && isOnSecondBreakout) {
+  //     // only do this if the breakout finished wihtin the past 3 minutes
+  //     const breakoutEnd = new Date(breakouts[0][1].endDate);
+  //     if (isBefore(now, addMinutes(breakoutEnd, 3))) {
+  //       const timeout = setTimeout(() => {
+  //         handleRedirect();
+  //       }, 10000);
+  //       return () => clearTimeout(timeout);
+  //     }
+  //   }
+  // }, [isSecondBreakoutOver, isOnSecondBreakout]);
 
-  const handleBreakoutSelect = (url: string) => {
-    if (window.IS_STORYBOOK) {
-      alert(url);
-    } else {
-      const fullUrl = new URL(url);
-      fullUrl.search = window.location.search;
-      window.location.href = fullUrl.toString();
-    }
-  };
+  // const handleBreakoutSelect = (url: string) => {
+  //   if (window.IS_STORYBOOK) {
+  //     alert(url);
+  //   } else {
+  //     const fullUrl = new URL(url);
+  //     fullUrl.search = window.location.search;
+  //     window.location.href = fullUrl.toString();
+  //   }
+  // };
 
   return (
     <div className="mx-auto w-full mt-8 flex flex-col gap-12">
@@ -294,14 +287,14 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
           />
         ))}
       </div>
-      {showBreakoutModal && (
+      {/* {showBreakoutModal && (
         <BreakoutChoiceModal
           breakouts={breakouts.flat()}
           now={now}
           onClose={() => setShowBreakoutModal(false)}
           onSelect={handleBreakoutSelect}
         />
-      )}
+      )} */}
     </div>
   );
 }
