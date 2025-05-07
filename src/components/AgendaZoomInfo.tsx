@@ -1,4 +1,9 @@
-import { isBefore, isAfter, formatDistanceToNowStrict } from "date-fns";
+import {
+  isBefore,
+  isAfter,
+  formatDistanceToNowStrict,
+  addMinutes,
+} from "date-fns";
 
 import { cn } from "@src/styles/utils";
 import { IconWrapper } from "@src/components/IconWrapper";
@@ -205,6 +210,56 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
       return () => clearTimeout(timeout);
     }
   }, [allMainSessionsOver, hasShownModal]);
+
+  const handleRedirect = () => {
+    if (window.IS_STORYBOOK) {
+      alert(
+        "https://www.zoominfo.com/gtm-reconnect?camp_id=7017y000014ZTpHAAW"
+      );
+      return;
+    }
+    const url = new URL(
+      "https://www.zoominfo.com/gtm-reconnect?camp_id=7017y000014ZTpHAAW"
+    );
+    url.search +=
+      (url.search ? "&" : "?") + window.location.search.substring(1);
+    window.location.href = url.toString();
+  };
+
+  const isFirstBreakoutOver = isAfter(now, new Date(breakouts[0][0].endDate));
+  const isSecondBreakoutOver = isAfter(now, new Date(breakouts[0][1].endDate));
+  const isOnFirstBreakout = window.location.href.startsWith(
+    breakouts[0][0].url
+  );
+  const isOnSecondBreakout = window.location.href.startsWith(
+    breakouts[0][1].url
+  );
+
+  useEffect(() => {
+    if (isFirstBreakoutOver && (isOnFirstBreakout || window.IS_STORYBOOK)) {
+      // only do this if the breakout finished wihtin the past 3 minutes
+      const breakoutEnd = new Date(breakouts[0][0].endDate);
+      if (isBefore(now, addMinutes(breakoutEnd, 3))) {
+        const timeout = setTimeout(() => {
+          handleRedirect();
+        }, 10000);
+        return () => clearTimeout(timeout);
+      }
+    }
+  }, [isFirstBreakoutOver, isOnFirstBreakout]);
+
+  useEffect(() => {
+    if (isSecondBreakoutOver && isOnSecondBreakout) {
+      // only do this if the breakout finished wihtin the past 3 minutes
+      const breakoutEnd = new Date(breakouts[0][1].endDate);
+      if (isBefore(now, addMinutes(breakoutEnd, 3))) {
+        const timeout = setTimeout(() => {
+          handleRedirect();
+        }, 10000);
+        return () => clearTimeout(timeout);
+      }
+    }
+  }, [isSecondBreakoutOver, isOnSecondBreakout]);
 
   const handleBreakoutSelect = (url: string) => {
     if (window.IS_STORYBOOK) {

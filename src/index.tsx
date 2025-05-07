@@ -709,6 +709,8 @@ class Sequel {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
 
+    console.log(sequelEventId);
+
     const searchParams = new URLSearchParams(window.location.search);
     const testMode = searchParams.get("testMode");
 
@@ -719,7 +721,7 @@ class Sequel {
       return;
     }
 
-    if (!!event.agenda) {
+    if (sequelEventId === "723b6d9d-238c-48e5-84f7-17bb2d97fe02") {
       const isOnZoomInfoMainPage = window.location.href.startsWith(
         "https://www.zoominfo.com/gtm25-virtual"
       );

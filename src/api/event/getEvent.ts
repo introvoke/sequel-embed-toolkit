@@ -16,8 +16,8 @@ const SESSION_DURATIONS_SPEEDY = {
   TODD: 3, // 21 minutes 5 seconds
   DOMINIK: 3, // 19 minutes 19 seconds
   JAMES: 3, // 14 minutes 48 seconds
-  BREAKOUT_1: 60 * 5, // 33 minutes 49 seconds
-  BREAKOUT_2: 60 * 5, // 24 minutes 5 seconds
+  BREAKOUT_1: 10, // 33 minutes 49 seconds
+  BREAKOUT_2: 10, // 24 minutes 5 seconds
 };
 
 const CLOUDINARY_BASE_URL =
