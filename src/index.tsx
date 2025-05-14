@@ -249,7 +249,7 @@ class Sequel {
       );
       return;
     }
-    window.addEventListener("load", () => Sequel.trackPageView());
+    Sequel.trackPageView();
   }
 
   static renderThankYouPage = async () => {
