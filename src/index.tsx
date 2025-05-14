@@ -249,7 +249,9 @@ class Sequel {
       );
       return;
     }
-    Sequel.trackPageView();
+    onDocumentReady(() => {
+      Sequel.trackPageView();
+    });
   }
 
   static renderThankYouPage = async () => {
