@@ -78,17 +78,19 @@ class Sequel {
     }
     Sequel.companyId = companyId;
 
-    // Check if consent was previously given
-    const consentCookie = Cookies.get("sequel-consent");
-    if (consentCookie === "true") {
-      // Initialize tracking without setting cookie again
-      Sequel.hasConsent = true;
-      Sequel.userId = Sequel.getOrCreateUserId();
-      Sequel.sessionId = Sequel.getOrCreateSessionId();
-      Sequel.checkJoinCode();
-      Sequel.listenForIframeMessages();
-      Sequel.trackWebsite();
-    }
+    onDocumentReady(() => {
+      // Check if consent was previously given
+      const consentCookie = Cookies.get("sequel-consent");
+      if (consentCookie === "true") {
+        // Initialize tracking without setting cookie again
+        Sequel.hasConsent = true;
+        Sequel.userId = Sequel.getOrCreateUserId();
+        Sequel.sessionId = Sequel.getOrCreateSessionId();
+        Sequel.checkJoinCode();
+        Sequel.listenForIframeMessages();
+        Sequel.trackWebsite();
+      }
+    });
   }
 
   static initializeTracking() {
@@ -96,18 +98,20 @@ class Sequel {
       return;
     }
 
-    Sequel.hasConsent = true;
-    Sequel.userId = Sequel.getOrCreateUserId();
-    Sequel.sessionId = Sequel.getOrCreateSessionId();
-    Sequel.checkJoinCode();
-    Sequel.listenForIframeMessages();
-    Sequel.trackWebsite();
+    onDocumentReady(() => {
+      Sequel.hasConsent = true;
+      Sequel.userId = Sequel.getOrCreateUserId();
+      Sequel.sessionId = Sequel.getOrCreateSessionId();
+      Sequel.checkJoinCode();
+      Sequel.listenForIframeMessages();
+      Sequel.trackWebsite();
 
-    // Store consent cookie only when explicitly initialized
-    Cookies.set("sequel-consent", "true", {
-      secure: true,
-      sameSite: "strict",
-      expires: 365, // 1 year
+      // Store consent cookie only when explicitly initialized
+      Cookies.set("sequel-consent", "true", {
+        secure: true,
+        sameSite: "strict",
+        expires: 365, // 1 year
+      });
     });
   }
 
@@ -249,9 +253,7 @@ class Sequel {
       );
       return;
     }
-    onDocumentReady(() => {
-      Sequel.trackPageView();
-    });
+    Sequel.trackPageView();
   }
 
   static renderThankYouPage = async () => {
