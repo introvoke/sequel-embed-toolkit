@@ -22,6 +22,7 @@ interface RenderMarketoFormParams {
   sequelEventId: string;
   renderAddToCalendar?: boolean;
   loadMarketoForm?: boolean;
+  delaySequelRender?: boolean;
 }
 
 interface RenderHubspotFormParams {
@@ -568,6 +569,7 @@ class Sequel {
   static renderSequelWithMarketoFrame = async ({
     sequelEventId,
     renderAddToCalendar = false,
+    delaySequelRender = false,
     loadMarketoForm = true,
   }: RenderMarketoFormParams) => {
     const joinCode = await getValidatedJoinCode({
@@ -641,6 +643,11 @@ class Sequel {
                 sequelEventId,
                 registeredAttendeee.joinCode
               );
+
+              if (delaySequelRender) {
+                return;
+              }
+
               if (!renderAddToCalendar) {
                 if (followUpUrl) {
                   window.location.href = followUpUrl;
@@ -670,6 +677,7 @@ class Sequel {
             };
 
             completeRegistration();
+
             return false;
           });
         });
