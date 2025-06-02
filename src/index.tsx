@@ -631,16 +631,38 @@ class Sequel {
 
         window.MktoForms2?.whenReady((e) => {
           e.onSuccess((registrant: any, followUpUrl: string) => {
+            // Immediately prevent default form submission behavior
+            // and handle registration asynchronously to avoid Firefox issues
             const completeRegistration = async () => {
-              const registeredAttendeee = await registrationApi.registerUser({
-                name: `${registrant.FirstName} ${registrant.LastName}`,
-                email: registrant.Email,
-                eventId: sequelEventId,
-              });
-              setSequelJoinCodeCookie(
-                sequelEventId,
-                registeredAttendeee.joinCode
-              );
+              let joinCode: string = "";
+              try { 
+                const registeredAttendeee = await registrationApi.registerUser({
+                  name: `${registrant.FirstName} ${registrant.LastName}`,
+                  email: registrant.Email,
+                  eventId: sequelEventId,
+                });
+                joinCode = registeredAttendeee.joinCode;
+                setSequelJoinCodeCookie(
+                  sequelEventId,
+                  registeredAttendeee.joinCode
+                );
+              } catch (error) {
+                console.error("Error registering Marketo attendee:", error);
+                // On error, still allow the form to proceed with followUpUrl if available
+                if (followUpUrl) {
+                  window.location.href = followUpUrl;
+                }
+                return;
+              }
+
+              if (!joinCode) {
+                // If no joinCode, allow form to proceed with followUpUrl if available
+                if (followUpUrl) {
+                  window.location.href = followUpUrl;
+                }
+                return;
+              }
+              
               if (!renderAddToCalendar) {
                 if (followUpUrl) {
                   window.location.href = followUpUrl;
@@ -648,19 +670,19 @@ class Sequel {
                   removeElementAndParentIfEmpty(htmlForm);
                   Sequel.renderEvent({
                     eventId: sequelEventId,
-                    joinCode: registeredAttendeee.joinCode,
+                    joinCode,
                   });
                 }
               } else {
                 renderAppInsideDocument(
                   <MarketoRegistrationSuccess
                     event={event}
-                    joinCode={registeredAttendeee.joinCode}
+                    joinCode={joinCode}
                     onOpenEvent={() => {
                       removeElementAndParentIfEmpty(htmlForm);
                       Sequel.renderEvent({
                         eventId: sequelEventId,
-                        joinCode: registeredAttendeee.joinCode,
+                        joinCode,
                       });
                     }}
                   />,
@@ -669,7 +691,16 @@ class Sequel {
               }
             };
 
-            completeRegistration();
+            // Execute async operation without blocking the callback
+            completeRegistration().catch((error) => {
+              console.error("Error in completeRegistration:", error);
+              // Fallback to followUpUrl if available
+              if (followUpUrl) {
+                window.location.href = followUpUrl;
+              }
+            });
+
+            // Return false immediately to prevent default form submission
             return false;
           });
         });
