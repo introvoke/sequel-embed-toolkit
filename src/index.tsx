@@ -906,58 +906,69 @@ class Sequel {
     form: any,
     companyId: string
   ) => {
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
     const dates: string[] = [];
 
-    // Collect all selected webinar dates
-    for (let i = 1; i <= 5; i++) {
-      const fieldName = `mktoWebinar0${i}`;
-      const input = document.querySelector(`input[name="${fieldName}"]`);
+    // Check for the select dropdown for webinar date
+    const webinarDateSelect = document.querySelector('select[name="mktoWebinarDate"]') as HTMLSelectElement;
+    if (webinarDateSelect && webinarDateSelect.value) {
+      // The value is in MM-DD-YYYY format, convert to YYYY-MM-DD
+      const [month, day, year] = webinarDateSelect.value.split("-");
+      const formattedDate = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+      dates.push(formattedDate);
+    } else {
+      // Fallback: Check for legacy checkbox/radio format
+      const months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
 
-      // Handle both radio buttons and checkboxes
-      if (input && (input as HTMLInputElement).checked) {
-        const disclaimer =
-          document.querySelector(`label[id="Lbl${fieldName}"] .disclaimer`) ||
-          document
-            .querySelector(`#${fieldName}`)
-            ?.closest(".mktoFormRow")
-            ?.querySelector(".disclaimer");
+      // Collect all selected webinar dates from checkboxes/radios
+      for (let i = 1; i <= 5; i++) {
+        const fieldName = `mktoWebinar0${i}`;
+        const input = document.querySelector(`input[name="${fieldName}"]`);
 
-        if (disclaimer) {
-          const text = disclaimer.textContent?.trim();
-          if (!text) continue;
+        // Handle both radio buttons and checkboxes
+        if (input && (input as HTMLInputElement).checked) {
+          const disclaimer =
+            document.querySelector(`label[id="Lbl${fieldName}"] .disclaimer`) ||
+            document
+              .querySelector(`#${fieldName}`)
+              ?.closest(".mktoFormRow")
+              ?.querySelector(".disclaimer");
 
-          const parts = text.split(",");
-          if (parts.length > 1) {
-            const dateStr = parts[1].trim();
-            const match = dateStr.match(/(\w+)\. (\d+)/); // e.g., Apr. 22
-            if (match && match.length === 3) {
-              const monthIndex = months.indexOf(match[1]);
-              const day = parseInt(match[2], 10);
-              const year = new Date().getFullYear();
-              const date = new Date(year, monthIndex, day);
-              const formattedDate = `${date.getFullYear()}-${(
-                date.getMonth() + 1
-              )
-                .toString()
-                .padStart(2, "0")}-${date
-                .getDate()
-                .toString()
-                .padStart(2, "0")}`;
-              dates.push(formattedDate);
+          if (disclaimer) {
+            const text = disclaimer.textContent?.trim();
+            if (!text) continue;
+
+            const parts = text.split(",");
+            if (parts.length > 1) {
+              const dateStr = parts[1].trim();
+              const match = dateStr.match(/(\w+)\. (\d+)/); // e.g., Apr. 22
+              if (match && match.length === 3) {
+                const monthIndex = months.indexOf(match[1]);
+                const day = parseInt(match[2], 10);
+                const year = new Date().getFullYear();
+                const date = new Date(year, monthIndex, day);
+                const formattedDate = `${date.getFullYear()}-${(
+                  date.getMonth() + 1
+                )
+                  .toString()
+                  .padStart(2, "0")}-${date
+                  .getDate()
+                  .toString()
+                  .padStart(2, "0")}`;
+                dates.push(formattedDate);
+              }
             }
           }
         }
