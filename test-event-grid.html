@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Grid Test Page</title>
+    <style>
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-section {
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007AE6;
+            padding-bottom: 0.5rem;
+        }
+        .controls {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .control-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input[type="checkbox"] {
+            margin-left: 10px;
+        }
+        button {
+            background: #007AE6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Event Grid Test Page</h1>
+        
+        <div class="note">
+            <strong>Note:</strong> Replace the company ID below with a real company ID that has events. 
+            The current placeholder will not work.
+        </div>
+
+        <div class="test-section">
+            <h2>Interactive Test</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <label for="companyId">Company ID:</label>
+                    <input type="text" id="companyId" value="12345678-1234-1234-1234-123456789abc" 
+                           placeholder="Enter a real company ID">
+                </div>
+                <div class="control-group">
+                    <label for="excludeText">Exclude Text:</label>
+                    <input type="text" id="excludeText" value="" 
+                           placeholder="e.g., 'test' to exclude events starting with 'test'">
+                </div>
+                <div class="control-group">
+                    <label for="darkMode">Dark Mode:</label>
+                    <input type="checkbox" id="darkMode">
+                </div>
+                <button onclick="loadEventGrid()">Load Event Grid</button>
+                <button onclick="clearGrid()">Clear Grid</button>
+            </div>
+            <div id="sequel_events_grid"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Light Mode Example</h2>
+            <div id="light_mode_grid"></div>
+        </div>
+
+        <div class="test-section" style="background: #1a1a1a; color: white;">
+            <h2 style="color: white; border-bottom-color: #C2FF00;">Dark Mode Example</h2>
+            <div id="dark_mode_grid"></div>
+        </div>
+    </div>
+
+    <!-- Load the Sequel script -->
+    <script type="module">
+        // For development, you'll need to build the project first
+        // This assumes you're serving the built files
+        import('/dist/assets/sequel.js').then(() => {
+            console.log('Sequel loaded successfully');
+            // Auto-load examples
+            loadExamples();
+        }).catch(error => {
+            console.error('Failed to load Sequel:', error);
+            // Fallback: try to load from src for development
+            import('/src/index.tsx').then(() => {
+                console.log('Sequel loaded from source');
+                loadExamples();
+            }).catch(srcError => {
+                console.error('Failed to load Sequel from source:', srcError);
+                document.body.innerHTML = `
+                    <div class="container">
+                        <h1>Event Grid Test Page</h1>
+                        <div class="note" style="background: #f8d7da; border-color: #f5c6cb; color: #721c24;">
+                            <strong>Error:</strong> Could not load Sequel. Please ensure you've built the project first by running:
+                            <br><br>
+                            <code>npm run build</code>
+                            <br><br>
+                            Then serve the files or run the storybook with:
+                            <br><br>
+                            <code>npm run dev</code>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+
+        function loadEventGrid() {
+            const companyId = document.getElementById('companyId').value;
+            const excludeText = document.getElementById('excludeText').value;
+            const darkMode = document.getElementById('darkMode').checked;
+
+            if (!companyId) {
+                alert('Please enter a company ID');
+                return;
+            }
+
+            // Clear existing content
+            document.getElementById('sequel_events_grid').innerHTML = '<div class="loading">Loading events...</div>';
+
+            // Load the event grid
+            window.Sequel.renderEventGrid({
+                companyId: companyId,
+                darkMode: darkMode,
+                excludeText: excludeText,
+                containerId: 'sequel_events_grid'
+            });
+        }
+
+        function clearGrid() {
+            document.getElementById('sequel_events_grid').innerHTML = '';
+        }
+
+        function loadExamples() {
+            // Note: These will only work with a real company ID
+            // When testing locally, the API will automatically point to localhost:8000
+            const testCompanyId = "12345678-1234-1234-1234-123456789abc";
+            
+            // Light mode example
+            window.Sequel.renderEventGrid({
+                companyId: testCompanyId,
+                darkMode: false,
+                excludeText: "",
+                containerId: 'light_mode_grid'
+            });
+
+            // Dark mode example
+            window.Sequel.renderEventGrid({
+                companyId: testCompanyId,
+                darkMode: true,
+                excludeText: "",
+                containerId: 'dark_mode_grid'
+            });
+        }
+
+        // Make functions available globally
+        window.loadEventGrid = loadEventGrid;
+        window.clearGrid = clearGrid;
+    </script>
+</body>
+</html>
