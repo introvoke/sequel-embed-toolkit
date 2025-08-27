@@ -208,7 +208,7 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
   if (loading && !data) {
     return (
       <div className={`flex justify-center items-center p-8 ${darkMode ? 'dark' : ''}`}>
-        <div className="text-text-main dark:text-white">Loading events...</div>
+        <div className="text-black dark:text-white">Loading events...</div>
       </div>
     );
   }
@@ -216,7 +216,7 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
   if (error) {
     return (
       <div className={`flex justify-center items-center p-8 ${darkMode ? 'dark' : ''}`}>
-        <div className="text-text-main dark:text-white">Failed to load events. Please try again later.</div>
+        <div className="text-black dark:text-white">Failed to load events. Please try again later.</div>
       </div>
     );
   }
@@ -248,7 +248,7 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
         </div>
         <div className="self-stretch p-4 flex flex-col justify-start items-start gap-4">
           <div className="self-stretch flex flex-col justify-start items-start gap-1">
-            <div className="self-stretch text-text-main dark:text-white text-lg font-bold font-['Inter'] leading-7 line-clamp-2 h-14 flex items-start">
+            <div className="self-stretch text-black dark:text-white text-lg font-bold font-['Inter'] leading-7 line-clamp-2 h-14 flex items-start">
               <span>{event.name}</span>
             </div>
             {showDescription && event.description && (
@@ -294,7 +294,7 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
 
     return (
       <div className="mb-10">
-        <h2 className="text-text-main dark:text-white text-2xl font-bold font-['Inter'] mb-5">{title}</h2>
+        <h2 className="text-black dark:text-white text-2xl font-bold font-['Inter'] mb-5">{title}</h2>
         <div className="w-full max-w-[1280px] inline-flex justify-start items-start gap-4 flex-wrap content-start overflow-hidden">
           {events.map(event => (
             <EventCard key={event.uid} event={event} isUpcoming={isUpcoming} showDescription={showDescription} />
@@ -308,7 +308,7 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
               className="p-2.5 bg-bg-neutral-invisible dark:bg-transparent rounded-lg outline outline-1 outline-offset-[-1px] outline-border-soft/20 dark:outline-border-soft/30 inline-flex justify-center items-center gap-1 overflow-hidden disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <div className="px-1 flex justify-center items-center gap-2.5">
-                <div className="text-text-main dark:text-white text-sm font-medium font-['Inter'] leading-tight">
+                <div className="text-black dark:text-white text-sm font-medium font-['Inter'] leading-tight">
                   {loading ? 'Loading...' : 'Load more'}
                 </div>
               </div>

@@ -23,16 +23,13 @@ The Event Grid Widget allows you to display a beautiful, responsive grid of your
     <title>My Events</title>
 </head>
 <body>
-    <!-- Container for the event grid -->
     <div id="sequel_root"></div>
-
-    <!-- Load Sequel script -->
-    <script src="https://embed.sequel.io/sequel.js"></script>
-    
-    <!-- Initialize the event grid -->
+    <script type="module" src="https://prod-assets.sequelvideo.com/uploads/toolkit/sequel.js"></script>
     <script>
-        Sequel.renderEventGrid({
-            companyId: 'your-company-id-here'
+        document.addEventListener('DOMContentLoaded', (event) => {
+            Sequel.renderEventGrid({
+                companyId: 'your-company-id-here'
+            });
         });
     </script>
 </body>
@@ -43,7 +40,7 @@ The Event Grid Widget allows you to display a beautiful, responsive grid of your
 
 ### Option 1: Direct Script Include
 ```html
-<script src="https://embed.sequel.io/sequel.js"></script>
+<script type="module" src="https://prod-assets.sequelvideo.com/uploads/toolkit/sequel.js"></script>
 ```
 
 ### Option 2: Module Import (if using a bundler)
@@ -77,10 +74,12 @@ Sequel.renderEventGrid({
 ### Basic Light Mode Grid
 ```html
 <div id="sequel_root"></div>
-<script src="https://embed.sequel.io/sequel.js"></script>
+<script type="module" src="https://prod-assets.sequelvideo.com/uploads/toolkit/sequel.js"></script>
 <script>
-    Sequel.renderEventGrid({
-        companyId: 'abc123-def456-ghi789'
+    document.addEventListener('DOMContentLoaded', (event) => {
+        Sequel.renderEventGrid({
+            companyId: 'abc123-def456-ghi789'
+        });
     });
 </script>
 ```
@@ -88,12 +87,14 @@ Sequel.renderEventGrid({
 ### Dark Mode with Descriptions
 ```html
 <div id="sequel_root"></div>
-<script src="https://embed.sequel.io/sequel.js"></script>
+<script type="module" src="https://prod-assets.sequelvideo.com/uploads/toolkit/sequel.js"></script>
 <script>
-    Sequel.renderEventGrid({
-        companyId: 'abc123-def456-ghi789',
-        darkMode: true,
-        showDescription: true
+    document.addEventListener('DOMContentLoaded', (event) => {
+        Sequel.renderEventGrid({
+            companyId: 'abc123-def456-ghi789',
+            darkMode: true,
+            showDescription: true
+        });
     });
 </script>
 ```
@@ -101,11 +102,13 @@ Sequel.renderEventGrid({
 ### Exclude Test Events
 ```html
 <div id="sequel_root"></div>
-<script src="https://embed.sequel.io/sequel.js"></script>
+<script type="module" src="https://prod-assets.sequelvideo.com/uploads/toolkit/sequel.js"></script>
 <script>
-    Sequel.renderEventGrid({
-        companyId: 'abc123-def456-ghi789',
-        excludeText: 'test' // Hides events starting with "test"
+    document.addEventListener('DOMContentLoaded', (event) => {
+        Sequel.renderEventGrid({
+            companyId: 'abc123-def456-ghi789',
+            excludeText: 'test' // Hides events starting with "test"
+        });
     });
 </script>
 ```
@@ -146,11 +149,13 @@ Sequel.renderEventGrid({
         <div id="sequel_root"></div>
     </div>
 
-    <script src="https://embed.sequel.io/sequel.js"></script>
+    <script type="module" src="https://prod-assets.sequelvideo.com/uploads/toolkit/sequel.js"></script>
     <script>
-        Sequel.renderEventGrid({
-            companyId: 'your-company-id-here',
-            showDescription: true
+        document.addEventListener('DOMContentLoaded', (event) => {
+            Sequel.renderEventGrid({
+                companyId: 'your-company-id-here',
+                showDescription: true
+            });
         });
     </script>
 </body>
@@ -246,8 +251,11 @@ Sequel.renderEventGrid({
 
 <!-- ✅ Add container first -->
 <div id="sequel_root"></div>
+<script type="module" src="https://prod-assets.sequelvideo.com/uploads/toolkit/sequel.js"></script>
 <script>
-    Sequel.renderEventGrid({ companyId: 'abc123' });
+    document.addEventListener('DOMContentLoaded', (event) => {
+        Sequel.renderEventGrid({ companyId: 'abc123' });
+    });
 </script>
 ```
 
