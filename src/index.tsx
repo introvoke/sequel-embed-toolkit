@@ -230,16 +230,13 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
       <div 
         className={`w-96 rounded-lg border inline-flex flex-col justify-start items-start overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
           isLive 
-            ? 'bg-bg-neutral-weak/5 border-border-primary dark:bg-bg-neutral-weak/10 dark:border-border-primary' 
-            : 'bg-white dark:bg-gray-900'
+            ? 'bg-bg-neutral-weak/5 border-border-primary dark:bg-transparent dark:border-border-primary' 
+            : 'bg-white dark:bg-transparent border-gray-200 dark:border-white/20'
         }`}
-        style={{
-          borderColor: isLive ? undefined : 'rgba(0, 0, 0, 0.15)'
-        }}
         onClick={() => window.open(event.customUrl, '_blank')}
       >
         {/* 16:9 aspect ratio container */}
-        <div className="self-stretch aspect-video bg-gray-100 dark:bg-gray-800 overflow-hidden">
+        <div className="self-stretch aspect-video bg-gray-100 dark:bg-gray-700 overflow-hidden">
           <img 
             className="w-full h-full object-cover" 
             src={event.picture || 'https://placehold.co/416x234'} 
@@ -305,7 +302,7 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
             <button
               onClick={onLoadMore}
               disabled={loading}
-              className="p-2.5 bg-bg-neutral-invisible dark:bg-transparent rounded-lg outline outline-1 outline-offset-[-1px] outline-border-soft/20 dark:outline-border-soft/30 inline-flex justify-center items-center gap-1 overflow-hidden disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              className="p-2.5 bg-transparent rounded-lg outline outline-1 outline-offset-[-1px] outline-gray-300 dark:outline-white/30 inline-flex justify-center items-center gap-1 overflow-hidden disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
             >
               <div className="px-1 flex justify-center items-center gap-2.5">
                 <div className="text-black dark:text-white text-sm font-medium font-['Inter'] leading-tight">
@@ -320,7 +317,7 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
   };
 
   return (
-    <div className={`font-['Inter'] min-h-full ${darkMode ? 'dark bg-gray-900' : 'bg-white'}`}>
+    <div className={`font-['Inter'] min-h-full ${darkMode ? 'dark' : ''}`}>
       <div className="p-6">
         <EventSection
           title="Upcoming Events"
@@ -338,6 +335,229 @@ const EventGrid = ({ companyId, darkMode = false, excludeText = '', showDescript
           isUpcoming={false}
           showDescription={showDescription}
         />
+      </div>
+    </div>
+  );
+};
+
+// RelatedEvents component
+interface RelatedEventsProps {
+  companyId: string;
+  darkMode?: boolean;
+  excludeText?: string;
+  showDescription?: boolean;
+  maxEvents?: number;
+}
+
+const RelatedEvents = ({ companyId, darkMode = false, excludeText = '', showDescription = false, maxEvents = 6 }: RelatedEventsProps) => {
+  const [events, setEvents] = useState<EventData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchRelatedEvents = async () => {
+    // Fetch enough events to filter out current event and still have maxEvents
+    const params = new URLSearchParams({
+      upcomingPage: '1',
+      pastPage: '1',
+      pageSize: (maxEvents + 5).toString() // Fetch extra to account for filtering
+    });
+
+    if (excludeText.trim()) {
+      params.append('exclude', excludeText.trim());
+    }
+
+    const response = await fetch(
+      `https://api.introvoke.com/api/v3/companies/${companyId}/gridEvents?${params}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch events: ${response.statusText}`);
+    }
+
+    return response.json();
+  };
+
+  const getCurrentPageUrl = () => {
+    return window.location.href;
+  };
+
+  const filterCurrentEvent = (allEvents: EventData[]) => {
+    const currentUrl = getCurrentPageUrl();
+    
+    return allEvents.filter(event => {
+      if (!event.customUrl) return true;
+      
+      // Check if the current URL matches or contains the event's custom URL
+      // This handles cases where the event URL might be a path within the current domain
+      try {
+        const eventUrl = new URL(event.customUrl);
+        const currentUrlObj = new URL(currentUrl);
+        
+        // Compare full URLs
+        if (eventUrl.href === currentUrlObj.href) {
+          return false;
+        }
+        
+        // Compare paths if they're on the same domain
+        if (eventUrl.hostname === currentUrlObj.hostname && 
+            eventUrl.pathname === currentUrlObj.pathname) {
+          return false;
+        }
+        
+        return true;
+      } catch (e) {
+        // If URL parsing fails, do a simple string comparison
+        return !currentUrl.includes(event.customUrl);
+      }
+    });
+  };
+
+  const selectBestEvents = (upcomingEvents: EventData[], pastEvents: EventData[]) => {
+    // Filter out current event from both arrays
+    const filteredUpcoming = filterCurrentEvent(upcomingEvents);
+    const filteredPast = filterCurrentEvent(pastEvents);
+    
+    let selectedEvents: EventData[] = [];
+    
+    // First, add upcoming events
+    selectedEvents = [...filteredUpcoming];
+    
+    // If we need more events, add past events
+    if (selectedEvents.length < maxEvents) {
+      const remainingSlots = maxEvents - selectedEvents.length;
+      selectedEvents = [...selectedEvents, ...filteredPast.slice(0, remainingSlots)];
+    }
+    
+    // Trim to exact count if we have too many
+    return selectedEvents.slice(0, maxEvents);
+  };
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchRelatedEvents();
+        
+        const selectedEvents = selectBestEvents(
+          data.upcoming.events || [],
+          data.past.events || []
+        );
+        
+        setEvents(selectedEvents);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load events');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, [companyId, excludeText, maxEvents]);
+
+  if (loading) {
+    return (
+      <div className={`flex justify-center items-center p-8 ${darkMode ? 'dark' : ''}`}>
+        <div className="text-black dark:text-white">Loading related events...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={`flex justify-center items-center p-8 ${darkMode ? 'dark' : ''}`}>
+        <div className="text-black dark:text-white">Failed to load related events.</div>
+      </div>
+    );
+  }
+
+  if (events.length === 0) {
+    return (
+      <div className={`flex justify-center items-center p-8 ${darkMode ? 'dark' : ''}`}>
+        <div className="text-black dark:text-white">No related events available.</div>
+      </div>
+    );
+  }
+
+  const EventCard = ({ event }: { event: EventData }) => {
+    const currentDate = new Date();
+    const eventEndDate = new Date(event.endDate);
+    const isUpcoming = eventEndDate > currentDate;
+    const isLive = isUpcoming && event.isLive;
+    
+    return (
+      <div 
+        className={`w-full rounded-lg border inline-flex flex-col justify-start items-start overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
+          isLive 
+            ? 'bg-bg-neutral-weak/5 border-border-primary dark:bg-transparent dark:border-border-primary' 
+            : 'bg-white dark:bg-transparent border-gray-200 dark:border-white/20'
+        }`}
+        onClick={() => window.open(event.customUrl, '_blank')}
+      >
+        {/* 16:9 aspect ratio container */}
+        <div className="self-stretch aspect-video bg-gray-100 dark:bg-gray-700 overflow-hidden">
+          <img 
+            className="w-full h-full object-cover" 
+            src={event.picture || 'https://placehold.co/416x234'} 
+            alt={event.name}
+          />
+        </div>
+        <div className="self-stretch p-4 flex flex-col justify-start items-start gap-3">
+          <div className="self-stretch flex flex-col justify-start items-start gap-1">
+            <div className="self-stretch text-black dark:text-white text-base font-bold font-['Inter'] leading-6 line-clamp-2">
+              {event.name}
+            </div>
+            {showDescription && event.description && (
+              <div 
+                className="self-stretch text-text-sub/60 dark:text-gray-500 text-sm font-normal font-['Inter'] leading-relaxed line-clamp-2"
+                dangerouslySetInnerHTML={{ __html: event.description }}
+              />
+            )}
+            <div className="self-stretch text-text-sub/70 dark:text-gray-400 text-sm font-normal font-['Inter'] leading-tight">
+              {formatDate(event.startDate, event.timezone)}
+              {isLive && <span className="text-green-600 dark:text-green-400 font-medium"> • Live now</span>}
+              {event.isEventSeries && <span className="text-blue-600 dark:text-blue-400"> • Event Series</span>}
+            </div>
+          </div>
+          <div className="p-2 bg-black dark:bg-white rounded-lg inline-flex justify-center items-center gap-1 overflow-hidden">
+            <div className="px-1 flex justify-center items-center gap-2.5">
+              <div className="text-white dark:text-black text-sm font-medium font-['Inter'] leading-tight">
+                {!isUpcoming ? 'Watch now' : 'View now'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const formatDate = (dateString: string, timezone?: string) => {
+    const date = new Date(dateString);
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    };
+    
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    };
+
+    const formattedDate = date.toLocaleDateString('en-US', dateOptions);
+    const formattedTime = date.toLocaleTimeString('en-US', timeOptions);
+    const timezoneDisplay = timezone ? ` ${timezone}` : '';
+    
+    return `${formattedDate} • ${formattedTime}${timezoneDisplay}`;
+  };
+
+  return (
+    <div className={`font-['Inter'] ${darkMode ? 'dark' : ''}`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {events.map(event => (
+          <EventCard key={event.uid} event={event} />
+        ))}
       </div>
     </div>
   );
@@ -1398,8 +1618,43 @@ class Sequel {
     }
     
     renderApp(<EventGrid companyId={companyId} darkMode={darkMode} excludeText={excludeText} showDescription={showDescription} />);
+  };
 
+  /**
+   * Renders related events widget for event pages
+   * @param {Object} options - Configuration options
+   * @param {string} options.companyId - The company ID to fetch events for
+   * @param {boolean} [options.darkMode=false] - Whether to use dark mode styling
+   * @param {string} [options.excludeText=''] - Text to exclude events starting with (e.g., 'test')
+   * @param {boolean} [options.showDescription=false] - Whether to show event descriptions
+   * @param {number} [options.maxEvents=6] - Maximum number of events to show
+   */
+  static renderRelatedEvents = async ({
+    companyId,
+    darkMode = false,
+    excludeText = '',
+    showDescription = false,
+    maxEvents = 6
+  }: {
+    companyId: string;
+    darkMode?: boolean;
+    excludeText?: string;
+    showDescription?: boolean;
+    maxEvents?: number;
+  }) => {
+    if (!companyId) {
+      console.error('Company ID is required for Sequel related events.');
+      return;
+    }
 
+    // Check if sequel_root exists before rendering
+    const sequelRoot = document.getElementById('sequel_root');
+    if (!sequelRoot) {
+      console.error('Element with id "sequel_root" not found. Please add a div with this id to your HTML.');
+      return;
+    }
+    
+    renderApp(<RelatedEvents companyId={companyId} darkMode={darkMode} excludeText={excludeText} showDescription={showDescription} maxEvents={maxEvents} />);
   };
 }
 

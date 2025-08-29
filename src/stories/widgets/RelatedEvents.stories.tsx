@@ -1,20 +1,22 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useEffect } from "react";
 
-const EventGridWidget: React.FC<{ 
+const RelatedEventsWidget: React.FC<{ 
   companyId: string; 
   darkMode?: boolean; 
   excludeText?: string; 
   showDescription?: boolean;
-}> = ({ companyId, darkMode = false, excludeText = "", showDescription = false }) => {
+  maxEvents?: number;
+}> = ({ companyId, darkMode = false, excludeText = "", showDescription = false, maxEvents = 6 }) => {
   useEffect(() => {
-    window.Sequel.renderEventGrid({
+    window.Sequel.renderRelatedEvents({
       companyId,
       darkMode,
       excludeText,
       showDescription,
+      maxEvents,
     });
-  }, [companyId, darkMode, excludeText, showDescription]);
+  }, [companyId, darkMode, excludeText, showDescription, maxEvents]);
 
   return (
     <div 
@@ -27,8 +29,8 @@ const EventGridWidget: React.FC<{
 };
 
 const meta = {
-  title: "Widgets/EventGrid",
-  component: EventGridWidget,
+  title: "Widgets/RelatedEvents",
+  component: RelatedEventsWidget,
   parameters: {
     layout: "fullscreen",
   },
@@ -49,18 +51,23 @@ const meta = {
       control: { type: "boolean" },
       description: "Show event descriptions below the title",
     },
+    maxEvents: {
+      control: { type: "number", min: 1, max: 12, step: 1 },
+      description: "Maximum number of events to show",
+    },
   },
-} satisfies Meta<typeof EventGridWidget>;
+} satisfies Meta<typeof RelatedEventsWidget>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const LightMode: Story = {
+export const Default: Story = {
   args: {
     companyId: "8f956eae-f2ee-4095-b00f-58edbbaeaa23", // Replace with a real company ID that has events
     darkMode: false,
     excludeText: "",
     showDescription: false,
+    maxEvents: 6,
   },
 };
 
@@ -70,23 +77,36 @@ export const DarkMode: Story = {
     darkMode: true,
     excludeText: "",
     showDescription: false,
+    maxEvents: 6,
   },
 };
 
-export const WithDescription: Story = {
+export const WithDescriptions: Story = {
   args: {
     companyId: "8f956eae-f2ee-4095-b00f-58edbbaeaa23", // Replace with a real company ID that has events
     darkMode: false,
     excludeText: "",
     showDescription: true,
+    maxEvents: 6,
   },
 };
 
-export const DarkModeWithDescription: Story = {
+export const CustomCount: Story = {
   args: {
     companyId: "8f956eae-f2ee-4095-b00f-58edbbaeaa23", // Replace with a real company ID that has events
-    darkMode: true,
+    darkMode: false,
     excludeText: "",
-    showDescription: true,
+    showDescription: false,
+    maxEvents: 9,
+  },
+};
+
+export const Minimal: Story = {
+  args: {
+    companyId: "8f956eae-f2ee-4095-b00f-58edbbaeaa23", // Replace with a real company ID that has events
+    darkMode: false,
+    excludeText: "",
+    showDescription: false,
+    maxEvents: 3,
   },
 };
