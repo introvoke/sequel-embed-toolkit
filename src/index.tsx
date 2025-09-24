@@ -23,6 +23,7 @@ interface RenderMarketoFormParams {
   sequelEventId: string;
   renderAddToCalendar?: boolean;
   loadMarketoForm?: boolean;
+  openLinksInNewTab?: boolean;
 }
 
 interface RenderHubspotFormParams {
@@ -569,6 +570,30 @@ class Sequel {
   static sessionId: string | null = null;
   static hasConsent: boolean = false;
 
+  // Helper function to set up click handler for opening all links in new tabs
+  static setupLinkClickHandler(): void {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      const link = target.closest('a');
+      
+      if (link && link.href) {
+        const hasHref = link.getAttribute('href');
+        
+        // Open ALL links in new tab except for fragments and javascript void
+        if (hasHref && !hasHref.startsWith('#') && hasHref !== 'javascript:void(0)') {
+          event.preventDefault();
+          window.open(link.href, '_blank', 'noopener,noreferrer');
+        }
+      }
+    };
+    
+    // Add event listener to document to catch all clicks
+    document.addEventListener('click', handleClick, true);
+    
+    // Store the handler so it can be removed later if needed
+    (window as any).__sequelClickHandler = handleClick;
+  }
+
   static generateId(): string {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
       /[xy]/g,
@@ -1078,6 +1103,7 @@ class Sequel {
     sequelEventId,
     renderAddToCalendar = false,
     loadMarketoForm = true,
+    openLinksInNewTab = false,
   }: RenderMarketoFormParams) => {
     const joinCode = await getValidatedJoinCode({
       eventId: sequelEventId,
@@ -1113,6 +1139,11 @@ class Sequel {
         "The Marketo element was not found. Please add a div with id `mktoForm` to your html."
       );
       return;
+    }
+
+    // Set up click handler for opening links in new tab if flag is enabled
+    if (openLinksInNewTab) {
+      Sequel.setupLinkClickHandler();
     }
 
     const form = htmlForm.appendChild(document.createElement("form"));
