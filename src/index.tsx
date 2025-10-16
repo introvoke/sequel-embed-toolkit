@@ -1118,7 +1118,7 @@ class Sequel {
     }
 
     const formId = event.registration?.marketoFormId;
-    if (!formId) {
+    if (loadMarketoForm && !formId) {
       console.error(
         "The Sequel script is set to render the Marketo form but the event does not have a Marketo form id. Please double check the event information in the Sequel dashboard."
       );
@@ -1146,8 +1146,11 @@ class Sequel {
       Sequel.setupLinkClickHandler();
     }
 
-    const form = htmlForm.appendChild(document.createElement("form"));
-    form.id = `mktoForm_${formId}`;
+    let form: HTMLFormElement | null = null;
+    if (loadMarketoForm) {
+      form = htmlForm.appendChild(document.createElement("form"));
+      form.id = `mktoForm_${formId}`;
+    } 
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
