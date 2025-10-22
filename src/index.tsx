@@ -33,6 +33,10 @@ interface RenderHubspotFormParams {
   renderCountdown?: boolean;
 }
 
+interface ListenHubspotFormParams {
+  sequelEventId: string;
+}
+
 interface RenderEventParams {
   eventId: string;
   joinCode: string;
@@ -1591,6 +1595,55 @@ class Sequel {
     }
     
     renderApp(<RelatedEvents companyId={companyId} darkMode={darkMode} excludeText={excludeText} showDescription={showDescription} maxEvents={maxEvents} />);
+  };
+
+  /**
+   * Listens for HubSpot form submissions and automatically registers users with Sequel
+   * @param {Object} options - Configuration options
+   * @param {string} options.sequelEventId - The Sequel event ID to register users for
+   */
+  static listenHubspotFormSubmissions = async ({
+    sequelEventId,
+  }: ListenHubspotFormParams) => {
+    if (!sequelEventId) {
+      console.error('Sequel event ID is required for HubSpot form listener.');
+      return;
+    }
+
+    // Listen for HubSpot form submission via postMessage
+    window.addEventListener("message", async (eventSubmission) => {
+      if (
+        eventSubmission.data.type === "hsFormCallback" &&
+        eventSubmission.data.eventName === "onFormSubmitted"
+      ) {
+        const submissionValues = eventSubmission.data.data.submissionValues;
+
+        const firstName = submissionValues.firstname || "";
+        const lastName = submissionValues.lastname || "";
+        const email = submissionValues.email || "";
+
+        if (!firstName || !lastName || !email) {
+          console.error(
+            "The HubSpot form was submitted but the first name, last name, or email was not found for Sequel to register the user. Please double check the form fields."
+          );
+          return;
+        }
+
+        try {
+          console.log(`Registering user: ${firstName} ${lastName} (${email}) for event: ${sequelEventId}`);
+          
+          const registeredAttendee = await registrationApi.registerUser({
+            name: `${firstName} ${lastName}`,
+            email: email,
+            eventId: sequelEventId,
+          });
+
+          console.log(`Successfully registered user with join code: ${registeredAttendee.joinCode}`);
+        } catch (error) {
+          console.error("Error registering HubSpot form submission:", error);
+        }
+      }
+    });
   };
 }
 
