@@ -37,6 +37,12 @@ interface ListenHubspotFormParams {
   sequelEventId: string;
 }
 
+interface CheckAndRenderEventParams {
+  sequelEventId: string;
+  onAlreadyRegistered?: (joinCode: string) => void;
+  onNotRegistered?: () => void;
+}
+
 interface RenderEventParams {
   eventId: string;
   joinCode: string;
@@ -940,32 +946,12 @@ class Sequel {
     const hubspotFormId = event.registration?.hubspotFormId || "";
     const hubspotPortalId = event.registration?.hubspotPortalId || "";
     let htmlForm = document.getElementById(`hubspotForm`);
-    let form: HTMLFormElement | null = null;
 
     if (!htmlForm) {
       console.error(
         "The HubSpot element was not found. Please add a div with id `hubspotForm` to your html."
       );
       return;
-    }
-
-    if (loadHubspotForm) {
-      if (!hubspotFormId) {
-        console.error(
-          "The Sequel script is set to render the HubSpot form but the event does not have a HubSpot form id. Please double check the event information in the Sequel dashboard."
-        );
-        return;
-      }
-
-      if (!hubspotPortalId) {
-        console.error(
-          "The Sequel script is set to render the HubSpot form but the event does not have a HubSpot portal id. Please double check the event information in the Sequel dashboard."
-        );
-        return;
-      }
-
-      form = htmlForm.appendChild(document.createElement("form"));
-      form.id = `hubspotForm_${hubspotFormId}`;
     }
 
     if (!joinCode && renderCountdown) {
@@ -976,24 +962,33 @@ class Sequel {
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
-        if (loadHubspotForm) {
-          window.hbspt?.forms?.create({
-            portalId: hubspotPortalId,
-            formId: hubspotFormId,
-            target: `#hubspotForm_${hubspotFormId}`,
-            onFormSubmit: async (form, data) => {
-              const getFieldValue = (fieldName: string) => {
-                const field = data.find(
-                  (field: { name: string; value: string }) =>
-                    field.name === fieldName
-                );
-                return field ? field.value : "";
-              };
+        // Set up generic event listener for HubSpot form submissions (always use this)
+        const handleFormSubmission = async (eventSubmission: MessageEvent) => {
+          if (
+            eventSubmission.data.type === "hsFormCallback" &&
+            eventSubmission.data.eventName === "onFormSubmitted"
+          ) {
+            const submissionValues =
+              eventSubmission.data.data.submissionValues;
+            const submittedFormId = eventSubmission.data.data.formGuid;
 
-              const firstName = getFieldValue("firstname");
-              const lastName = getFieldValue("lastname");
-              const email = getFieldValue("email");
+            // If we have a specific form ID, only process submissions for that form
+            if (hubspotFormId && submittedFormId !== hubspotFormId) {
+              return;
+            }
 
+            const firstName = submissionValues.firstname || "";
+            const lastName = submissionValues.lastname || "";
+            const email = submissionValues.email || "";
+
+            if (!firstName || !lastName || !email) {
+              console.error(
+                "The HubSpot form was submitted but the first name, last name, or email was not found for Sequel to register the user. Please double check the form fields."
+              );
+              return;
+            }
+
+            try {
               const registeredAttendeee = await registrationApi.registerUser({
                 name: `${firstName} ${lastName}`,
                 email: email,
@@ -1027,70 +1022,53 @@ class Sequel {
                       });
                     }}
                   />,
-                  form
+                  htmlForm
                 );
               }
-              return false;
-            },
-          });
-        } else {
-          // Listen for HubSpot form submission via postMessage
-          window.addEventListener("message", async (eventSubmission) => {
-            if (
-              eventSubmission.data.type === "hsFormCallback" &&
-              eventSubmission.data.eventName === "onFormSubmitted"
-            ) {
-              const submissionValues =
-                eventSubmission.data.data.submissionValues;
-              const submittedFormId = eventSubmission.data.data.formGuid;
-
-              if (hubspotFormId && submittedFormId !== hubspotFormId) {
-                return;
-              }
-
-              const firstName = submissionValues.firstname || "";
-              const lastName = submissionValues.lastname || "";
-              const email = submissionValues.email || "";
-
-              if (!firstName || !lastName || !email) {
-                console.error(
-                  "The HubSpot form was submitted but the first name, last name, or email was not found for Sequel to register the user. Please double check the form fields."
-                );
-                return;
-              }
-
-              const registeredAttendeee = await registrationApi.registerUser({
-                name: `${firstName} ${lastName}`,
-                email: email,
-                eventId: sequelEventId,
-              });
-              setSequelJoinCodeCookie(
-                sequelEventId,
-                registeredAttendeee.joinCode
-              );
-              if (!renderAddToCalendar) {
-                removeElementAndParentIfEmpty(htmlForm);
-                Sequel.renderEvent({
-                  eventId: sequelEventId,
-                  joinCode: registeredAttendeee.joinCode,
-                });
-              } else {
-                renderAppInsideDocument(
-                  <MarketoRegistrationSuccess
-                    event={event}
-                    joinCode={registeredAttendeee.joinCode}
-                    onOpenEvent={() => {
-                      removeElementAndParentIfEmpty(htmlForm);
-                      Sequel.renderEvent({
-                        eventId: sequelEventId,
-                        joinCode: registeredAttendeee.joinCode,
-                      });
-                    }}
-                  />,
-                  form
-                );
-              }
+            } catch (error) {
+              console.error("Error registering user from HubSpot form:", error);
             }
+          }
+        };
+
+        // Add event listener (will only be added once per page load)
+        window.addEventListener("message", handleFormSubmission);
+
+        // Load HubSpot form if needed
+        if (loadHubspotForm) {
+          if (!hubspotFormId) {
+            console.error(
+              "The Sequel script is set to render the HubSpot form but the event does not have a HubSpot form id. Please double check the event information in the Sequel dashboard."
+            );
+            return;
+          }
+
+          if (!hubspotPortalId) {
+            console.error(
+              "The Sequel script is set to render the HubSpot form but the event does not have a HubSpot portal id. Please double check the event information in the Sequel dashboard."
+            );
+            return;
+          }
+
+          // Ensure htmlForm exists
+          if (!htmlForm) {
+            console.error("HubSpot form container not found");
+            return;
+          }
+
+          // Clear the container to prevent duplicate forms
+          htmlForm.innerHTML = "";
+
+          // Create a div container (not a form) - HubSpot will create its own form
+          const formContainer = document.createElement("div");
+          formContainer.id = `hubspotForm_${hubspotFormId}`;
+          htmlForm.appendChild(formContainer);
+
+          // Load HubSpot form without onFormSubmit callback - we use the postMessage listener instead
+          window.hbspt?.forms?.create({
+            portalId: hubspotPortalId,
+            formId: hubspotFormId,
+            target: `#hubspotForm_${hubspotFormId}`,
           });
         }
       });
@@ -1595,6 +1573,201 @@ class Sequel {
     }
     
     renderApp(<RelatedEvents companyId={companyId} darkMode={darkMode} excludeText={excludeText} showDescription={showDescription} maxEvents={maxEvents} />);
+  };
+
+  /**
+   * Validates a joinCode against the Sequel API
+   * @param {string} eventId - The event ID
+   * @param {string} joinCode - The join code to validate
+   * @returns {Promise<boolean>} - Returns true if joinCode is valid, false otherwise
+   */
+  static validateJoinCode = async (eventId: string, joinCode: string): Promise<boolean> => {
+    try {
+      const response = await fetch(`https://api.introvoke.com/api/v3/events/${eventId}/join/${joinCode}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        // Check if we got valid user data back
+        return data && data.joinCode === joinCode;
+      }
+      
+      if (response.status === 404) {
+        console.log('Invalid join code:', joinCode);
+        return false;
+      }
+      
+      // For other errors, log but assume invalid
+      console.error('Error validating join code:', response.statusText);
+      return false;
+    } catch (error) {
+      console.error('Error validating join code:', error);
+      return false;
+    }
+  };
+
+  /**
+   * Checks if user is already registered (via URL params or cookies) and renders Sequel event automatically
+   * @param {Object} options - Configuration options
+   * @param {string} options.sequelEventId - The Sequel event ID to check registration for
+   * @param {Function} [options.onAlreadyRegistered] - Callback when user is already registered
+   * @param {Function} [options.onNotRegistered] - Callback when user is not registered
+   * @returns {Promise<boolean>} - Returns true if user is already registered, false otherwise
+   */
+  static checkAndRenderIfRegistered = async ({
+    sequelEventId,
+    onAlreadyRegistered,
+    onNotRegistered,
+  }: CheckAndRenderEventParams): Promise<boolean> => {
+    if (!sequelEventId) {
+      console.error('Sequel event ID is required for registration check.');
+      return false;
+    }
+
+    // Check URL parameters first
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlJoinCode = urlParams.get('joinCode') || urlParams.get('joincode');
+    
+    if (urlJoinCode) {
+      console.log('Found joinCode in URL parameters:', urlJoinCode);
+      
+      // Validate the joinCode before rendering
+      const isValid = await Sequel.validateJoinCode(sequelEventId, urlJoinCode);
+      
+      if (isValid) {
+        console.log('JoinCode is valid, rendering Sequel event');
+        
+        // Render Sequel event immediately
+        Sequel.renderEvent({
+          eventId: sequelEventId,
+          joinCode: urlJoinCode,
+        });
+        
+        // Save valid joinCode to cookies for future visits
+        Sequel.setSequelJoinCodeCookie(sequelEventId, urlJoinCode);
+        
+        // Call callback if provided
+        if (onAlreadyRegistered) {
+          onAlreadyRegistered(urlJoinCode);
+        }
+        
+        return true;
+      } else {
+        console.log('Invalid joinCode in URL, treating as not registered');
+        // Don't save invalid joinCode to cookies
+      }
+    }
+
+    // Check cookies for existing registration
+    const cookieJoinCode = Sequel.getSequelJoinCodeCookie(sequelEventId);
+    
+    if (cookieJoinCode) {
+      console.log('Found joinCode in cookies:', cookieJoinCode);
+      
+      // Validate the joinCode before rendering
+      const isValid = await Sequel.validateJoinCode(sequelEventId, cookieJoinCode);
+      
+      if (isValid) {
+        console.log('Cached joinCode is valid, rendering Sequel event');
+        
+        // Render Sequel event immediately
+        Sequel.renderEvent({
+          eventId: sequelEventId,
+          joinCode: cookieJoinCode,
+        });
+        
+        // Call callback if provided
+        if (onAlreadyRegistered) {
+          onAlreadyRegistered(cookieJoinCode);
+        }
+        
+        return true;
+      } else {
+        console.log('Cached joinCode is invalid, clearing cookie');
+        // Clear invalid joinCode from cookies
+        Sequel.clearSequelJoinCodeCookie(sequelEventId);
+      }
+    }
+
+    console.log('No valid registration found for event:', sequelEventId);
+    
+    // Call callback if provided
+    if (onNotRegistered) {
+      onNotRegistered();
+    }
+    
+    return false;
+  };
+
+  /**
+   * Gets the Sequel join code cookie for a specific event
+   * @param {string} eventId - The event ID to get the join code for
+   * @returns {string|null} - The join code if found, null otherwise
+   */
+  static getSequelJoinCodeCookie = (eventId: string): string | null => {
+    const cookieName = `sequel_join_code_${eventId}`;
+    const cookies = document.cookie.split(';');
+    
+    for (let cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === cookieName) {
+        return decodeURIComponent(value);
+      }
+    }
+    
+    return null;
+  };
+
+  /**
+   * Sets the Sequel join code cookie for a specific event
+   * @param {string} eventId - The event ID to set the join code for
+   * @param {string} joinCode - The join code to store
+   * @param {number} [days=30] - Number of days until cookie expires
+   */
+  static setSequelJoinCodeCookie = (eventId: string, joinCode: string, days: number = 30): void => {
+    const cookieName = `sequel_join_code_${eventId}`;
+    const expiryDate = new Date();
+    expiryDate.setTime(expiryDate.getTime() + (days * 24 * 60 * 60 * 1000));
+    
+    document.cookie = `${cookieName}=${encodeURIComponent(joinCode)}; expires=${expiryDate.toUTCString()}; path=/; secure; samesite=strict`;
+  };
+
+  /**
+   * Clears the Sequel join code cookie for a specific event
+   * @param {string} eventId - The event ID to clear the join code for
+   */
+  static clearSequelJoinCodeCookie = (eventId: string): void => {
+    const cookieName = `sequel_join_code_${eventId}`;
+    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure; samesite=strict`;
+  };
+
+  /**
+   * Registers a user for a Sequel event
+   * @param {string} eventId - The Sequel event ID
+   * @param {string} name - User's full name
+   * @param {string} email - User's email address
+   * @returns {Promise<{joinCode: string, authToken: string, joinUrl: string}>}
+   */
+  static registerUserForEvent = async (eventId: string, name: string, email: string) => {
+    if (!eventId || !name || !email) {
+      throw new Error('Event ID, name, and email are required');
+    }
+
+    try {
+      const registeredAttendee = await registrationApi.registerUser({
+        name,
+        email,
+        eventId,
+      });
+
+      return {
+        joinCode: registeredAttendee.joinCode,
+        authToken: registeredAttendee.authToken,
+        joinUrl: registeredAttendee.joinUrl,
+      };
+    } catch (error) {
+      console.error('Error registering user:', error);
+      throw error;
+    }
   };
 
   /**
