@@ -1136,6 +1136,9 @@ class Sequel {
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
       onDocumentReady(() => {
+        // Check for pending Marketo registrations after page refresh
+        Sequel.checkPendingMarketoRegistration();
+
         if (loadMarketoForm) {
           if (
             !event?.registration?.marketoFormId ||
@@ -1155,7 +1158,19 @@ class Sequel {
         }
 
         window.MktoForms2?.whenReady((e) => {
-          e.onSuccess((registrant: any) => {
+          e.onSuccess((registrant: any, followUpUrl: string) => {
+            // Store form submission data in localStorage before async operation
+            // in case the page refreshes and interrupts the API call
+            const pendingRegistrationData = {
+              registrant,
+              eventId: sequelEventId,
+              renderAddToCalendar,
+              followUpUrl,
+              timestamp: Date.now()
+            };
+            
+            localStorage.setItem("sequelPendingMarketoRegistration", JSON.stringify(pendingRegistrationData));
+            
             // Immediately prevent default form submission behavior
             // and handle registration asynchronously to avoid Firefox issues
             const completeRegistration = async () => {
@@ -1171,22 +1186,37 @@ class Sequel {
                   sequelEventId,
                   registeredAttendeee.joinCode
                 );
+                
+                // Clear the pending registration data since we completed successfully
+                localStorage.removeItem("sequelPendingMarketoRegistration");
               } catch (error) {
                 console.error("Error registering Marketo attendee:", error);
+                // Don't clear localStorage here - let the page refresh handle it
+                // On error, still allow the form to proceed with followUpUrl if available
+                if (followUpUrl) {
+                  window.location.href = followUpUrl;
+                }
                 return;
               }
 
               if (!joinCode) {
+                // If no joinCode, allow form to proceed with followUpUrl if available
+                if (followUpUrl) {
+                  window.location.href = followUpUrl;
+                }
                 return;
               }
               
               if (!renderAddToCalendar) {
+                if (followUpUrl) {
+                  window.location.href = followUpUrl;
+                } else {
                   removeElementAndParentIfEmpty(htmlForm);
                   Sequel.renderEvent({
                     eventId: sequelEventId,
                     joinCode,
                   });
-                
+                }
               } else {
                 renderAppInsideDocument(
                   <MarketoRegistrationSuccess
@@ -1208,6 +1238,10 @@ class Sequel {
             // Execute async operation without blocking the callback
             completeRegistration().catch((error) => {
               console.error("Error in completeRegistration:", error);
+              // Fallback to followUpUrl if available
+              if (followUpUrl) {
+                window.location.href = followUpUrl;
+              }
             });
 
             // Return false immediately to prevent default form submission
@@ -1503,6 +1537,70 @@ class Sequel {
       });
     });
   };
+
+  // Check for pending Marketo registrations stored in localStorage
+  static async checkPendingMarketoRegistration() {
+    const pendingData = localStorage.getItem("sequelPendingMarketoRegistration");
+    if (!pendingData) {
+      return;
+    }
+
+    try {
+      const { registrant, eventId, renderAddToCalendar, followUpUrl } = JSON.parse(pendingData);
+      
+      // Clear the stored data immediately to prevent duplicate processing
+      localStorage.removeItem("sequelPendingMarketoRegistration");
+      
+      console.log("Processing pending Marketo registration for:", registrant.Email);
+      
+      // Complete the registration
+      const registeredAttendeee = await registrationApi.registerUser({
+        name: `${registrant.FirstName} ${registrant.LastName}`,
+        email: registrant.Email,
+        eventId: eventId,
+      });
+      
+      setSequelJoinCodeCookie(eventId, registeredAttendeee.joinCode);
+      
+      if (!renderAddToCalendar) {
+        if (followUpUrl) {
+          window.location.href = followUpUrl;
+        } else {
+          // Remove form elements and render event
+          const htmlForm = document.getElementById("mktoForm");
+          removeElementAndParentIfEmpty(htmlForm);
+          Sequel.renderEvent({
+            eventId: eventId,
+            joinCode: registeredAttendeee.joinCode,
+          });
+        }
+      } else {
+        const event = await getEvent(eventId);
+        const form = document.getElementById(`mktoForm_${event.registration?.marketoFormId}`);
+        renderAppInsideDocument(
+          <MarketoRegistrationSuccess
+            event={event}
+            joinCode={registeredAttendeee.joinCode}
+            onOpenEvent={() => {
+              const htmlForm = document.getElementById("mktoForm");
+              removeElementAndParentIfEmpty(htmlForm);
+              Sequel.renderEvent({
+                eventId: eventId,
+                joinCode: registeredAttendeee.joinCode,
+              });
+            }}
+          />,
+          form
+        );
+      }
+      
+      console.log("Pending Marketo registration completed successfully");
+    } catch (error) {
+      console.error("Error processing pending Marketo registration:", error);
+      // Clear the stored data even if there was an error
+      localStorage.removeItem("sequelPendingMarketoRegistration");
+    }
+  }
 
   /**
    * Renders an event grid with upcoming and past events using React and Tailwind
