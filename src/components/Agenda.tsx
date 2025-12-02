@@ -9,6 +9,7 @@ import Check from "@src/components/icons/Check";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
 import { BreakoutChoiceModal } from "./BreakoutChoiceModal";
+import { SessionRedirectModal } from "./SessionRedirectModal";
 
 const getStatus = (
   now: Date,
@@ -172,16 +173,30 @@ interface AgendaScheduleProps {
 
 function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
   const [showBreakoutModal, setShowBreakoutModal] = useState(false);
-  const [hasShownModal, setHasShownModal] = useState(false);
+  const [hasShownBreakoutModal, setHasShownBreakoutModal] = useState(false);
+  const [showKeynoteRedirect, setShowKeynoteRedirect] = useState(false);
+  const [hasShownKeynoteRedirect, setHasShownKeynoteRedirect] = useState(false);
 
   // Split schedule into main sessions and breakouts
-  const mainSessions = schedule.slice(0, 4);
-  const breakouts = schedule.slice(4);
+  const mainSessions = schedule.slice(0, 2);
+  const breakouts = schedule.slice(2);
+
+  const keynoteSession = mainSessions[0]?.[0];
+  const mainSession = mainSessions[1]?.[0];
+
+  // Check if keynote is over
+  const isKeynoteOver = keynoteSession && isAfter(now, new Date(keynoteSession.endDate));
+  
+  // Check if user is on keynote URL
+  const isOnKeynoteUrl = keynoteSession && window.location.href.startsWith(keynoteSession.url);
 
   // Check if all main sessions are over
   const allMainSessionsOver = mainSessions.every((sessionGroup) =>
     sessionGroup.every((session) => isAfter(now, new Date(session.endDate)))
   );
+
+  // Check if user is on main session URL
+  const isOnMainSessionUrl = mainSession && window.location.href.startsWith(mainSession.url);
 
   // Check if any breakout is live
   const hasLiveBreakout = breakouts.some((sessionGroup) =>
@@ -192,13 +207,21 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
     })
   );
 
-  // Show modal when main sessions end and it hasn't been shown yet
+  // Show keynote redirect modal when keynote ends (only on keynote page)
   useEffect(() => {
-    if (allMainSessionsOver && !hasShownModal) {
-      setShowBreakoutModal(true);
-      setHasShownModal(true);
+    if (isKeynoteOver && isOnKeynoteUrl && !hasShownKeynoteRedirect) {
+      setShowKeynoteRedirect(true);
+      setHasShownKeynoteRedirect(true);
     }
-  }, [allMainSessionsOver, hasShownModal]);
+  }, [isKeynoteOver, isOnKeynoteUrl, hasShownKeynoteRedirect]);
+
+  // Show breakout modal when main sessions end (only on main session page)
+  useEffect(() => {
+    if (allMainSessionsOver && isOnMainSessionUrl && !hasShownBreakoutModal) {
+      setShowBreakoutModal(true);
+      setHasShownBreakoutModal(true);
+    }
+  }, [allMainSessionsOver, isOnMainSessionUrl, hasShownBreakoutModal]);
 
   const handleBreakoutSelect = (url: string) => {
     const fullUrl = new URL(url);
@@ -231,6 +254,13 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
           />
         ))}
       </div>
+
+      {showKeynoteRedirect && mainSession && (
+        <SessionRedirectModal
+          targetUrl={mainSession.url}
+          sessionName="Main Session"
+        />
+      )}
 
       {showBreakoutModal && (
         <BreakoutChoiceModal

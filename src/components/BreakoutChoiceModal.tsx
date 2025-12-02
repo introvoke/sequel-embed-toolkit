@@ -13,8 +13,8 @@ interface BreakoutChoiceModalProps {
 }
 
 const breakoutOptions = [
-  "Option 1: For Sales & Marketing",
-  "Option 2: For RevOps",
+  "Breakout Session 1",
+  "Breakout Session 2",
 ];
 
 export function BreakoutChoiceModal({
@@ -44,11 +44,11 @@ export function BreakoutChoiceModal({
         />
         <div className="px-4 py-3 border-b border-[#D7DAE0] flex-0">
           <h2 className="font-[600] text-[18px] leading-[160%]">
-            Choose Your Breakout Session
+            Select Your Breakout Session
           </h2>
           <p className="text-[#565E73] text-[14px] leading-[160%]">
-            The main sessions have concluded. Please select which breakout
-            session you'd like to attend.
+            The keynote and main session have concluded. Choose the breakout
+            session that best fits your interests.
           </p>
         </div>
 

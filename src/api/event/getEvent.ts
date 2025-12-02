@@ -12,13 +12,13 @@ const SESSION_DURATIONS = {
 };
 
 const SESSION_DURATIONS_SPEEDY = {
-  KEYNOTE: 3, // 20 minutes 37 seconds
-  TODD: 3, // 21 minutes 5 seconds
-  DOMINIK: 3, // 19 minutes 19 seconds
-  JAMES: 3, // 14 minutes 48 seconds
-  BREAKOUT_1: 10, // 33 minutes 49 seconds
-  BREAKOUT_2: 10, // 24 minutes 5 seconds
+  KEYNOTE: 10, // 10 seconds for demo
+  TODD: 10, // 10 seconds for demo
+  BREAKOUT_1: 10, // 10 seconds for demo
+  BREAKOUT_2: 10, // 10 seconds for demo
 };
+
+const BREAK_BETWEEN_SESSIONS = 10; // 10 seconds break between sessions
 
 const CLOUDINARY_BASE_URL =
   "https://res.cloudinary.com/introvoke/image/upload/c_limit,w_200,h_200,q_auto/";
@@ -38,11 +38,31 @@ const generateAgenda = (
   useQuickDates: boolean = false,
   speedMode = false
 ): EventAgenda => {
-  const baseTime = useQuickDates
+  const DURATIONS = speedMode ? SESSION_DURATIONS_SPEEDY : SESSION_DURATIONS;
+  const BREAK_TIME = speedMode ? BREAK_BETWEEN_SESSIONS : 0;
+  
+  // Adjust base time based on current URL in speed mode
+  let baseTime = useQuickDates
     ? speedMode
       ? new Date()
       : new Date("2025-05-05T18:30:00.000+00:00")
     : new Date("2025-05-07T18:00:00.000+00:00");
+
+  // In speed mode, adjust start time based on which page user is on
+  if (speedMode && useQuickDates) {
+    const currentUrl = window.location.href;
+    const now = new Date();
+    
+    // If on main session URL, rewind so keynote is finished and main session is live
+    if (currentUrl.includes('/main-session')) {
+      baseTime = new Date(now.getTime() - (DURATIONS.KEYNOTE + BREAK_TIME) * 1000);
+    }
+    // If on breakout URL, rewind so keynote and main session are finished
+    else if (currentUrl.includes('/breakout-')) {
+      baseTime = new Date(now.getTime() - (DURATIONS.KEYNOTE + BREAK_TIME + DURATIONS.TODD + BREAK_TIME) * 1000);
+    }
+    // Otherwise (on keynote or other page), start from now
+  }
 
   let currentTime = baseTime;
 
@@ -52,114 +72,96 @@ const generateAgenda = (
     currentTime = nextTime;
     return nextTime;
   };
-
-  const DURATIONS = speedMode ? SESSION_DURATIONS_SPEEDY : SESSION_DURATIONS;
+  
   return {
-    heading: "The Future of Go-to-Market Starts Here",
+    heading: "Annual Virtual Summit 2025",
     subheading:
-      "Join ZoomInfo's flagship virtual conference for AI-driven strategies and cutting-edge insights that help sales, marketing, and RevOps teams stay ahead in a competitive market.",
+      "Join us for an inspiring day of keynotes, sessions, and networking opportunities designed to help you grow your business and connect with industry leaders.",
     schedule: [
       {
         title: "Keynote",
         startDate: getNextTime(0),
         endDate: getNextTime(DURATIONS.KEYNOTE),
-        eventId: "55ff41fa-55ff-4bf5-8012-1190dac93cb9",
-        url: "https://www.zoominfo.com/live/gtm25-keynote",
-        supheading: "Henry Schuck, CEO & Founder ZoomInfo",
-        heading: "The Future of AI-Driven Go-To-Market Intelligence",
+        eventId: "keynote-session-2025",
+        url: "https://sequel-conference-demo.webflow.io/virtual-summit/keynote",
+        supheading: "Opening Keynote Speaker",
+        heading: "The Future of Digital Transformation",
         content:
-          "Today's go-to-market teams are full of bold, creative ideas—but too often, those ideas never see the light of day. Execution bottlenecks, fragmented data, and outdated processes slow down innovation, making it impossible to act in real time. But that's about to change.\n\nJoin Henry Schuck, Founder and CEO of ZoomInfo, as he unveils a bold vision for the future—where GTM Intelligence puts revenue leaders back in the driver's seat, allowing them to design, activate, and scale their most creative go-to-market strategies instantly.",
+          "Join us for an inspiring keynote address that explores the latest trends and innovations shaping the future of business. Our keynote speaker will share valuable insights on navigating digital transformation, embracing new technologies, and building resilient organizations in a rapidly changing world.\n\nDiscover how leading companies are leveraging cutting-edge tools and strategies to stay ahead of the curve and deliver exceptional value to their customers.",
         list: [
-          "Why creativity is the ultimate competitive advantage in revenue generation—and how AI is unlocking it.",
-          "How GTM Intelligence transforms disconnected data into real-time execution, removing every obstacle between great ideas and action.",
-          "How leading companies are harnessing creativity to move faster, engage with precision, and drive revenue.",
+          "Key trends driving digital transformation across industries",
+          "Best practices for implementing new technologies and workflows",
+          "Real-world case studies from successful companies",
+          "Actionable strategies you can apply to your own organization",
         ],
         coverImage: IMAGES.HENRY,
       },
       {
         title: "Main Session",
-        startDate: getNextTime(0),
+        startDate: getNextTime(BREAK_TIME),
         endDate: getNextTime(DURATIONS.TODD),
-        eventId: "8ea595c1-99df-4609-a475-fbc351935b54",
-        url: "https://www.zoominfo.com/live/gtm25-ai-b2b-sales",
-        supheading: "Todd Horst, Partner McKinsey & Company",
-        heading:
-          "An Unconstrained Future: How Generative AI Could Reshape B2B Sales",
+        eventId: "main-session-2025",
+        url: "https://sequel-conference-demo.webflow.io/virtual-summit/main-session",
+        supheading: "Featured Industry Expert",
+        heading: "Strategies for Sustainable Growth in 2025",
         content:
-          "The impact of generative AI on B2B sales is still in its early stages—but the transformation ahead is profound. Pioneering companies are already seeing measurable benefits. From enhancing efficiency to fundamentally reshaping sales organizations, AI is poised to redefine every stage of the deal cycle.\n\nTodd Horst, Partner at McKinsey, will explore three key pathways for AI-driven sales transformation and uncover the critical implications for B2B companies navigating this shift.",
+          "In this main session, our featured expert will dive deep into proven strategies for achieving sustainable growth in today's competitive landscape. Learn how to optimize your operations, engage your customers more effectively, and build a strong foundation for long-term success.\n\nWhether you're a startup founder or leading an established enterprise, this session will provide actionable insights to help you scale your business while maintaining quality and customer satisfaction.",
         list: [
-          "The three possible futures for generative AI in B2B sales—and how they're taking shape today",
-          "What we can learn from early AI adopters",
-          "The crucial steps companies must take to build a scalable, competitive AI strategy",
+          "Core principles of sustainable business growth",
+          "How to identify and capitalize on new market opportunities",
+          "Building strong customer relationships that drive retention",
+          "Measuring success and adjusting your strategy based on data",
         ],
         coverImage: IMAGES.TODD,
       },
       {
-        title: "Main Session",
-        startDate: getNextTime(0),
-        endDate: getNextTime(DURATIONS.DOMINIK),
-        eventId: "91eb98d4-6cb9-4a91-ada0-8344d66a084f",
-        url: "https://www.zoominfo.com/live/gtm25-intelligence-platform",
-        supheading: "Dominik Facher, CPO ZoomInfo",
-        heading: "Go-To-Market Intelligence Platform Reveal",
+        title: "Breakout Session 1",
+        startDate: (() => {
+          // Add break time before breakouts
+          const breakoutStart = getNextTime(BREAK_TIME);
+          // Save for breakout 2 to start at same time
+          const breakoutStartTime = new Date(breakoutStart);
+          return breakoutStartTime;
+        })(),
+        endDate: (() => {
+          const endDate = new Date(currentTime);
+          endDate.setSeconds(endDate.getSeconds() + DURATIONS.BREAKOUT_1);
+          return endDate;
+        })(),
+        eventId: "breakout-1-2025",
+        url: "https://sequel-conference-demo.webflow.io/virtual-summit/breakout-1",
+        supheading: "Deep Dive Workshop",
+        heading: "Mastering Customer Engagement & Retention",
         content:
-          "Chief Product Officer Dominik Facher will introduce ZoomInfo's groundbreaking GTM Intelligence Platform, where AI-enhanced data and workflows slash time to value and drive precision execution. Tune into this session to see a walkthrough of the ZoomInfo Go-to-market Intelligence Platform, including;",
+          "This interactive breakout session focuses on advanced techniques for engaging customers throughout their journey and building lasting relationships. Learn from real-world examples and get hands-on experience with tools and frameworks that drive customer loyalty.\n\nPerfect for marketing, sales, and customer success professionals looking to enhance their engagement strategies and improve retention rates.",
         list: [
-          "AI-Ready Data Foundation",
-          "Surfacing High-Intent, AI-Prioritized Buyers",
-          "The AI-Driven GTM Workflow",
-        ],
-        coverImage: IMAGES.DOMINIK,
-      },
-      {
-        title: "Main Session",
-        startDate: getNextTime(0),
-        endDate: getNextTime(DURATIONS.JAMES),
-        eventId: "988e550e-b3be-4fc4-b659-6782cd70f9a2",
-        url: "https://www.zoominfo.com/live/gtm25-revenue-growth",
-        supheading: "James Roth, CRO ZoomInfo",
-        heading: "The Future of Revenue Growth",
-        content:
-          "ZoomInfo Chief Revenue Officer James Roth will demonstrate how bad data is costing you revenue and share how AI-fueled sales strategies can boost close rates, accelerate deal velocity, and reshape customer engagement. In this session you'll learn to:",
-        list: [
-          "Expand your TAM and drive higher close rates",
-          "Grow & retain customers with precision engagement",
-          "Maximize rep productivity with AI-powered automation",
-        ],
-        coverImage: IMAGES.JAMES,
-      },
-      {
-        title: "Breakout Sessions",
-        startDate: new Date(currentTime),
-        endDate: new Date(currentTime.getTime() + DURATIONS.BREAKOUT_1 * 1000),
-        eventId: "c7f88320-15b0-4ece-91a5-793503ddfdcb",
-        url: "https://www.zoominfo.com/live/gtm25-breakout-1",
-        supheading:
-          "Keith Pearce, CMO Gainsight, and Marilee Bear, CRO at Gainsight",
-        heading: "From Cold to Closed, How to Turn Whitespace Into Wins",
-        content:
-          "Join Keith Pearce, CMO at Gainsight, and Marilee Bear, CRO at Gainsight, for this must-attend session designed for sales and marketing leaders. Gain high-impact strategies, rewrite traditional playbooks, and architect your GTM motion to stay ahead. Join us and learn how to:",
-        list: [
-          "Find high-value accounts with real-time data & intent signals",
-          "Automate execution for precision targeting across marketing & sales",
-          "Maximize revenue from both new and existing accounts",
+          "Understanding the modern customer journey and key touchpoints",
+          "Personalization strategies that drive engagement and conversion",
         ],
         coverImage: IMAGES.KEITH_MARILEE,
       },
       {
         title: "Breakout Session 2",
         startDate: new Date(currentTime),
-        endDate: new Date(currentTime.getTime() + DURATIONS.BREAKOUT_2 * 1000),
-        eventId: "c4dadc5f-6545-4d38-9692-661f425b0e76",
-        url: "https://www.zoominfo.com/live/gtm25-breakout-2",
-        supheading: "Toby Carrington, CBO Seismic",
-        heading: "From Service to Strategy. The Rise of GTM Architects",
+        endDate: (() => {
+          const endDate = new Date(currentTime);
+          endDate.setSeconds(endDate.getSeconds() + DURATIONS.BREAKOUT_2);
+          // Update currentTime to the end of breakouts (they run simultaneously)
+          currentTime = new Date(Math.max(
+            currentTime.getTime() + DURATIONS.BREAKOUT_1 * 1000,
+            currentTime.getTime() + DURATIONS.BREAKOUT_2 * 1000
+          ));
+          return endDate;
+        })(),
+        eventId: "breakout-2-2025",
+        url: "https://sequel-conference-demo.webflow.io/virtual-summit/breakout-2",
+        supheading: "Expert Panel Discussion",
+        heading: "Innovation & Technology Trends",
         content:
-          "Designed for operations leaders across GTM—whether you're in marketing, sales, or revenue operations—Join Toby Carrington, Chief Business Officer at Seismic for this session that will equip you with the essential tools and strategies to transform your team into a high-performing revenue engine. Join us and learn how to:",
+          "Join our expert panel for an engaging discussion on the latest technology trends and innovations that are transforming industries. Hear diverse perspectives from thought leaders and get your questions answered in this interactive session.\n\nIdeal for technology leaders, product managers, and anyone interested in staying ahead of emerging trends and understanding how to apply them to their business.",
         list: [
-          "Eliminate inefficiencies with AI-driven execution",
-          "Prioritize the right accounts using intent data",
-          "Scale revenue by automating GTM execution",
+          "Emerging technologies and their potential business impact",
+          "How to evaluate and prioritize new technology investments",
         ],
         coverImage: IMAGES.TOBY,
       },
@@ -178,19 +180,11 @@ export const getEvent = async (eventId: string): Promise<Event> => {
   const response = await axios.get(configUrl);
   const data: Event = await response.data;
   const url = new URL(window.location.href);
-  const isTestMode = url.searchParams.get("testMode") === "true";
   const isSpeedMode =
     window.IS_STORYBOOK || url.searchParams.get("speedMode") === "true";
 
-  if (generateAgenda(false).schedule.some((item) => item.eventId === eventId)) {
     return {
       ...data,
-      agenda:
-        window.IS_STORYBOOK || isTestMode
-          ? generateAgenda(true, isSpeedMode)
-          : generateAgenda(false),
+      agenda: generateAgenda(true, isSpeedMode)
     };
-  }
-
-  return data;
 };

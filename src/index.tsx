@@ -18,6 +18,7 @@ import type { EventAgenda } from "@src/api/event/event";
 import { ZoomInfoAgendaContainer } from "./routes/agenda/ZoomInfoAgendaContainer";
 import { isSameDay } from "date-fns";
 import { useState, useEffect } from "react";
+import { MultiRegistration } from "@src/components/MultiRegistration";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -1395,8 +1396,6 @@ class Sequel {
       );
       return;
     }
-    sequelRoot.style.marginTop = "100px";
-    sequelRoot.style.padding = "20px";
 
     // Simply render the Sequel event with the joinCode if it exists
     Sequel.renderEvent({
@@ -1671,6 +1670,41 @@ class Sequel {
     }
     
     renderApp(<RelatedEvents companyId={companyId} darkMode={darkMode} excludeText={excludeText} showDescription={showDescription} maxEvents={maxEvents} />);
+  };
+
+  /**
+   * Renders a multi-registration widget for registering users to multiple events at once
+   * @param {Object} options - Configuration options
+   * @param {string[]} options.eventIds - Array of Sequel event IDs (up to 3)
+   * @param {boolean} [options.darkMode=false] - Whether to use dark mode styling
+   * @param {Function} [options.onRegistrationComplete] - Callback when registration is complete with array of {eventId, joinCode}
+   */
+  static renderMultiRegistration = async ({
+    eventIds,
+    darkMode = false,
+    onRegistrationComplete,
+  }: {
+    eventIds: string[];
+    darkMode?: boolean;
+    onRegistrationComplete?: (joinCodes: { eventId: string; joinCode: string }[]) => void;
+  }) => {
+    if (!eventIds || eventIds.length === 0) {
+      console.error('At least one event ID is required for Sequel multi-registration.');
+      return;
+    }
+
+    if (eventIds.length > 3) {
+      console.warn('Maximum of 3 events supported. Only the first 3 will be used.');
+    }
+
+    // Check if sequel_root exists before rendering
+    const sequelRoot = document.getElementById('sequel_root');
+    if (!sequelRoot) {
+      console.error('Element with id "sequel_root" not found. Please add a div with this id to your HTML.');
+      return;
+    }
+    
+    renderApp(<MultiRegistration eventIds={eventIds} darkMode={darkMode} onRegistrationComplete={onRegistrationComplete} />);
   };
 
   /**

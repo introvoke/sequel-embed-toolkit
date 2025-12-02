@@ -13,6 +13,8 @@ export interface Registration {
 export interface Event {
   uid: string;
   name: string;
+  description?: string;
+  picture?: string;
   startDate: Date;
   endDate: Date;
   timezone: string;

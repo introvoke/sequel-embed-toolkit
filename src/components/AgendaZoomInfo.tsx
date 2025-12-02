@@ -8,6 +8,9 @@ import Check from "@src/components/icons/Check";
 import CheckPurpleZoomInfo from "@src/components/icons/CheckPurpleZoomInfo";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
 import { Button } from "./Button";
+import { useEffect, useState } from "react";
+import { BreakoutChoiceModal } from "./BreakoutChoiceModal";
+import { SessionRedirectModal } from "./SessionRedirectModal";
 
 const getStatus = (
   now: Date,
@@ -167,17 +170,31 @@ interface AgendaScheduleProps {
 }
 
 function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
-  // const [showBreakoutModal, setShowBreakoutModal] = useState(false);
-  // const [hasShownModal, setHasShownModal] = useState(false);
+  const [showBreakoutModal, setShowBreakoutModal] = useState(false);
+  const [hasShownBreakoutModal, setHasShownBreakoutModal] = useState(false);
+  const [showKeynoteRedirect, setShowKeynoteRedirect] = useState(false);
+  const [hasShownKeynoteRedirect, setHasShownKeynoteRedirect] = useState(false);
 
   // Split schedule into main sessions and breakouts
-  const mainSessions = schedule.slice(0, 4);
-  const breakouts = schedule.slice(4);
+  const mainSessions = schedule.slice(0, 2);
+  const breakouts = schedule.slice(2);
+
+  const keynoteSession = mainSessions[0]?.[0];
+  const mainSession = mainSessions[1]?.[0];
+
+  // Check if keynote is over
+  const isKeynoteOver = keynoteSession && isAfter(now, new Date(keynoteSession.endDate));
+  
+  // Check if user is on keynote URL
+  const isOnKeynoteUrl = keynoteSession && (window.location.href.startsWith(keynoteSession.url) || window.IS_STORYBOOK);
 
   // Check if all main sessions are over
   const allMainSessionsOver = mainSessions.every((sessionGroup) =>
     sessionGroup.every((session) => isAfter(now, new Date(session.endDate)))
   );
+
+  // Check if user is on main session URL
+  const isOnMainSessionUrl = mainSession && (window.location.href.startsWith(mainSession.url) || window.IS_STORYBOOK);
 
   // Check if any breakout is live
   const hasLiveBreakout = breakouts.some((sessionGroup) =>
@@ -188,21 +205,24 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
     })
   );
 
-  // Show modal when main sessions end and it hasn't been shown yet
-  // useEffect(() => {
-  //   if (
-  //     allMainSessionsOver &&
-  //     !hasShownModal &&
-  //     (window.location.href.startsWith(schedule[0][0].url) ||
-  //       window.IS_STORYBOOK)
-  //   ) {
-  //     const timeout = setTimeout(() => {
-  //       setShowBreakoutModal(true);
-  //       setHasShownModal(true);
-  //     }, 10000);
-  //     return () => clearTimeout(timeout);
-  //   }
-  // }, [allMainSessionsOver, hasShownModal]);
+  // Show keynote redirect modal when keynote ends (only on keynote page)
+  useEffect(() => {
+    if (isKeynoteOver && isOnKeynoteUrl && !hasShownKeynoteRedirect) {
+      setShowKeynoteRedirect(true);
+      setHasShownKeynoteRedirect(true);
+    }
+  }, [isKeynoteOver, isOnKeynoteUrl, hasShownKeynoteRedirect]);
+
+  // Show breakout modal when main sessions end (only on main session page)
+  useEffect(() => {
+    if (allMainSessionsOver && isOnMainSessionUrl && !hasShownBreakoutModal) {
+      const timeout = setTimeout(() => {
+        setShowBreakoutModal(true);
+        setHasShownBreakoutModal(true);
+      }, 10000);
+      return () => clearTimeout(timeout);
+    }
+  }, [allMainSessionsOver, isOnMainSessionUrl, hasShownBreakoutModal]);
 
   // const handleRedirect = () => {
   //   if (window.IS_STORYBOOK) {
@@ -254,15 +274,15 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
   //   }
   // }, [isSecondBreakoutOver, isOnSecondBreakout]);
 
-  // const handleBreakoutSelect = (url: string) => {
-  //   if (window.IS_STORYBOOK) {
-  //     alert(url);
-  //   } else {
-  //     const fullUrl = new URL(url);
-  //     fullUrl.search = window.location.search;
-  //     window.location.href = fullUrl.toString();
-  //   }
-  // };
+  const handleBreakoutSelect = (url: string) => {
+    if (window.IS_STORYBOOK) {
+      alert(url);
+    } else {
+      const fullUrl = new URL(url);
+      fullUrl.search = window.location.search;
+      window.location.href = fullUrl.toString();
+    }
+  };
 
   return (
     <div className="mx-auto w-full mt-8 flex flex-col gap-12">
@@ -287,14 +307,20 @@ function AgendaScheduleContainer({ schedule, now }: AgendaScheduleProps) {
           />
         ))}
       </div>
-      {/* {showBreakoutModal && (
+      {showKeynoteRedirect && mainSession && (
+        <SessionRedirectModal
+          targetUrl={mainSession.url}
+          sessionName="Main Session"
+        />
+      )}
+      {showBreakoutModal && (
         <BreakoutChoiceModal
           breakouts={breakouts.flat()}
           now={now}
           onClose={() => setShowBreakoutModal(false)}
           onSelect={handleBreakoutSelect}
         />
-      )} */}
+      )}
     </div>
   );
 }
