@@ -51,6 +51,14 @@ interface RenderEventParams {
   isPopup?: boolean;
 }
 
+interface EmbedSequelComponentParams {
+  sequelEventId: string;
+  rootElementId?: string;
+  hybrid?: boolean;
+  renderAgenda?: boolean;
+  onError?: (error: string) => void;
+}
+
 // Helper function to remove the element and its parent if the parent is empty
 const removeElementAndParentIfEmpty = (element: HTMLElement | null) => {
   if (!element) return;
@@ -1404,6 +1412,54 @@ class Sequel {
       joinCode: joinCode || "",
       agenda: event.agenda,
     });
+  };
+
+  /**
+   * Flexible event embedding method with granular control
+   * Automatically includes Sourcebuster UTM tracking
+   */
+  static embedSequelComponent = async ({
+    sequelEventId,
+    rootElementId = 'sequel_root',
+    hybrid = false,
+    renderAgenda = true,
+    onError,
+  }: EmbedSequelComponentParams) => {
+    try {
+      // Fetch event data
+      const event = await getEvent(sequelEventId);
+
+      if (!event) {
+        const errorMsg = "Sequel event not found. Please double check the event id.";
+        console.error(errorMsg);
+        onError?.(errorMsg);
+        return;
+      }
+
+      // Get or validate join code
+      const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
+
+      // Get root element
+      const rootElement = document.getElementById(rootElementId);
+      if (!rootElement) {
+        const errorMsg = `The root element with id '${rootElementId}' was not found. Please add a div with id '${rootElementId}' to your HTML.`;
+        console.error(errorMsg);
+        onError?.(errorMsg);
+        return;
+      }
+
+      // Render event component
+      Sequel.renderEvent({
+        eventId: sequelEventId,
+        joinCode: joinCode || "",
+        hybrid,
+        agenda: renderAgenda ? event.agenda : undefined,
+      });
+    } catch (error) {
+      const errorMsg = `Error embedding Sequel component: ${error instanceof Error ? error.message : String(error)}`;
+      console.error(errorMsg, error);
+      onError?.(errorMsg);
+    }
   };
 
   static renderEmbedAgenda = async ({ eventId }: { eventId: string }) => {

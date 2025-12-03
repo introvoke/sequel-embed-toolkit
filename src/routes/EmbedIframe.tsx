@@ -1,4 +1,5 @@
 import { ApiConfig } from "@src/api/apiConfig";
+import { getSourcebusterUTMParams } from "@src/utils/cookie";
 
 interface EmbedIframeProps {
   eventId: string;
@@ -10,14 +11,31 @@ export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup }: EmbedIframeP
   // Get current URL search parameters
   const searchParams = new URLSearchParams(window.location.search);
   
+  // Get Sourcebuster UTM parameters from cookies
+  const sourcebusterParams = getSourcebusterUTMParams();
+  
   // Create base URL with required parameters
   const baseUrl = `${ApiConfig.GetEmbedUrl()}/event/${eventId}?joinCode=${joinCode}&hybrid=${hybrid}`;
   
-  // Add all other search parameters
-  const iframeUrl = Array.from(searchParams.entries()).reduce((url, [key, value]) => {
+  // Collect all parameters to add to the iframe URL
+  const allParams = new Map<string, string>();
+  
+  // First, add Sourcebuster parameters (lower priority)
+  for (const [key, value] of Object.entries(sourcebusterParams)) {
+    allParams.set(key, value);
+  }
+  
+  // Then, add/override with URL search parameters (higher priority)
+  // URL params take precedence, especially for UTM values
+  for (const [key, value] of searchParams.entries()) {
     // Skip parameters that are already included in the base URL
-    if (key === 'joinCode' || key === 'hybrid') return url;
-    return `${url}&${key}=${value}`;
+    if (key === 'joinCode' || key === 'hybrid') continue;
+    allParams.set(key, value);
+  }
+  
+  // Build the final iframe URL with all parameters
+  const iframeUrl = Array.from(allParams.entries()).reduce((url, [key, value]) => {
+    return `${url}&${key}=${encodeURIComponent(value)}`;
   }, baseUrl);
 
   const iframeStyle = isPopup 
