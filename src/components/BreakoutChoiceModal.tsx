@@ -1,8 +1,10 @@
 import { EventAgendaScheduleItem } from "@src/api/event/event";
-import { Button } from "./Button";
-import { IconButton } from "./IconButton";
-import XClose from "./icons/XClose";
-import { IconWrapper } from "./IconWrapper";
+import {
+  Button,
+  IconButton,
+  XClose,
+  IconWrapper,
+} from "@src/lib/introvoke-exports";
 import CheckPurpleZoomInfo from "./icons/CheckPurpleZoomInfo";
 
 interface BreakoutChoiceModalProps {

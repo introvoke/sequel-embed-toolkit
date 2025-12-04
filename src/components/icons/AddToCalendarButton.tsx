@@ -1,6 +1,6 @@
 import "add-to-calendar-button";
 import { Event } from "@src/api/event/event";
-import { Button, ButtonProps } from "@src/components/Button";
+import { Button, ButtonProps } from "@src/lib/introvoke-exports";
 import { atcb_action } from "add-to-calendar-button";
 import { format, toZonedTime } from "date-fns-tz";
 import { memo } from "react";

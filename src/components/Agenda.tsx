@@ -2,12 +2,14 @@ import { isBefore, isAfter, formatDistanceToNowStrict } from "date-fns";
 import { useState, useEffect } from "react";
 
 import { cn } from "@src/styles/utils";
-import { IconWrapper } from "@src/components/IconWrapper";
-import ClockStopwatch from "@src/components/icons/ClockStopwatch";
-import Signal01 from "@src/components/icons/Signal01";
-import Check from "@src/components/icons/Check";
+import {
+  IconWrapper,
+  ClockStopwatch,
+  Signal01,
+  Check,
+  Button,
+} from "@src/lib/introvoke-exports";
 import { EventAgenda, EventAgendaScheduleItem } from "@src/api/event/event";
-import { Button } from "./Button";
 import { BreakoutChoiceModal } from "./BreakoutChoiceModal";
 
 const getStatus = (
