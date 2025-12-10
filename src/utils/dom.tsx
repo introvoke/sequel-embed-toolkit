@@ -13,9 +13,10 @@ export const onDocumentReady = (callback: () => void) => {
 };
 
 let appRoot: Root;
-export const renderApp = (app: React.ReactNode) => {
+export const renderApp = (app: React.ReactNode, container?: HTMLElement) => {
   appRoot?.unmount();
-  appRoot = createRoot(document.getElementById("sequel_root")!);
+  const targetElement = container || document.getElementById("sequel_root")!;
+  appRoot = createRoot(targetElement);
   appRoot.render(
     // <React.StrictMode>
     <Providers>{app}</Providers>

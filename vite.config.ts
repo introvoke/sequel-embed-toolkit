@@ -22,4 +22,16 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Inline small dependencies to avoid unnecessary HTTP requests
+          if (id.includes('clsx')) {
+            return 'index';
+          }
+        },
+      },
+    },
+  },
 });

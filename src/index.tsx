@@ -8,16 +8,17 @@ import { getUserEmailFromJoinCode } from "@src/api/registration/getUserJoinInfor
 import Cookies from "js-cookie";
 import type { EventAgenda } from "@src/api/event/event";
 import { isSameDay } from "date-fns";
+import { trpcSequelApi } from "@src/api/apiConfig";
 
 // React and components - HEAVY, lazy-load on demand only
 let domModule: typeof import("@src/utils/dom") | null = null;
 let reactModule: typeof import("react") | null = null;
-let reactComponentsModule: {
-  MarketoRegistrationSuccess: any;
-  EmbedIframe: any;
-  CountdownIframe: any;
-  ZoomInfoAgendaContainer: any;
-} | null = null;
+// Individual component caches
+let marketoRegistrationSuccessModule: any = null;
+let zoomInfoAgendaContainerModule: any = null;
+let widgetContainerModule: any = null;
+let embedIframeModule: any = null;
+let countdownIframeModule: any = null;
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -49,6 +50,7 @@ interface RenderEventParams {
   hybrid?: boolean;
   agenda?: EventAgenda;
   isPopup?: boolean;
+  enableWidgets?: boolean;
 }
 
 // Lazy loading helpers - only for React/DOM (the heavy stuff)
@@ -66,28 +68,43 @@ const loadReactModule = async () => {
   return reactModule;
 };
 
-const loadReactComponents = async () => {
-  if (!reactComponentsModule) {
-    const [
-      { MarketoRegistrationSuccess },
-      { EmbedIframe },
-      { CountdownIframe },
-      { ZoomInfoAgendaContainer },
-    ] = await Promise.all([
-      import("@src/routes/MarketoRegistrationSuccess"),
-      import("@src/routes/EmbedIframe"),
-      import("@src/routes/CountdownIframe"),
-      import("./routes/agenda/ZoomInfoAgendaContainer"),
-    ]);
-
-    reactComponentsModule = {
-      MarketoRegistrationSuccess,
-      EmbedIframe,
-      CountdownIframe,
-      ZoomInfoAgendaContainer,
-    };
+const loadMarketoRegistrationSuccess = async () => {
+  if (!marketoRegistrationSuccessModule) {
+    marketoRegistrationSuccessModule = await import(
+      "@src/routes/MarketoRegistrationSuccess"
+    );
   }
-  return reactComponentsModule;
+  return marketoRegistrationSuccessModule.MarketoRegistrationSuccess;
+};
+
+const loadZoomInfoAgendaContainer = async () => {
+  if (!zoomInfoAgendaContainerModule) {
+    zoomInfoAgendaContainerModule = await import(
+      "./routes/agenda/ZoomInfoAgendaContainer"
+    );
+  }
+  return zoomInfoAgendaContainerModule.ZoomInfoAgendaContainer;
+};
+
+const loadWidgetContainer = async () => {
+  if (!widgetContainerModule) {
+    widgetContainerModule = await import("./widgets/WidgetContainer");
+  }
+  return widgetContainerModule.WidgetContainer;
+};
+
+const loadEmbedIframe = async () => {
+  if (!embedIframeModule) {
+    embedIframeModule = await import("@src/routes/EmbedIframe");
+  }
+  return embedIframeModule.EmbedIframe;
+};
+
+const loadCountdownIframe = async () => {
+  if (!countdownIframeModule) {
+    countdownIframeModule = await import("@src/routes/CountdownIframe");
+  }
+  return countdownIframeModule.CountdownIframe;
 };
 
 // Helper function to remove the element and its parent if the parent is empty
@@ -964,8 +981,10 @@ class Sequel {
     const joinCode = urlParams.get("joinCode") || "";
 
     // Lazy load React components
-    const { renderApp } = await loadDomModule();
-    const { MarketoRegistrationSuccess } = await loadReactComponents();
+    const [MarketoRegistrationSuccess, { renderApp }] = await Promise.all([
+      loadMarketoRegistrationSuccess(),
+      loadDomModule(),
+    ]);
 
     renderApp(
       <MarketoRegistrationSuccess
@@ -1103,7 +1122,7 @@ class Sequel {
     }
 
     if (!joinCode && renderCountdown) {
-      const { CountdownIframe } = await loadReactComponents();
+      const CountdownIframe = await loadCountdownIframe();
       CountdownIframe({
         eventId: sequelEventId,
       });
@@ -1113,7 +1132,7 @@ class Sequel {
       // Lazy load React/DOM for form handling
       const { onDocumentReady, renderAppInsideDocument } =
         await loadDomModule();
-      const { MarketoRegistrationSuccess } = await loadReactComponents();
+      const MarketoRegistrationSuccess = await loadMarketoRegistrationSuccess();
 
       onDocumentReady(() => {
         // Set up generic event listener for HubSpot form submissions (always use this)
@@ -1291,7 +1310,7 @@ class Sequel {
       // Lazy load React/DOM for form handling
       const { onDocumentReady, renderAppInsideDocument } =
         await loadDomModule();
-      const { MarketoRegistrationSuccess } = await loadReactComponents();
+      const MarketoRegistrationSuccess = await loadMarketoRegistrationSuccess();
 
       onDocumentReady(() => {
         // Check for pending Marketo registrations after page refresh
@@ -1425,31 +1444,108 @@ class Sequel {
     hybrid,
     isPopup,
     agenda,
+    enableWidgets = false,
   }: RenderEventParams & { isPopup?: boolean }) => {
-    // Lazy load React/DOM for rendering
-    const { renderApp } = await loadDomModule();
-    const { EmbedIframe, ZoomInfoAgendaContainer } =
-      await loadReactComponents();
+    // If widgets are not enabled, use the legacy rendering method
+    if (!enableWidgets) {
+      const [EmbedIframe, ZoomInfoAgendaContainer, { renderApp }] =
+        await Promise.all([
+          loadEmbedIframe(),
+          loadZoomInfoAgendaContainer(),
+          loadDomModule(),
+        ]);
 
-    renderApp(
-      <div className="flex flex-col gap-20">
-        <EmbedIframe
-          eventId={eventId}
+      renderApp(
+        <div className="flex flex-col gap-20">
+          <EmbedIframe
+            eventId={eventId}
+            joinCode={joinCode}
+            hybrid={hybrid}
+            isPopup={isPopup}
+          />
+          {agenda && <ZoomInfoAgendaContainer agenda={agenda} />}
+        </div>
+      );
+      return;
+    }
+
+    // New widgets-based rendering
+    try {
+      // Load WidgetContainer component and fetch widgets data in parallel
+      const [WidgetContainer, widgets, { renderApp }] = await Promise.all([
+        loadWidgetContainer(),
+        trpcSequelApi.widgets.getWidgets.query({ eventId }),
+        loadDomModule(),
+      ]);
+
+      console.log("Loaded widgets from API:", widgets);
+
+      // Create a shadow root container
+      const sequelRoot = document.getElementById("sequel_root");
+      if (!sequelRoot) {
+        console.error(
+          'Element with id "sequel_root" not found. Please add a div with this id to your HTML.'
+        );
+        return;
+      }
+
+      // Create shadow root
+      let shadowRoot: ShadowRoot;
+      if (sequelRoot.shadowRoot) {
+        shadowRoot = sequelRoot.shadowRoot;
+      } else {
+        shadowRoot = sequelRoot.attachShadow({ mode: "open" });
+      }
+
+      // Create a container div inside the shadow root
+      const shadowContainer = document.createElement("div");
+      shadowContainer.id = "sequel-shadow-container";
+      shadowRoot.appendChild(shadowContainer);
+
+      // Render the WidgetContainer with all widgets
+      renderApp(
+        <WidgetContainer
+          widgets={widgets}
           joinCode={joinCode}
           hybrid={hybrid}
           isPopup={isPopup}
-        />
-        {agenda && <ZoomInfoAgendaContainer agenda={agenda} />}
-      </div>
-    );
+        />,
+        shadowContainer
+      );
+    } catch (error) {
+      console.error("Error loading widgets:", error);
+
+      // Fallback to old rendering method if widgets API fails
+      console.log("Falling back to legacy rendering method");
+      const [EmbedIframe, ZoomInfoAgendaContainer, { renderApp }] =
+        await Promise.all([
+          loadEmbedIframe(),
+          loadZoomInfoAgendaContainer(),
+          loadDomModule(),
+        ]);
+
+      renderApp(
+        <div className="flex flex-col gap-20">
+          <EmbedIframe
+            eventId={eventId}
+            joinCode={joinCode}
+            hybrid={hybrid}
+            isPopup={isPopup}
+          />
+          {agenda && <ZoomInfoAgendaContainer agenda={agenda} />}
+        </div>
+      );
+    }
   };
 
   static embedSequelRegistration = async ({
     sequelEventId,
     isPopup = false,
+    enableWidgets = false,
   }: {
     sequelEventId: string;
     isPopup?: boolean;
+    enableWidgets?: boolean;
   }) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
     const event = await getEvent(sequelEventId);
@@ -1532,6 +1628,7 @@ class Sequel {
       hybrid: true,
       isPopup: isPopup,
       agenda: event.agenda,
+      enableWidgets,
     });
   };
 
@@ -1591,8 +1688,10 @@ class Sequel {
     }
 
     // Lazy load React/DOM for rendering
-    const { renderApp } = await loadDomModule();
-    const { ZoomInfoAgendaContainer } = await loadReactComponents();
+    const [ZoomInfoAgendaContainer, { renderApp }] = await Promise.all([
+      loadZoomInfoAgendaContainer(),
+      loadDomModule(),
+    ]);
 
     renderApp(<ZoomInfoAgendaContainer agenda={event.agenda} />);
   };
@@ -1763,8 +1862,11 @@ class Sequel {
         );
 
         // Lazy load React/DOM for rendering
-        const { renderAppInsideDocument } = await loadDomModule();
-        const { MarketoRegistrationSuccess } = await loadReactComponents();
+        const [MarketoRegistrationSuccess, { renderAppInsideDocument }] =
+          await Promise.all([
+            loadMarketoRegistrationSuccess(),
+            loadDomModule(),
+          ]);
 
         renderAppInsideDocument(
           <MarketoRegistrationSuccess

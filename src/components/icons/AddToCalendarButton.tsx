@@ -7,7 +7,6 @@ import { memo } from "react";
 
 interface AddToCalendarButtonProps extends ButtonProps {
   event: Event;
-
   joinCode: string | undefined;
 }
 

@@ -1,4 +1,6 @@
 import axios from "axios";
+import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
+import type { AppRouter as SequelAppRouter } from "@introvoke/sequel-trpc";
 
 interface AppSyncConfigType {
   aws_appsync_graphqlEndpoint: string;
@@ -41,6 +43,14 @@ const DemoAppEndpoints: Endpoints = {
   TEST: "https://test-app.sequel.io",
 };
 
+/** These are the new endpoints hosted in the new Sequel API repo using tRPC */
+const SequelApiEndpoints: Endpoints = {
+  PRODUCTION: "https://sequel-api.sequelvideo.com",
+  STAGING: "https://stg-sequel-api.sequelvideo.com",
+  DEV: "https://dev-sequel-api.sequelvideo.com",
+  TEST: "https://test-sequel-api.sequelvideo.com",
+};
+
 const AppSyncConfig: Endpoints<AppSyncConfigType> = {
   PRODUCTION: {
     aws_appsync_graphqlEndpoint: "https://graphql.sequelvideo.com/graphql",
@@ -78,31 +88,38 @@ const getCurrentEndpoint = <T>(endpoints: Endpoints<T>) => {
 };
 
 const GetAnalyticsUrl = (): string => {
-  if (import.meta.env.REACT_APP_ANALYTICS_ENDPOINT) {
-    return import.meta.env.REACT_APP_ANALYTICS_ENDPOINT;
+  if (import.meta.env.VITE_ANALYTICS_ENDPOINT) {
+    return import.meta.env.VITE_ANALYTICS_ENDPOINT;
   }
   return getCurrentEndpoint(AnalyticsEndpoints);
 };
 
 const GetApiUrl = (): string => {
-  if (import.meta.env.REACT_APP_API_ENDPOINT) {
-    return import.meta.env.REACT_APP_API_ENDPOINT;
+  if (import.meta.env.VITE_API_ENDPOINT) {
+    return import.meta.env.VITE_API_ENDPOINT;
   }
   return getCurrentEndpoint(ApiEndpoints);
 };
 
 const GetDemoSiteUrl = () => {
-  if (import.meta.env.REACT_APP_DEMO_ENDPOINT) {
-    return import.meta.env.REACT_APP_DEMO_ENDPOINT;
+  if (import.meta.env.VITE_DEMO_ENDPOINT) {
+    return import.meta.env.VITE_DEMO_ENDPOINT;
   }
   return getCurrentEndpoint(DemoAppEndpoints);
 };
 
 const GetEmbedUrl = () => {
-  if (import.meta.env.REACT_APP_EMBED_ENDPOINT) {
-    return import.meta.env.REACT_APP_EMBED_ENDPOINT;
+  if (import.meta.env.VITE_EMBED_ENDPOINT) {
+    return import.meta.env.VITE_EMBED_ENDPOINT;
   }
   return getCurrentEndpoint(EmbedEndpoints);
+};
+
+const GetSequelApiUrl = () => {
+  if (import.meta.env.VITE_SEQUEL_API_ENDPOINT) {
+    return import.meta.env.VITE_SEQUEL_API_ENDPOINT;
+  }
+  return getCurrentEndpoint(SequelApiEndpoints);
 };
 
 /**
@@ -152,14 +169,13 @@ const isAnalyticsApiAvailable = () =>
  */
 const GetAppSyncConfig = (): AppSyncConfigType => {
   if (
-    import.meta.env.REACT_APP_AWS_APPSYNC_GRAPHQL &&
-    import.meta.env.REACT_APP_AWS_APPSYNC_REGION
+    import.meta.env.VITE_AWS_APPSYNC_GRAPHQL &&
+    import.meta.env.VITE_AWS_APPSYNC_REGION
   ) {
     return {
       // NOTE: This config comes from the aws-exports.js file
-      aws_appsync_graphqlEndpoint: import.meta.env
-        .REACT_APP_AWS_APPSYNC_GRAPHQL,
-      aws_appsync_region: import.meta.env.REACT_APP_AWS_APPSYNC_REGION,
+      aws_appsync_graphqlEndpoint: import.meta.env.VITE_AWS_APPSYNC_GRAPHQL,
+      aws_appsync_region: import.meta.env.VITE_AWS_APPSYNC_REGION,
       aws_appsync_authenticationType: "AWS_LAMBDA",
     };
   }
@@ -167,11 +183,23 @@ const GetAppSyncConfig = (): AppSyncConfigType => {
   return getCurrentEndpoint(AppSyncConfig);
 };
 
+/**
+ * tRPC client for the new Sequel API
+ */
+export const trpcSequelApi = createTRPCProxyClient<SequelAppRouter>({
+  links: [
+    httpBatchLink({
+      url: `${GetSequelApiUrl()}/sequel-api`,
+    }),
+  ],
+});
+
 export const ApiConfig = {
   GetApiUrl,
   GetAnalyticsUrl,
   GetDemoSiteUrl,
   GetEmbedUrl,
+  GetSequelApiUrl,
   GetAppSyncConfig,
   isAnalyticsApiAvailable,
   isApiAvailable,
@@ -182,5 +210,6 @@ export const __testable__ = {
   ApiEndpoints,
   AnalyticsEndpoints,
   DemoAppEndpoints,
+  SequelApiEndpoints,
   getCurrentEndpoint,
 };

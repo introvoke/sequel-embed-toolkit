@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "@introvoke/react": "^2.1.6",
+    "@introvoke/sequel-trpc": "^0.0.30",
     "@react-hookz/web": "^25.1.1",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tanstack/react-query": "^5.74.4",
+    "@trpc/client": "^10.45.2",
     "add-to-calendar-button": "^2.4.3",
     "axios": "^1.6.2",
     "chroma-js": "^2.4.2",
