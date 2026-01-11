@@ -42,3 +42,4 @@ export { default as ClockStopwatch } from "@introvoke/react/icons/ClockStopwatch
 export { default as Signal01 } from "@introvoke/react/icons/Signal01";
 export { default as XClose } from "@introvoke/react/icons/XClose";
 export { default as LoaderIcon } from "@introvoke/react/icons/LoaderIcon";
+export { default as ArrowNarrowUpRight } from "@introvoke/react/icons/ArrowNarrowUpRight";

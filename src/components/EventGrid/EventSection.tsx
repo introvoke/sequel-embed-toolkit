@@ -58,3 +58,9 @@ export const EventSection: React.FC<EventSectionProps> = ({
     </div>
   );
 };
+
+
+
+
+
+

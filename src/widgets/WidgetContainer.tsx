@@ -3,22 +3,19 @@ import { EventEmbedWidget } from "./EventEmbedWidget";
 import { DescriptionWidget } from "./DescriptionWidget";
 import { EventAgendaWidget } from "./EventAgendaWidget";
 import { EventsGridWidget } from "./EventsGridWidget";
+import { SpeakerWidget } from "./SpeakerWidget";
+import { AgendaWidget } from "./AgendaWidget";
+import { CountdownWidget } from "./CountdownWidget";
+import type { AppRouter } from "@introvoke/sequel-trpc";
 
-// Widget types
-type WidgetEmbed = {
-  type: "eventEmbed";
-  config: {
-    id: string;
-  };
-};
+// Infer widget types from tRPC API
+type GetWidgetsOutput =
+  AppRouter["widgets"]["getWidgets"]["_def"]["_output_out"];
 
-type WidgetDescription = {
-  type: "description";
-  config: {
-    description?: string;
-  };
-};
+// Extract the widgets array element type from the API
+type ApiWidget = GetWidgetsOutput["widgets"][number];
 
+// Local-only widgets not in API
 type WidgetEventAgenda = {
   type: "eventAgenda";
   config: {
@@ -30,33 +27,31 @@ type WidgetEventAgenda = {
   };
 };
 
-type WidgetEventsGrid = {
-  type: "eventsGrid";
+type LocalEventEmbed = {
+  type: "eventEmbed";
+  data?: { eventId: string };
+  config?: { id: string };
+};
+
+type LocalDescription = {
+  type: "description";
   config: {
-    events: {
-      name: string;
-      id: string;
-      startDate: string | Date;
-      endDate: string | Date;
-      description?: string;
-      picture?: string;
-      thumbnail?: string;
-    }[];
+    description?: string;
   };
 };
 
+// Combine API widgets with local-only widgets
 type Widget =
-  | WidgetEmbed
-  | WidgetDescription
+  | ApiWidget
   | WidgetEventAgenda
-  | WidgetEventsGrid;
+  | LocalEventEmbed
+  | LocalDescription;
 
 interface WidgetContainerProps {
   widgets: Widget[];
   joinCode: string;
   hybrid?: boolean;
   isPopup?: boolean;
-  darkMode?: boolean;
 }
 
 export const WidgetContainer: React.FC<WidgetContainerProps> = ({
@@ -64,15 +59,23 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
   joinCode,
   hybrid,
   isPopup,
-  darkMode = false,
 }) => {
   return (
-    <div className="flex flex-col gap-6 p-4">
+    <div className="flex flex-col gap-6 p-4 max-w-[1280px]">
       {widgets.map((widget, index) => (
-        <div key={index} className="widget-container">
+        <div key={index} className="w-full">
           {widget.type === "eventEmbed" && (
             <EventEmbedWidget
-              config={widget.config}
+              widget={
+                "data" in widget && widget.data?.eventId
+                  ? widget
+                  : ({
+                      type: "eventEmbed",
+                      data: {
+                        eventId: (widget as LocalEventEmbed).config?.id || "",
+                      },
+                    } as any)
+              }
               joinCode={joinCode}
               hybrid={hybrid}
               isPopup={isPopup}
@@ -87,9 +90,13 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
             <EventAgendaWidget config={widget.config} />
           )}
 
-          {widget.type === "eventsGrid" && (
-            <EventsGridWidget config={widget.config} darkMode={darkMode} />
-          )}
+          {widget.type === "eventGrid" && <EventsGridWidget widget={widget} />}
+
+          {widget.type === "speaker" && <SpeakerWidget widget={widget} />}
+
+          {widget.type === "agenda" && <AgendaWidget widget={widget} />}
+
+          {widget.type === "countdown" && <CountdownWidget widget={widget} />}
         </div>
       ))}
     </div>

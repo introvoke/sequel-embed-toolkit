@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 import path from "path";
+import { resolve } from "path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,11 +25,15 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        test: resolve(__dirname, "test.html"),
+      },
       output: {
         manualChunks: (id) => {
           // Inline small dependencies to avoid unnecessary HTTP requests
-          if (id.includes('clsx')) {
-            return 'index';
+          if (id.includes("clsx")) {
+            return "index";
           }
         },
       },

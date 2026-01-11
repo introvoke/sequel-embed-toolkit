@@ -18,14 +18,12 @@ interface EventCardProps {
   event: EventData;
   isUpcoming: boolean;
   showDescription: boolean;
-  darkMode?: boolean;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({
   event,
   isUpcoming,
   showDescription,
-  darkMode = false,
 }) => {
   const isLive = isUpcoming && event.isLive;
 
@@ -52,7 +50,7 @@ export const EventCard: React.FC<EventCardProps> = ({
 
   return (
     <div
-      className={`w-96 rounded-lg border inline-flex flex-col justify-start items-start overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
+      className={`w-full rounded-lg border flex flex-col justify-start items-start overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
         isLive
           ? "bg-bg-neutral-weak/5 border-border-primary dark:bg-transparent dark:border-border-primary"
           : "bg-white dark:bg-transparent border-gray-200 dark:border-white/20"
@@ -69,8 +67,8 @@ export const EventCard: React.FC<EventCardProps> = ({
       </div>
       <div className="self-stretch p-4 flex flex-col justify-start items-start gap-4">
         <div className="self-stretch flex flex-col justify-start items-start gap-1">
-          <div className="self-stretch text-black dark:text-white text-lg font-bold font-['Inter'] leading-7 line-clamp-2 h-14 flex items-start">
-            <span>{event.name}</span>
+          <div className="self-stretch text-black dark:text-white text-lg font-bold font-['Inter'] leading-7 line-clamp-3">
+            {event.name}
           </div>
           {showDescription && event.description && (
             <div

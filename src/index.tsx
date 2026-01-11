@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import type { EventAgenda } from "@src/api/event/event";
 import { isSameDay } from "date-fns";
 import { trpcSequelApi } from "@src/api/apiConfig";
+import type { AppRouter } from "@introvoke/sequel-trpc";
 
 // React and components - HEAVY, lazy-load on demand only
 let domModule: typeof import("@src/utils/dom") | null = null;
@@ -52,6 +53,9 @@ interface RenderEventParams {
   isPopup?: boolean;
   enableWidgets?: boolean;
 }
+
+type PreviewLayout =
+  AppRouter["widgets"]["previewWidgets"]["_def"]["_input_in"]["layout"];
 
 // Lazy loading helpers - only for React/DOM (the heavy stuff)
 const loadDomModule = async () => {
@@ -1472,13 +1476,14 @@ class Sequel {
     // New widgets-based rendering
     try {
       // Load WidgetContainer component and fetch widgets data in parallel
-      const [WidgetContainer, widgets, { renderApp }] = await Promise.all([
-        loadWidgetContainer(),
-        trpcSequelApi.widgets.getWidgets.query({ eventId }),
-        loadDomModule(),
-      ]);
+      const [WidgetContainer, widgetsResponse, { renderApp }] =
+        await Promise.all([
+          loadWidgetContainer(),
+          trpcSequelApi.widgets.getWidgets.query({ eventId }),
+          loadDomModule(),
+        ]);
 
-      console.log("Loaded widgets from API:", widgets);
+      const { widgets = [] } = widgetsResponse;
 
       // Create a shadow root container
       const sequelRoot = document.getElementById("sequel_root");
@@ -1630,6 +1635,45 @@ class Sequel {
       agenda: event.agenda,
       enableWidgets,
     });
+  };
+
+  static renderPreviewWidgets = async ({
+    layout,
+    joinCode = "",
+  }: {
+    layout: PreviewLayout;
+    joinCode?: string;
+  }) => {
+    try {
+      const [WidgetContainer, { renderApp }] = await Promise.all([
+        loadWidgetContainer(),
+        loadDomModule(),
+      ]);
+
+      const { widgets } = await trpcSequelApi.widgets.previewWidgets.query({
+        layout,
+      });
+
+      if (!widgets || widgets.length === 0) {
+        console.warn("No widgets returned from previewWidgets.");
+        return;
+      }
+
+      const target = document.getElementById("sequel_root");
+      if (!target) {
+        console.error(
+          'Element with id "sequel_root" not found. Please add a div with this id to your HTML.'
+        );
+        return;
+      }
+
+      renderApp(
+        <WidgetContainer widgets={widgets} joinCode={joinCode} />,
+        target
+      );
+    } catch (error) {
+      console.error("Failed to render preview widgets:", error);
+    }
   };
 
   static getHubspotFormId = async ({

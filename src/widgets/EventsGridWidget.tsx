@@ -1,31 +1,35 @@
 import React from "react";
 import { EventCard, type EventData } from "@src/components/EventGrid";
+import type { AppRouter } from "@introvoke/sequel-trpc";
+
+// Infer types from tRPC API
+type GetWidgetsOutput =
+  AppRouter["widgets"]["getWidgets"]["_def"]["_output_out"];
+type ApiWidget = GetWidgetsOutput["widgets"][number];
+type EventGridWidget = Extract<ApiWidget, { type: "eventGrid" }>;
 
 interface EventsGridWidgetProps {
-  config: {
-    events: {
-      name: string;
-      id: string;
-      startDate: string | Date;
-      endDate: string | Date;
-      description?: string;
-      picture?: string;
-      thumbnail?: string;
-    }[];
-  };
-  darkMode?: boolean;
+  widget: EventGridWidget;
 }
 
 export const EventsGridWidget: React.FC<EventsGridWidgetProps> = ({
-  config,
-  darkMode = false,
+  widget,
 }) => {
+  const events = widget.data?.events ?? [];
+  const cardsToDisplay = widget.config?.cardsToDisplay;
+
+  const limitedEvents =
+    typeof cardsToDisplay === "number"
+      ? events.slice(0, cardsToDisplay)
+      : events;
+
   // Convert widget events to EventData format
-  const events: EventData[] = config.events.map((event) => ({
+  const normalizedEvents: EventData[] = limitedEvents.map((event) => ({
     uid: event.id,
     name: event.name,
     description: event.description || "",
     picture: event.picture || event.thumbnail || "",
+    // Dates come as strings from JSON serialization, handle both cases
     startDate:
       typeof event.startDate === "string"
         ? event.startDate
@@ -45,29 +49,25 @@ export const EventsGridWidget: React.FC<EventsGridWidgetProps> = ({
   const now = new Date();
   const currentDate = now.getTime();
 
-  return (
-    <div className={`events-grid-widget ${darkMode ? "dark" : ""}`}>
-      <div className="mb-5">
-        <h2 className="text-black dark:text-white text-2xl font-bold font-['Inter']">
-          Related Events
-        </h2>
-      </div>
-      <div className="w-full max-w-[1280px] inline-flex justify-start items-start gap-4 flex-wrap content-start overflow-hidden">
-        {events.map((event) => {
-          const eventEndDate = new Date(event.endDate).getTime();
-          const isUpcoming = eventEndDate > currentDate;
+  if (normalizedEvents.length === 0) {
+    return null;
+  }
 
-          return (
-            <EventCard
-              key={event.uid}
-              event={event}
-              isUpcoming={isUpcoming}
-              showDescription={true}
-              darkMode={darkMode}
-            />
-          );
-        })}
-      </div>
+  return (
+    <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {normalizedEvents.map((event) => {
+        const eventEndDate = new Date(event.endDate).getTime();
+        const isUpcoming = eventEndDate > currentDate;
+
+        return (
+          <EventCard
+            key={event.uid}
+            event={event}
+            isUpcoming={isUpcoming}
+            showDescription={true}
+          />
+        );
+      })}
     </div>
   );
 };
