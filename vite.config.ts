@@ -24,18 +24,18 @@ export default defineConfig({
     },
   },
   build: {
+    lib: {
+      entry: resolve(__dirname, "src/index.tsx"),
+      name: "Sequel",
+      formats: ["iife"],
+      fileName: () => "sequel.js",
+    },
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, "index.html"),
-        test: resolve(__dirname, "test.html"),
-      },
       output: {
-        manualChunks: (id) => {
-          // Inline small dependencies to avoid unnecessary HTTP requests
-          if (id.includes("clsx")) {
-            return "index";
-          }
-        },
+        // Ensure everything is in one file
+        inlineDynamicImports: true,
+        // Single CSS file
+        assetFileNames: "sequel[extname]",
       },
     },
   },

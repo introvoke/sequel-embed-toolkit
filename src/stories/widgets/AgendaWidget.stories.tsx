@@ -85,12 +85,12 @@ const widget = {
   config: {
     displaySpeakerPhoto: true,
     displayLiveCountdowns: true,
-    textColor: "#111827",
-    secondaryColor: "#fcd34d", // Yellow/amber card background
-    buttonColor: "#18181b", // Dark button
+    timelineTitleColor: "#111827",
+    sessionCardBackgroundColor: "#fcd34d", // Yellow/amber card background
+    buttonBackgroundColor: "#18181b", // Dark button
     buttonTextColor: "#ffffff",
-    cardTextColor: "#111827",
-    subtitleColor: "#6b7280",
+    sessionCardTextColor: "#111827",
+    timelineSubtitleColor: "#6b7280",
   },
 };
 
@@ -117,13 +117,13 @@ export const Themed: Story = {
       ...widget,
       config: {
         ...widget.config,
-        textColor: "#0f172a",
-        primaryColor: "#8b5cf6",
-        secondaryColor: "#ede9fe", // Light purple card background
-        buttonColor: "#8b5cf6",
+        timelineTitleColor: "#0f172a",
+        timelineDotColor: "#8b5cf6",
+        sessionCardBackgroundColor: "#ede9fe", // Light purple card background
+        buttonBackgroundColor: "#8b5cf6",
         buttonTextColor: "#ffffff",
-        cardTextColor: "#1e1b4b",
-        subtitleColor: "#6b7280",
+        sessionCardTextColor: "#1e1b4b",
+        timelineSubtitleColor: "#6b7280",
       },
     },
   },

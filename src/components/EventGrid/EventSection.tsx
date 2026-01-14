@@ -9,7 +9,6 @@ interface EventSectionProps {
   isUpcoming: boolean;
   showDescription: boolean;
   loading: boolean;
-  darkMode?: boolean;
 }
 
 export const EventSection: React.FC<EventSectionProps> = ({
@@ -20,7 +19,6 @@ export const EventSection: React.FC<EventSectionProps> = ({
   isUpcoming,
   showDescription,
   loading,
-  darkMode = false,
 }) => {
   if (events.length === 0) return null;
 
@@ -36,7 +34,6 @@ export const EventSection: React.FC<EventSectionProps> = ({
             event={event}
             isUpcoming={isUpcoming}
             showDescription={showDescription}
-            darkMode={darkMode}
           />
         ))}
       </div>

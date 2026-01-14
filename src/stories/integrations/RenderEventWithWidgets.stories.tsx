@@ -14,8 +14,8 @@ const layoutEmbedCountdownDescriptionAgenda: PreviewLayout = {
     {
       type: "countdown",
       config: {
-        textColor: "#111827",
-        unitColor: "#6b7280",
+        valueTextColor: "#111827",
+        unitTextColor: "#6b7280",
         cardBackgroundColor: "#f3f4f6",
         cardBorderColor: "#e5e7eb",
       },
@@ -23,10 +23,10 @@ const layoutEmbedCountdownDescriptionAgenda: PreviewLayout = {
     {
       type: "agenda",
       config: {
-        textColor: "#111827",
-        primaryColor: "#ef4444",
-        secondaryColor: "#e5e7eb",
-        buttonColor: "#ef4444",
+        sessionCardTextColor: "#111827",
+        timelineDotColor: "#ef4444",
+        buttonBackgroundColor: "#ef4444",
+        buttonTextColor: "#ffffff",
       },
     },
     { type: "speaker" as const, config: { showSpeakerPhoto: true } },
@@ -41,8 +41,8 @@ const layoutEmbedDescriptionCountdownSpeakers: PreviewLayout = {
     {
       type: "countdown",
       config: {
-        textColor: "#111827",
-        unitColor: "#6b7280",
+        valueTextColor: "#111827",
+        unitTextColor: "#6b7280",
         cardBackgroundColor: "#f3f4f6",
         cardBorderColor: "#e5e7eb",
       },

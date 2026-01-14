@@ -160,7 +160,6 @@ export const EventGrid: React.FC<EventGridProps> = ({
           isUpcoming={true}
           showDescription={showDescription}
           loading={loading}
-          darkMode={darkMode}
         />
         <EventSection
           title="Past Events"
@@ -170,7 +169,6 @@ export const EventGrid: React.FC<EventGridProps> = ({
           isUpcoming={false}
           showDescription={showDescription}
           loading={loading}
-          darkMode={darkMode}
         />
       </div>
     </div>

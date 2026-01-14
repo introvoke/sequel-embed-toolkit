@@ -185,7 +185,6 @@ export const RelatedEvents: React.FC<RelatedEventsProps> = ({
               event={event}
               isUpcoming={isUpcoming}
               showDescription={showDescription}
-              darkMode={darkMode}
             />
           );
         })}

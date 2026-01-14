@@ -8,8 +8,8 @@ const baseWidget = {
     eventEndDate: new Date(Date.now() + 100 * 24 * 60 * 60 * 1000),
   },
   config: {
-    textColor: "#111827",
-    unitColor: "#6b7280",
+    valueTextColor: "#111827",
+    unitTextColor: "#6b7280",
     cardBackgroundColor: "#f3f4f6",
     cardBorderColor: "#e5e7eb",
   },
@@ -37,8 +37,8 @@ export const DarkMode: Story = {
     widget: {
       ...baseWidget,
       config: {
-        textColor: "#f8fafc",
-        unitColor: "#cbd5e1",
+        valueTextColor: "#f8fafc",
+        unitTextColor: "#cbd5e1",
         cardBackgroundColor: "#0f172a",
         cardBorderColor: "rgba(255,255,255,0.08)",
       },
@@ -51,8 +51,8 @@ export const CustomColors: Story = {
     widget: {
       ...baseWidget,
       config: {
-        textColor: "#111827",
-        unitColor: "#6b7280",
+        valueTextColor: "#111827",
+        unitTextColor: "#6b7280",
         cardBackgroundColor: "#f3f4f6",
         cardBorderColor: "#e5e7eb",
       },

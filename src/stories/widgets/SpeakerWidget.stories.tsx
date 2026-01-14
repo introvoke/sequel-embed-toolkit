@@ -115,8 +115,9 @@ export const CustomColors: Story = {
     widget: {
       ...widgetBase,
       config: {
-        textColor: "#0f172a",
-        linkColor: "#2563eb",
+        speakerNameColor: "#0f172a",
+        speakerTitleColor: "#64748b",
+        linkedInLinkColor: "#2563eb",
         cardBackgroundColor: "#ff00ff",
         cardBorderColor: "#e2e8f0",
       },

@@ -43,3 +43,24 @@ export { default as Signal01 } from "@introvoke/react/icons/Signal01";
 export { default as XClose } from "@introvoke/react/icons/XClose";
 export { default as LoaderIcon } from "@introvoke/react/icons/LoaderIcon";
 export { default as ArrowNarrowUpRight } from "@introvoke/react/icons/ArrowNarrowUpRight";
+
+// ===== WIDGETS =====
+export { Speaker } from "@introvoke/react/components/widgets/Speaker";
+export type {
+  SpeakerProps,
+  SpeakerData,
+} from "@introvoke/react/components/widgets/Speaker";
+
+export { Countdown } from "@introvoke/react/components/widgets/Countdown";
+export type { CountdownProps } from "@introvoke/react/components/widgets/Countdown";
+
+export {
+  Agenda,
+  AgendaSection,
+  EventWithSpeakersAgendaItem,
+} from "@introvoke/react/components/widgets/Agenda";
+export type {
+  AgendaProps,
+  SessionData,
+  AgendaSpeakerData,
+} from "@introvoke/react/components/widgets/Agenda";

@@ -1,4 +1,4 @@
-// Core dependencies - lightweight, fine to load upfront
+// Core dependencies
 import { setSequelJoinCodeCookie } from "@src/utils/cookie";
 import { getValidatedJoinCode } from "@src/utils/user";
 import registrationApi from "@src/api/registration";
@@ -11,15 +11,21 @@ import { isSameDay } from "date-fns";
 import { trpcSequelApi } from "@src/api/apiConfig";
 import type { AppRouter } from "@introvoke/sequel-trpc";
 
-// React and components - HEAVY, lazy-load on demand only
-let domModule: typeof import("@src/utils/dom") | null = null;
-let reactModule: typeof import("react") | null = null;
-// Individual component caches
-let marketoRegistrationSuccessModule: any = null;
-let zoomInfoAgendaContainerModule: any = null;
-let widgetContainerModule: any = null;
-let embedIframeModule: any = null;
-let countdownIframeModule: any = null;
+// React and DOM utilities - imported directly (no lazy loading)
+import { useState, useEffect } from "react";
+import {
+  renderApp,
+  renderAppInsideDocument,
+  onDocumentReady,
+  forceLinksToNewTab,
+} from "@src/utils/dom";
+
+// Components - imported directly (no lazy loading)
+import { MarketoRegistrationSuccess } from "@src/routes/MarketoRegistrationSuccess";
+import { ZoomInfoAgendaContainer } from "@src/routes/agenda/ZoomInfoAgendaContainer";
+import { WidgetContainer } from "@src/widgets/WidgetContainer";
+import { EmbedIframe } from "@src/routes/EmbedIframe";
+import { CountdownIframe } from "@src/routes/CountdownIframe";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -56,60 +62,6 @@ interface RenderEventParams {
 
 type PreviewLayout =
   AppRouter["widgets"]["previewWidgets"]["_def"]["_input_in"]["layout"];
-
-// Lazy loading helpers - only for React/DOM (the heavy stuff)
-const loadDomModule = async () => {
-  if (!domModule) {
-    domModule = await import("@src/utils/dom");
-  }
-  return domModule;
-};
-
-const loadReactModule = async () => {
-  if (!reactModule) {
-    reactModule = await import("react");
-  }
-  return reactModule;
-};
-
-const loadMarketoRegistrationSuccess = async () => {
-  if (!marketoRegistrationSuccessModule) {
-    marketoRegistrationSuccessModule = await import(
-      "@src/routes/MarketoRegistrationSuccess"
-    );
-  }
-  return marketoRegistrationSuccessModule.MarketoRegistrationSuccess;
-};
-
-const loadZoomInfoAgendaContainer = async () => {
-  if (!zoomInfoAgendaContainerModule) {
-    zoomInfoAgendaContainerModule = await import(
-      "./routes/agenda/ZoomInfoAgendaContainer"
-    );
-  }
-  return zoomInfoAgendaContainerModule.ZoomInfoAgendaContainer;
-};
-
-const loadWidgetContainer = async () => {
-  if (!widgetContainerModule) {
-    widgetContainerModule = await import("./widgets/WidgetContainer");
-  }
-  return widgetContainerModule.WidgetContainer;
-};
-
-const loadEmbedIframe = async () => {
-  if (!embedIframeModule) {
-    embedIframeModule = await import("@src/routes/EmbedIframe");
-  }
-  return embedIframeModule.EmbedIframe;
-};
-
-const loadCountdownIframe = async () => {
-  if (!countdownIframeModule) {
-    countdownIframeModule = await import("@src/routes/CountdownIframe");
-  }
-  return countdownIframeModule.CountdownIframe;
-};
 
 // Helper function to remove the element and its parent if the parent is empty
 const removeElementAndParentIfEmpty = (element: HTMLElement | null) => {
@@ -163,302 +115,293 @@ interface EventGridData {
   };
 }
 
-// Factory function to create EventGrid component with lazy-loaded React
-const createEventGrid = (React: typeof import("react")) => {
-  const { useState, useEffect } = React;
+// EventGrid component
+const EventGrid = ({
+  companyId,
+  darkMode = false,
+  excludeText = "",
+  showDescription = false,
+}: EventGridProps) => {
+  const [data, setData] = useState<EventGridData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [upcomingPage, setUpcomingPage] = useState(1);
+  const [pastPage, setPastPage] = useState(1);
 
-  return ({
-    companyId,
-    darkMode = false,
-    excludeText = "",
-    showDescription = false,
-  }: EventGridProps) => {
-    const [data, setData] = useState<EventGridData | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [upcomingPage, setUpcomingPage] = useState(1);
-    const [pastPage, setPastPage] = useState(1);
+  const fetchEvents = async (upcomingPageNum: number, pastPageNum: number) => {
+    const params = new URLSearchParams({
+      upcomingPage: upcomingPageNum.toString(),
+      pastPage: pastPageNum.toString(),
+      pageSize: "9",
+    });
 
-    const fetchEvents = async (
-      upcomingPageNum: number,
-      pastPageNum: number
-    ) => {
-      const params = new URLSearchParams({
-        upcomingPage: upcomingPageNum.toString(),
-        pastPage: pastPageNum.toString(),
-        pageSize: "9",
+    if (excludeText.trim()) {
+      params.append("exclude", excludeText.trim());
+    }
+
+    const response = await fetch(
+      `https://api.introvoke.com/api/v3/companies/${companyId}/gridEvents?${params}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch events: ${response.statusText}`);
+    }
+
+    return response.json();
+  };
+
+  const formatDate = (dateString: string, timezone?: string) => {
+    const date = new Date(dateString);
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    };
+
+    const formattedDate = date.toLocaleDateString("en-US", dateOptions);
+    const formattedTime = date.toLocaleTimeString("en-US", timeOptions);
+    const timezoneDisplay = timezone ? ` ${timezone}` : "";
+
+    return `${formattedDate} • ${formattedTime}${timezoneDisplay}`;
+  };
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setLoading(true);
+        const result = await fetchEvents(1, 1);
+        setData(result);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load events");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, [companyId, excludeText]);
+
+  const loadMoreUpcoming = async () => {
+    if (!data || loading) return;
+
+    try {
+      setLoading(true);
+      const nextPage = upcomingPage + 1;
+      const result = await fetchEvents(nextPage, pastPage);
+
+      setData({
+        ...data,
+        upcoming: {
+          ...result.upcoming,
+          events: [...data.upcoming.events, ...result.upcoming.events],
+        },
       });
-
-      if (excludeText.trim()) {
-        params.append("exclude", excludeText.trim());
-      }
-
-      const response = await fetch(
-        `https://api.introvoke.com/api/v3/companies/${companyId}/gridEvents?${params}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch events: ${response.statusText}`);
-      }
-
-      return response.json();
-    };
-
-    const formatDate = (dateString: string, timezone?: string) => {
-      const date = new Date(dateString);
-      const dateOptions: Intl.DateTimeFormatOptions = {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      };
-
-      const timeOptions: Intl.DateTimeFormatOptions = {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      };
-
-      const formattedDate = date.toLocaleDateString("en-US", dateOptions);
-      const formattedTime = date.toLocaleTimeString("en-US", timeOptions);
-      const timezoneDisplay = timezone ? ` ${timezone}` : "";
-
-      return `${formattedDate} • ${formattedTime}${timezoneDisplay}`;
-    };
-
-    useEffect(() => {
-      const loadEvents = async () => {
-        try {
-          setLoading(true);
-          const result = await fetchEvents(1, 1);
-          setData(result);
-          setError(null);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load events"
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      loadEvents();
-    }, [companyId, excludeText]);
-
-    const loadMoreUpcoming = async () => {
-      if (!data || loading) return;
-
-      try {
-        setLoading(true);
-        const nextPage = upcomingPage + 1;
-        const result = await fetchEvents(nextPage, pastPage);
-
-        setData({
-          ...data,
-          upcoming: {
-            ...result.upcoming,
-            events: [...data.upcoming.events, ...result.upcoming.events],
-          },
-        });
-        setUpcomingPage(nextPage);
-      } catch (err) {
-        console.error("Error loading more upcoming events:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const loadMorePast = async () => {
-      if (!data || loading) return;
-
-      try {
-        setLoading(true);
-        const nextPage = pastPage + 1;
-        const result = await fetchEvents(upcomingPage, nextPage);
-
-        setData({
-          ...data,
-          past: {
-            ...result.past,
-            events: [...data.past.events, ...result.past.events],
-          },
-        });
-        setPastPage(nextPage);
-      } catch (err) {
-        console.error("Error loading more past events:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (loading && !data) {
-      return (
-        <div
-          className={`flex justify-center items-center p-8 ${
-            darkMode ? "dark" : ""
-          }`}
-        >
-          <div className="text-black dark:text-white">Loading events...</div>
-        </div>
-      );
+      setUpcomingPage(nextPage);
+    } catch (err) {
+      console.error("Error loading more upcoming events:", err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (error) {
-      return (
-        <div
-          className={`flex justify-center items-center p-8 ${
-            darkMode ? "dark" : ""
-          }`}
-        >
-          <div className="text-black dark:text-white">
-            Failed to load events. Please try again later.
-          </div>
-        </div>
-      );
+  const loadMorePast = async () => {
+    if (!data || loading) return;
+
+    try {
+      setLoading(true);
+      const nextPage = pastPage + 1;
+      const result = await fetchEvents(upcomingPage, nextPage);
+
+      setData({
+        ...data,
+        past: {
+          ...result.past,
+          events: [...data.past.events, ...result.past.events],
+        },
+      });
+      setPastPage(nextPage);
+    } catch (err) {
+      console.error("Error loading more past events:", err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (!data) return null;
+  if (loading && !data) {
+    return (
+      <div
+        className={`flex justify-center items-center p-8 ${
+          darkMode ? "dark" : ""
+        }`}
+      >
+        <div className="text-black dark:text-white">Loading events...</div>
+      </div>
+    );
+  }
 
-    const EventCard = ({
-      event,
-      isUpcoming,
-      showDescription,
-    }: {
-      event: EventData;
-      isUpcoming: boolean;
-      showDescription: boolean;
-    }) => {
-      const isLive = isUpcoming && event.isLive;
-
-      return (
-        <div
-          className={`w-96 rounded-lg border inline-flex flex-col justify-start items-start overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
-            isLive
-              ? "bg-bg-neutral-weak/5 border-border-primary dark:bg-transparent dark:border-border-primary"
-              : "bg-white dark:bg-transparent border-gray-200 dark:border-white/20"
-          }`}
-          onClick={() => window.open(event.customUrl, "_blank")}
-        >
-          {/* 16:9 aspect ratio container */}
-          <div className="self-stretch aspect-video bg-gray-100 dark:bg-gray-700 overflow-hidden">
-            <img
-              className="w-full h-full object-cover"
-              src={event.picture || "https://placehold.co/416x234"}
-              alt={event.name}
-            />
-          </div>
-          <div className="self-stretch p-4 flex flex-col justify-start items-start gap-4">
-            <div className="self-stretch flex flex-col justify-start items-start gap-1">
-              <div className="self-stretch text-black dark:text-white text-lg font-bold font-['Inter'] leading-7 line-clamp-2 h-14 flex items-start">
-                <span>{event.name}</span>
-              </div>
-              {showDescription && event.description && (
-                <div
-                  className="self-stretch text-text-sub/60 dark:text-gray-500 text-sm font-normal font-['Inter'] leading-relaxed line-clamp-2"
-                  dangerouslySetInnerHTML={{ __html: event.description }}
-                />
-              )}
-              <div className="self-stretch text-text-sub/70 dark:text-gray-400 text-sm font-normal font-['Inter'] leading-tight">
-                {formatDate(event.startDate, event.timezone)}
-                {isLive && (
-                  <span className="text-green-600 dark:text-green-400 font-medium">
-                    {" "}
-                    • Live now
-                  </span>
-                )}
-                {event.isEventSeries && (
-                  <span className="text-blue-600 dark:text-blue-400">
-                    {" "}
-                    • Event Series
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="p-2 bg-black dark:bg-white rounded-lg inline-flex justify-center items-center gap-1 overflow-hidden">
-              <div className="px-1 flex justify-center items-center gap-2.5">
-                <div className="text-white dark:text-black text-sm font-medium font-['Inter'] leading-tight">
-                  {!isUpcoming ? "Watch now" : "View now"}
-                </div>
-              </div>
-            </div>
-          </div>
+  if (error) {
+    return (
+      <div
+        className={`flex justify-center items-center p-8 ${
+          darkMode ? "dark" : ""
+        }`}
+      >
+        <div className="text-black dark:text-white">
+          Failed to load events. Please try again later.
         </div>
-      );
-    };
+      </div>
+    );
+  }
 
-    const EventSection = ({
-      title,
-      events,
-      hasMore,
-      onLoadMore,
-      isUpcoming,
-      showDescription,
-    }: {
-      title: string;
-      events: EventData[];
-      hasMore: boolean;
-      onLoadMore: () => void;
-      isUpcoming: boolean;
-      showDescription: boolean;
-    }) => {
-      if (events.length === 0) return null;
+  if (!data) return null;
 
-      return (
-        <div className="mb-10">
-          <h2 className="text-black dark:text-white text-2xl font-bold font-['Inter'] mb-5">
-            {title}
-          </h2>
-          <div className="w-full max-w-[1280px] inline-flex justify-start items-start gap-4 flex-wrap content-start overflow-hidden">
-            {events.map((event) => (
-              <EventCard
-                key={event.uid}
-                event={event}
-                isUpcoming={isUpcoming}
-                showDescription={showDescription}
-              />
-            ))}
-          </div>
-          {hasMore && (
-            <div className="mt-5 flex justify-center">
-              <button
-                onClick={onLoadMore}
-                disabled={loading}
-                className="p-2.5 bg-transparent rounded-lg outline outline-1 outline-offset-[-1px] outline-gray-300 dark:outline-white/30 inline-flex justify-center items-center gap-1 overflow-hidden disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
-              >
-                <div className="px-1 flex justify-center items-center gap-2.5">
-                  <div className="text-black dark:text-white text-sm font-medium font-['Inter'] leading-tight">
-                    {loading ? "Loading..." : "Load more"}
-                  </div>
-                </div>
-              </button>
-            </div>
-          )}
-        </div>
-      );
-    };
+  const EventCard = ({
+    event,
+    isUpcoming,
+    showDescription,
+  }: {
+    event: EventData;
+    isUpcoming: boolean;
+    showDescription: boolean;
+  }) => {
+    const isLive = isUpcoming && event.isLive;
 
     return (
-      <div className={`font-['Inter'] min-h-full ${darkMode ? "dark" : ""}`}>
-        <div className="p-6">
-          <EventSection
-            title="Upcoming Events"
-            events={data.upcoming.events}
-            hasMore={data.upcoming.hasMore}
-            onLoadMore={loadMoreUpcoming}
-            isUpcoming={true}
-            showDescription={showDescription}
+      <div
+        className={`w-96 rounded-lg border inline-flex flex-col justify-start items-start overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
+          isLive
+            ? "bg-bg-neutral-weak/5 border-border-primary dark:bg-transparent dark:border-border-primary"
+            : "bg-white dark:bg-transparent border-gray-200 dark:border-white/20"
+        }`}
+        onClick={() => window.open(event.customUrl, "_blank")}
+      >
+        {/* 16:9 aspect ratio container */}
+        <div className="self-stretch aspect-video bg-gray-100 dark:bg-gray-700 overflow-hidden">
+          <img
+            className="w-full h-full object-cover"
+            src={event.picture || "https://placehold.co/416x234"}
+            alt={event.name}
           />
-          <EventSection
-            title="Past Events"
-            events={data.past.events}
-            hasMore={data.past.hasMore}
-            onLoadMore={loadMorePast}
-            isUpcoming={false}
-            showDescription={showDescription}
-          />
+        </div>
+        <div className="self-stretch p-4 flex flex-col justify-start items-start gap-4">
+          <div className="self-stretch flex flex-col justify-start items-start gap-1">
+            <div className="self-stretch text-black dark:text-white text-lg font-bold font-['Inter'] leading-7 line-clamp-2 h-14 flex items-start">
+              <span>{event.name}</span>
+            </div>
+            {showDescription && event.description && (
+              <div
+                className="self-stretch text-text-sub/60 dark:text-gray-500 text-sm font-normal font-['Inter'] leading-relaxed line-clamp-2"
+                dangerouslySetInnerHTML={{ __html: event.description }}
+              />
+            )}
+            <div className="self-stretch text-text-sub/70 dark:text-gray-400 text-sm font-normal font-['Inter'] leading-tight">
+              {formatDate(event.startDate, event.timezone)}
+              {isLive && (
+                <span className="text-green-600 dark:text-green-400 font-medium">
+                  {" "}
+                  • Live now
+                </span>
+              )}
+              {event.isEventSeries && (
+                <span className="text-blue-600 dark:text-blue-400">
+                  {" "}
+                  • Event Series
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="p-2 bg-black dark:bg-white rounded-lg inline-flex justify-center items-center gap-1 overflow-hidden">
+            <div className="px-1 flex justify-center items-center gap-2.5">
+              <div className="text-white dark:text-black text-sm font-medium font-['Inter'] leading-tight">
+                {!isUpcoming ? "Watch now" : "View now"}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   };
+
+  const EventSection = ({
+    title,
+    events,
+    hasMore,
+    onLoadMore,
+    isUpcoming,
+    showDescription,
+  }: {
+    title: string;
+    events: EventData[];
+    hasMore: boolean;
+    onLoadMore: () => void;
+    isUpcoming: boolean;
+    showDescription: boolean;
+  }) => {
+    if (events.length === 0) return null;
+
+    return (
+      <div className="mb-10">
+        <h2 className="text-black dark:text-white text-2xl font-bold font-['Inter'] mb-5">
+          {title}
+        </h2>
+        <div className="w-full max-w-[1280px] inline-flex justify-start items-start gap-4 flex-wrap content-start overflow-hidden">
+          {events.map((event) => (
+            <EventCard
+              key={event.uid}
+              event={event}
+              isUpcoming={isUpcoming}
+              showDescription={showDescription}
+            />
+          ))}
+        </div>
+        {hasMore && (
+          <div className="mt-5 flex justify-center">
+            <button
+              onClick={onLoadMore}
+              disabled={loading}
+              className="p-2.5 bg-transparent rounded-lg outline outline-1 outline-offset-[-1px] outline-gray-300 dark:outline-white/30 inline-flex justify-center items-center gap-1 overflow-hidden disabled:opacity-50 hover:bg-gray-50 dark:hover:bg-white/10 transition-colors"
+            >
+              <div className="px-1 flex justify-center items-center gap-2.5">
+                <div className="text-black dark:text-white text-sm font-medium font-['Inter'] leading-tight">
+                  {loading ? "Loading..." : "Load more"}
+                </div>
+              </div>
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className={`font-['Inter'] min-h-full ${darkMode ? "dark" : ""}`}>
+      <div className="p-6">
+        <EventSection
+          title="Upcoming Events"
+          events={data.upcoming.events}
+          hasMore={data.upcoming.hasMore}
+          onLoadMore={loadMoreUpcoming}
+          isUpcoming={true}
+          showDescription={showDescription}
+        />
+        <EventSection
+          title="Past Events"
+          events={data.past.events}
+          hasMore={data.past.hasMore}
+          onLoadMore={loadMorePast}
+          isUpcoming={false}
+          showDescription={showDescription}
+        />
+      </div>
+    </div>
+  );
 };
 
 // RelatedEvents component - Type definitions
@@ -470,267 +413,261 @@ interface RelatedEventsProps {
   maxEvents?: number;
 }
 
-// Factory function to create RelatedEvents component with lazy-loaded React
-const createRelatedEvents = (React: typeof import("react")) => {
-  const { useState, useEffect } = React;
+// RelatedEvents component
+const RelatedEvents = ({
+  companyId,
+  darkMode = false,
+  excludeText = "",
+  showDescription = false,
+  maxEvents = 6,
+}: RelatedEventsProps) => {
+  const [events, setEvents] = useState<EventData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  return ({
-    companyId,
-    darkMode = false,
-    excludeText = "",
-    showDescription = false,
-    maxEvents = 6,
-  }: RelatedEventsProps) => {
-    const [events, setEvents] = useState<EventData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+  const fetchRelatedEvents = async () => {
+    // Fetch enough events to filter out current event and still have maxEvents
+    const params = new URLSearchParams({
+      upcomingPage: "1",
+      pastPage: "1",
+      pageSize: (maxEvents + 5).toString(), // Fetch extra to account for filtering
+    });
 
-    const fetchRelatedEvents = async () => {
-      // Fetch enough events to filter out current event and still have maxEvents
-      const params = new URLSearchParams({
-        upcomingPage: "1",
-        pastPage: "1",
-        pageSize: (maxEvents + 5).toString(), // Fetch extra to account for filtering
-      });
+    if (excludeText.trim()) {
+      params.append("exclude", excludeText.trim());
+    }
 
-      if (excludeText.trim()) {
-        params.append("exclude", excludeText.trim());
-      }
+    const response = await fetch(
+      `https://api.introvoke.com/api/v3/companies/${companyId}/gridEvents?${params}`
+    );
 
-      const response = await fetch(
-        `https://api.introvoke.com/api/v3/companies/${companyId}/gridEvents?${params}`
-      );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch events: ${response.statusText}`);
+    }
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch events: ${response.statusText}`);
-      }
+    return response.json();
+  };
 
-      return response.json();
-    };
+  const getCurrentPageUrl = () => {
+    return window.location.href;
+  };
 
-    const getCurrentPageUrl = () => {
-      return window.location.href;
-    };
+  const filterCurrentEvent = (allEvents: EventData[]) => {
+    const currentUrl = getCurrentPageUrl();
 
-    const filterCurrentEvent = (allEvents: EventData[]) => {
-      const currentUrl = getCurrentPageUrl();
+    return allEvents.filter((event) => {
+      if (!event.customUrl) return true;
 
-      return allEvents.filter((event) => {
-        if (!event.customUrl) return true;
+      // Check if the current URL matches or contains the event's custom URL
+      // This handles cases where the event URL might be a path within the current domain
+      try {
+        const eventUrl = new URL(event.customUrl);
+        const currentUrlObj = new URL(currentUrl);
 
-        // Check if the current URL matches or contains the event's custom URL
-        // This handles cases where the event URL might be a path within the current domain
-        try {
-          const eventUrl = new URL(event.customUrl);
-          const currentUrlObj = new URL(currentUrl);
-
-          // Compare full URLs
-          if (eventUrl.href === currentUrlObj.href) {
-            return false;
-          }
-
-          // Compare paths if they're on the same domain
-          if (
-            eventUrl.hostname === currentUrlObj.hostname &&
-            eventUrl.pathname === currentUrlObj.pathname
-          ) {
-            return false;
-          }
-
-          return true;
-        } catch (e) {
-          // If URL parsing fails, do a simple string comparison
-          return !currentUrl.includes(event.customUrl);
+        // Compare full URLs
+        if (eventUrl.href === currentUrlObj.href) {
+          return false;
         }
-      });
-    };
 
-    const selectBestEvents = (
-      upcomingEvents: EventData[],
-      pastEvents: EventData[]
-    ) => {
-      // Filter out current event from both arrays
-      const filteredUpcoming = filterCurrentEvent(upcomingEvents);
-      const filteredPast = filterCurrentEvent(pastEvents);
-
-      let selectedEvents: EventData[] = [];
-
-      // First, add upcoming events
-      selectedEvents = [...filteredUpcoming];
-
-      // If we need more events, add past events
-      if (selectedEvents.length < maxEvents) {
-        const remainingSlots = maxEvents - selectedEvents.length;
-        selectedEvents = [
-          ...selectedEvents,
-          ...filteredPast.slice(0, remainingSlots),
-        ];
-      }
-
-      // Trim to exact count if we have too many
-      return selectedEvents.slice(0, maxEvents);
-    };
-
-    useEffect(() => {
-      const loadEvents = async () => {
-        try {
-          setLoading(true);
-          const data = await fetchRelatedEvents();
-
-          const selectedEvents = selectBestEvents(
-            data.upcoming.events || [],
-            data.past.events || []
-          );
-
-          setEvents(selectedEvents);
-          setError(null);
-        } catch (err) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load events"
-          );
-        } finally {
-          setLoading(false);
+        // Compare paths if they're on the same domain
+        if (
+          eventUrl.hostname === currentUrlObj.hostname &&
+          eventUrl.pathname === currentUrlObj.pathname
+        ) {
+          return false;
         }
-      };
 
-      loadEvents();
-    }, [companyId, excludeText, maxEvents]);
+        return true;
+      } catch (e) {
+        // If URL parsing fails, do a simple string comparison
+        return !currentUrl.includes(event.customUrl);
+      }
+    });
+  };
 
-    if (loading) {
-      return (
-        <div
-          className={`flex justify-center items-center p-8 ${
-            darkMode ? "dark" : ""
-          }`}
-        >
-          <div className="text-black dark:text-white">
-            Loading related events...
-          </div>
-        </div>
-      );
+  const selectBestEvents = (
+    upcomingEvents: EventData[],
+    pastEvents: EventData[]
+  ) => {
+    // Filter out current event from both arrays
+    const filteredUpcoming = filterCurrentEvent(upcomingEvents);
+    const filteredPast = filterCurrentEvent(pastEvents);
+
+    let selectedEvents: EventData[] = [];
+
+    // First, add upcoming events
+    selectedEvents = [...filteredUpcoming];
+
+    // If we need more events, add past events
+    if (selectedEvents.length < maxEvents) {
+      const remainingSlots = maxEvents - selectedEvents.length;
+      selectedEvents = [
+        ...selectedEvents,
+        ...filteredPast.slice(0, remainingSlots),
+      ];
     }
 
-    if (error) {
-      return (
-        <div
-          className={`flex justify-center items-center p-8 ${
-            darkMode ? "dark" : ""
-          }`}
-        >
-          <div className="text-black dark:text-white">
-            Failed to load related events.
-          </div>
-        </div>
-      );
-    }
+    // Trim to exact count if we have too many
+    return selectedEvents.slice(0, maxEvents);
+  };
 
-    if (events.length === 0) {
-      return (
-        <div
-          className={`flex justify-center items-center p-8 ${
-            darkMode ? "dark" : ""
-          }`}
-        >
-          <div className="text-black dark:text-white">
-            No related events available.
-          </div>
-        </div>
-      );
-    }
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchRelatedEvents();
 
-    const EventCard = ({ event }: { event: EventData }) => {
-      const currentDate = new Date();
-      const eventEndDate = new Date(event.endDate);
-      const isUpcoming = eventEndDate > currentDate;
-      const isLive = isUpcoming && event.isLive;
+        const selectedEvents = selectBestEvents(
+          data.upcoming.events || [],
+          data.past.events || []
+        );
 
-      return (
-        <div
-          className={`w-full rounded-lg border inline-flex flex-col justify-start items-start overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
-            isLive
-              ? "bg-bg-neutral-weak/5 border-border-primary dark:bg-transparent dark:border-border-primary"
-              : "bg-white dark:bg-transparent border-gray-200 dark:border-white/20"
-          }`}
-          onClick={() => window.open(event.customUrl, "_blank")}
-        >
-          {/* 16:9 aspect ratio container */}
-          <div className="self-stretch aspect-video bg-gray-100 dark:bg-gray-700 overflow-hidden">
-            <img
-              className="w-full h-full object-cover"
-              src={event.picture || "https://placehold.co/416x234"}
-              alt={event.name}
-            />
-          </div>
-          <div className="self-stretch p-4 flex flex-col justify-start items-start gap-3">
-            <div className="self-stretch flex flex-col justify-start items-start gap-1">
-              <div className="self-stretch text-black dark:text-white text-base font-bold font-['Inter'] leading-6 line-clamp-2">
-                {event.name}
-              </div>
-              {showDescription && event.description && (
-                <div
-                  className="self-stretch text-text-sub/60 dark:text-gray-500 text-sm font-normal font-['Inter'] leading-relaxed line-clamp-2"
-                  dangerouslySetInnerHTML={{ __html: event.description }}
-                />
-              )}
-              <div className="self-stretch text-text-sub/70 dark:text-gray-400 text-sm font-normal font-['Inter'] leading-tight">
-                {formatDate(event.startDate, event.timezone)}
-                {isLive && (
-                  <span className="text-green-600 dark:text-green-400 font-medium">
-                    {" "}
-                    • Live now
-                  </span>
-                )}
-                {event.isEventSeries && (
-                  <span className="text-blue-600 dark:text-blue-400">
-                    {" "}
-                    • Event Series
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="p-2 bg-black dark:bg-white rounded-lg inline-flex justify-center items-center gap-1 overflow-hidden">
-              <div className="px-1 flex justify-center items-center gap-2.5">
-                <div className="text-white dark:text-black text-sm font-medium font-['Inter'] leading-tight">
-                  {!isUpcoming ? "Watch now" : "View now"}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
+        setEvents(selectedEvents);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load events");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    const formatDate = (dateString: string, timezone?: string) => {
-      const date = new Date(dateString);
-      const dateOptions: Intl.DateTimeFormatOptions = {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      };
+    loadEvents();
+  }, [companyId, excludeText, maxEvents]);
 
-      const timeOptions: Intl.DateTimeFormatOptions = {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      };
+  if (loading) {
+    return (
+      <div
+        className={`flex justify-center items-center p-8 ${
+          darkMode ? "dark" : ""
+        }`}
+      >
+        <div className="text-black dark:text-white">
+          Loading related events...
+        </div>
+      </div>
+    );
+  }
 
-      const formattedDate = date.toLocaleDateString("en-US", dateOptions);
-      const formattedTime = date.toLocaleTimeString("en-US", timeOptions);
-      const timezoneDisplay = timezone ? ` ${timezone}` : "";
+  if (error) {
+    return (
+      <div
+        className={`flex justify-center items-center p-8 ${
+          darkMode ? "dark" : ""
+        }`}
+      >
+        <div className="text-black dark:text-white">
+          Failed to load related events.
+        </div>
+      </div>
+    );
+  }
 
-      return `${formattedDate} • ${formattedTime}${timezoneDisplay}`;
-    };
+  if (events.length === 0) {
+    return (
+      <div
+        className={`flex justify-center items-center p-8 ${
+          darkMode ? "dark" : ""
+        }`}
+      >
+        <div className="text-black dark:text-white">
+          No related events available.
+        </div>
+      </div>
+    );
+  }
+
+  const EventCard = ({ event }: { event: EventData }) => {
+    const currentDate = new Date();
+    const eventEndDate = new Date(event.endDate);
+    const isUpcoming = eventEndDate > currentDate;
+    const isLive = isUpcoming && event.isLive;
 
     return (
-      <div className={`font-['Inter'] ${darkMode ? "dark" : ""}`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {events.map((event) => (
-            <EventCard key={event.uid} event={event} />
-          ))}
+      <div
+        className={`w-full rounded-lg border inline-flex flex-col justify-start items-start overflow-hidden cursor-pointer transition-all hover:shadow-lg ${
+          isLive
+            ? "bg-bg-neutral-weak/5 border-border-primary dark:bg-transparent dark:border-border-primary"
+            : "bg-white dark:bg-transparent border-gray-200 dark:border-white/20"
+        }`}
+        onClick={() => window.open(event.customUrl, "_blank")}
+      >
+        {/* 16:9 aspect ratio container */}
+        <div className="self-stretch aspect-video bg-gray-100 dark:bg-gray-700 overflow-hidden">
+          <img
+            className="w-full h-full object-cover"
+            src={event.picture || "https://placehold.co/416x234"}
+            alt={event.name}
+          />
+        </div>
+        <div className="self-stretch p-4 flex flex-col justify-start items-start gap-3">
+          <div className="self-stretch flex flex-col justify-start items-start gap-1">
+            <div className="self-stretch text-black dark:text-white text-base font-bold font-['Inter'] leading-6 line-clamp-2">
+              {event.name}
+            </div>
+            {showDescription && event.description && (
+              <div
+                className="self-stretch text-text-sub/60 dark:text-gray-500 text-sm font-normal font-['Inter'] leading-relaxed line-clamp-2"
+                dangerouslySetInnerHTML={{ __html: event.description }}
+              />
+            )}
+            <div className="self-stretch text-text-sub/70 dark:text-gray-400 text-sm font-normal font-['Inter'] leading-tight">
+              {formatDate(event.startDate, event.timezone)}
+              {isLive && (
+                <span className="text-green-600 dark:text-green-400 font-medium">
+                  {" "}
+                  • Live now
+                </span>
+              )}
+              {event.isEventSeries && (
+                <span className="text-blue-600 dark:text-blue-400">
+                  {" "}
+                  • Event Series
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="p-2 bg-black dark:bg-white rounded-lg inline-flex justify-center items-center gap-1 overflow-hidden">
+            <div className="px-1 flex justify-center items-center gap-2.5">
+              <div className="text-white dark:text-black text-sm font-medium font-['Inter'] leading-tight">
+                {!isUpcoming ? "Watch now" : "View now"}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
   };
+
+  const formatDate = (dateString: string, timezone?: string) => {
+    const date = new Date(dateString);
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    };
+
+    const formattedDate = date.toLocaleDateString("en-US", dateOptions);
+    const formattedTime = date.toLocaleTimeString("en-US", timeOptions);
+    const timezoneDisplay = timezone ? ` ${timezone}` : "";
+
+    return `${formattedDate} • ${formattedTime}${timezoneDisplay}`;
+  };
+
+  return (
+    <div className={`font-['Inter'] ${darkMode ? "dark" : ""}`}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {events.map((event) => (
+          <EventCard key={event.uid} event={event} />
+        ))}
+      </div>
+    </div>
+  );
 };
 
 class Sequel {
@@ -785,7 +722,6 @@ class Sequel {
     }
     Sequel.companyId = companyId;
 
-    const { onDocumentReady } = await loadDomModule();
     onDocumentReady(() => {
       // Check if consent was previously given
       const consentCookie = Cookies.get("sequel-consent");
@@ -806,7 +742,6 @@ class Sequel {
       return;
     }
 
-    const { onDocumentReady } = await loadDomModule();
     onDocumentReady(() => {
       Sequel.hasConsent = true;
       Sequel.userId = Sequel.getOrCreateUserId();
@@ -984,12 +919,6 @@ class Sequel {
 
     const joinCode = urlParams.get("joinCode") || "";
 
-    // Lazy load React components
-    const [MarketoRegistrationSuccess, { renderApp }] = await Promise.all([
-      loadMarketoRegistrationSuccess(),
-      loadDomModule(),
-    ]);
-
     renderApp(
       <MarketoRegistrationSuccess
         event={event}
@@ -1126,18 +1055,12 @@ class Sequel {
     }
 
     if (!joinCode && renderCountdown) {
-      const CountdownIframe = await loadCountdownIframe();
       CountdownIframe({
         eventId: sequelEventId,
       });
     }
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
-      // Lazy load React/DOM for form handling
-      const { onDocumentReady, renderAppInsideDocument } =
-        await loadDomModule();
-      const MarketoRegistrationSuccess = await loadMarketoRegistrationSuccess();
-
       onDocumentReady(() => {
         // Set up generic event listener for HubSpot form submissions (always use this)
         const handleFormSubmission = async (eventSubmission: MessageEvent) => {
@@ -1311,11 +1234,6 @@ class Sequel {
     }
 
     if (!joinCode && event.registration?.outsideOfAppEnabled) {
-      // Lazy load React/DOM for form handling
-      const { onDocumentReady, renderAppInsideDocument } =
-        await loadDomModule();
-      const MarketoRegistrationSuccess = await loadMarketoRegistrationSuccess();
-
       onDocumentReady(() => {
         // Check for pending Marketo registrations after page refresh
         Sequel.checkPendingMarketoRegistration();
@@ -1452,13 +1370,6 @@ class Sequel {
   }: RenderEventParams & { isPopup?: boolean }) => {
     // If widgets are not enabled, use the legacy rendering method
     if (!enableWidgets) {
-      const [EmbedIframe, ZoomInfoAgendaContainer, { renderApp }] =
-        await Promise.all([
-          loadEmbedIframe(),
-          loadZoomInfoAgendaContainer(),
-          loadDomModule(),
-        ]);
-
       renderApp(
         <div className="flex flex-col gap-20">
           <EmbedIframe
@@ -1475,15 +1386,9 @@ class Sequel {
 
     // New widgets-based rendering
     try {
-      // Load WidgetContainer component and fetch widgets data in parallel
-      const [WidgetContainer, widgetsResponse, { renderApp }] =
-        await Promise.all([
-          loadWidgetContainer(),
-          trpcSequelApi.widgets.getWidgets.query({ eventId }),
-          loadDomModule(),
-        ]);
-
-      const { widgets = [] } = widgetsResponse;
+      const { widgets = [] } = await trpcSequelApi.widgets.getWidgets.query({
+        eventId,
+      });
 
       // Create a shadow root container
       const sequelRoot = document.getElementById("sequel_root");
@@ -1508,9 +1413,11 @@ class Sequel {
       shadowRoot.appendChild(shadowContainer);
 
       // Render the WidgetContainer with all widgets
+      // Note: tRPC serializes Date objects as strings over the wire, but the
+      // component handles this internally so we cast to any[] here
       renderApp(
         <WidgetContainer
-          widgets={widgets}
+          widgets={widgets as any[]}
           joinCode={joinCode}
           hybrid={hybrid}
           isPopup={isPopup}
@@ -1522,13 +1429,6 @@ class Sequel {
 
       // Fallback to old rendering method if widgets API fails
       console.log("Falling back to legacy rendering method");
-      const [EmbedIframe, ZoomInfoAgendaContainer, { renderApp }] =
-        await Promise.all([
-          loadEmbedIframe(),
-          loadZoomInfoAgendaContainer(),
-          loadDomModule(),
-        ]);
-
       renderApp(
         <div className="flex flex-col gap-20">
           <EmbedIframe
@@ -1583,7 +1483,6 @@ class Sequel {
       }
 
       if (joinCode && isDayOfEvent) {
-        const { forceLinksToNewTab } = await loadDomModule();
         forceLinksToNewTab();
         window.addEventListener("DOMContentLoaded", forceLinksToNewTab);
       }
@@ -1645,11 +1544,6 @@ class Sequel {
     joinCode?: string;
   }) => {
     try {
-      const [WidgetContainer, { renderApp }] = await Promise.all([
-        loadWidgetContainer(),
-        loadDomModule(),
-      ]);
-
       const { widgets } = await trpcSequelApi.widgets.previewWidgets.query({
         layout,
       });
@@ -1667,10 +1561,8 @@ class Sequel {
         return;
       }
 
-      renderApp(
-        <WidgetContainer widgets={widgets} joinCode={joinCode} />,
-        target
-      );
+      // Note: tRPC serializes Date objects as strings over the wire
+      renderApp(<WidgetContainer widgets={widgets as any[]} joinCode={joinCode} />, target);
     } catch (error) {
       console.error("Failed to render preview widgets:", error);
     }
@@ -1730,12 +1622,6 @@ class Sequel {
       );
       return;
     }
-
-    // Lazy load React/DOM for rendering
-    const [ZoomInfoAgendaContainer, { renderApp }] = await Promise.all([
-      loadZoomInfoAgendaContainer(),
-      loadDomModule(),
-    ]);
 
     renderApp(<ZoomInfoAgendaContainer agenda={event.agenda} />);
   };
@@ -1905,13 +1791,6 @@ class Sequel {
           `mktoForm_${event.registration?.marketoFormId}`
         );
 
-        // Lazy load React/DOM for rendering
-        const [MarketoRegistrationSuccess, { renderAppInsideDocument }] =
-          await Promise.all([
-            loadMarketoRegistrationSuccess(),
-            loadDomModule(),
-          ]);
-
         renderAppInsideDocument(
           <MarketoRegistrationSuccess
             event={event}
@@ -1939,11 +1818,6 @@ class Sequel {
 
   /**
    * Renders an event grid with upcoming and past events using React and Tailwind
-   * @param {Object} options - Configuration options
-   * @param {string} options.companyId - The company ID to fetch events for
-   * @param {boolean} [options.darkMode=false] - Whether to use dark mode styling
-   * @param {string} [options.excludeText=''] - Text to exclude events starting with (e.g., 'test')
-   * @param {boolean} [options.showDescription=false] - Whether to show event descriptions
    */
   static renderEventGrid = async ({
     companyId,
@@ -1970,11 +1844,6 @@ class Sequel {
       return;
     }
 
-    // Lazy load React and create EventGrid component
-    const React = await loadReactModule();
-    const { renderApp } = await loadDomModule();
-    const EventGrid = createEventGrid(React);
-
     renderApp(
       <EventGrid
         companyId={companyId}
@@ -1987,12 +1856,6 @@ class Sequel {
 
   /**
    * Renders related events widget for event pages
-   * @param {Object} options - Configuration options
-   * @param {string} options.companyId - The company ID to fetch events for
-   * @param {boolean} [options.darkMode=false] - Whether to use dark mode styling
-   * @param {string} [options.excludeText=''] - Text to exclude events starting with (e.g., 'test')
-   * @param {boolean} [options.showDescription=false] - Whether to show event descriptions
-   * @param {number} [options.maxEvents=6] - Maximum number of events to show
    */
   static renderRelatedEvents = async ({
     companyId,
@@ -2021,11 +1884,6 @@ class Sequel {
       return;
     }
 
-    // Lazy load React and create RelatedEvents component
-    const React = await loadReactModule();
-    const { renderApp } = await loadDomModule();
-    const RelatedEvents = createRelatedEvents(React);
-
     renderApp(
       <RelatedEvents
         companyId={companyId}
@@ -2039,9 +1897,6 @@ class Sequel {
 
   /**
    * Validates a joinCode against the Sequel API
-   * @param {string} eventId - The event ID
-   * @param {string} joinCode - The join code to validate
-   * @returns {Promise<boolean>} - Returns true if joinCode is valid, false otherwise
    */
   static validateJoinCode = async (
     eventId: string,
@@ -2074,11 +1929,6 @@ class Sequel {
 
   /**
    * Checks if user is already registered (via URL params or cookies) and renders Sequel event automatically
-   * @param {Object} options - Configuration options
-   * @param {string} options.sequelEventId - The Sequel event ID to check registration for
-   * @param {Function} [options.onAlreadyRegistered] - Callback when user is already registered
-   * @param {Function} [options.onNotRegistered] - Callback when user is not registered
-   * @returns {Promise<boolean>} - Returns true if user is already registered, false otherwise
    */
   static checkAndRenderIfRegistered = async ({
     sequelEventId,
@@ -2170,8 +2020,6 @@ class Sequel {
 
   /**
    * Gets the Sequel join code cookie for a specific event
-   * @param {string} eventId - The event ID to get the join code for
-   * @returns {string|null} - The join code if found, null otherwise
    */
   static getSequelJoinCodeCookie = (eventId: string): string | null => {
     const cookieName = `sequel_join_code_${eventId}`;
@@ -2189,9 +2037,6 @@ class Sequel {
 
   /**
    * Sets the Sequel join code cookie for a specific event
-   * @param {string} eventId - The event ID to set the join code for
-   * @param {string} joinCode - The join code to store
-   * @param {number} [days=30] - Number of days until cookie expires
    */
   static setSequelJoinCodeCookie = (
     eventId: string,
@@ -2209,7 +2054,6 @@ class Sequel {
 
   /**
    * Clears the Sequel join code cookie for a specific event
-   * @param {string} eventId - The event ID to clear the join code for
    */
   static clearSequelJoinCodeCookie = (eventId: string): void => {
     const cookieName = `sequel_join_code_${eventId}`;
@@ -2218,10 +2062,6 @@ class Sequel {
 
   /**
    * Registers a user for a Sequel event
-   * @param {string} eventId - The Sequel event ID
-   * @param {string} name - User's full name
-   * @param {string} email - User's email address
-   * @returns {Promise<{joinCode: string, authToken: string, joinUrl: string}>}
    */
   static registerUserForEvent = async (
     eventId: string,
@@ -2252,8 +2092,6 @@ class Sequel {
 
   /**
    * Listens for HubSpot form submissions and automatically registers users with Sequel
-   * @param {Object} options - Configuration options
-   * @param {string} options.sequelEventId - The Sequel event ID to register users for
    */
   static listenHubspotFormSubmissions = async ({
     sequelEventId,
@@ -2304,4 +2142,5 @@ class Sequel {
   };
 }
 
+// Make Sequel available on window immediately (synchronously)
 window.Sequel = Sequel;
