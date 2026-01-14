@@ -6,8 +6,6 @@ import { getEvent } from "@src/api/event/getEvent";
 import { trackIdentify, trackPageView } from "@src/api/website/website";
 import { getUserEmailFromJoinCode } from "@src/api/registration/getUserJoinInformation";
 import Cookies from "js-cookie";
-import type { EventAgenda } from "@src/api/event/event";
-import { isSameDay } from "date-fns";
 import { trpcSequelApi } from "@src/api/apiConfig";
 import type { AppRouter } from "@introvoke/sequel-trpc";
 
@@ -17,15 +15,13 @@ import {
   renderApp,
   renderAppInsideDocument,
   onDocumentReady,
-  forceLinksToNewTab,
 } from "@src/utils/dom";
 
 // Components - imported directly (no lazy loading)
 import { MarketoRegistrationSuccess } from "@src/routes/MarketoRegistrationSuccess";
-import { ZoomInfoAgendaContainer } from "@src/routes/agenda/ZoomInfoAgendaContainer";
 import { WidgetContainer } from "@src/widgets/WidgetContainer";
-import { EmbedIframe } from "@src/routes/EmbedIframe";
 import { CountdownIframe } from "@src/routes/CountdownIframe";
+import { EventRenderer } from "@src/components/EventRenderer";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -55,9 +51,7 @@ interface RenderEventParams {
   eventId: string;
   joinCode: string;
   hybrid?: boolean;
-  agenda?: EventAgenda;
   isPopup?: boolean;
-  enableWidgets?: boolean;
 }
 
 type PreviewLayout =
@@ -1360,133 +1354,34 @@ class Sequel {
     }
   };
 
-  static renderEvent = async ({
+  static renderEvent = ({
     eventId,
     joinCode,
     hybrid,
     isPopup,
-    agenda,
-    enableWidgets = false,
-  }: RenderEventParams & { isPopup?: boolean }) => {
-    // If widgets are not enabled, use the legacy rendering method
-    if (!enableWidgets) {
-      renderApp(
-        <div className="flex flex-col gap-20">
-          <EmbedIframe
-            eventId={eventId}
-            joinCode={joinCode}
-            hybrid={hybrid}
-            isPopup={isPopup}
-          />
-          {agenda && <ZoomInfoAgendaContainer agenda={agenda} />}
-        </div>
-      );
-      return;
-    }
-
-    // New widgets-based rendering
-    try {
-      const { widgets = [] } = await trpcSequelApi.widgets.getWidgets.query({
-        eventId,
-      });
-
-      // Create a shadow root container
-      const sequelRoot = document.getElementById("sequel_root");
-      if (!sequelRoot) {
-        console.error(
-          'Element with id "sequel_root" not found. Please add a div with this id to your HTML.'
-        );
-        return;
-      }
-
-      // Create shadow root
-      let shadowRoot: ShadowRoot;
-      if (sequelRoot.shadowRoot) {
-        shadowRoot = sequelRoot.shadowRoot;
-      } else {
-        shadowRoot = sequelRoot.attachShadow({ mode: "open" });
-      }
-
-      // Create a container div inside the shadow root
-      const shadowContainer = document.createElement("div");
-      shadowContainer.id = "sequel-shadow-container";
-      shadowRoot.appendChild(shadowContainer);
-
-      // Render the WidgetContainer with all widgets
-      // Note: tRPC serializes Date objects as strings over the wire, but the
-      // component handles this internally so we cast to any[] here
-      renderApp(
-        <WidgetContainer
-          widgets={widgets as any[]}
-          joinCode={joinCode}
-          hybrid={hybrid}
-          isPopup={isPopup}
-        />,
-        shadowContainer
-      );
-    } catch (error) {
-      console.error("Error loading widgets:", error);
-
-      // Fallback to old rendering method if widgets API fails
-      console.log("Falling back to legacy rendering method");
-      renderApp(
-        <div className="flex flex-col gap-20">
-          <EmbedIframe
-            eventId={eventId}
-            joinCode={joinCode}
-            hybrid={hybrid}
-            isPopup={isPopup}
-          />
-          {agenda && <ZoomInfoAgendaContainer agenda={agenda} />}
-        </div>
-      );
-    }
+  }: RenderEventParams) => {
+    // Render the EventRenderer component which:
+    // 1. Immediately renders the iframe (no blocking)
+    // 2. Asynchronously loads widgets via react-query
+    // 3. Only renders widgets if the API returns any
+    renderApp(
+      <EventRenderer
+        eventId={eventId}
+        joinCode={joinCode}
+        hybrid={hybrid}
+        isPopup={isPopup}
+      />
+    );
   };
 
   static embedSequelRegistration = async ({
     sequelEventId,
     isPopup = false,
-    enableWidgets = false,
   }: {
     sequelEventId: string;
     isPopup?: boolean;
-    enableWidgets?: boolean;
   }) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
-    const event = await getEvent(sequelEventId);
-
-    console.log(sequelEventId);
-
-    const searchParams = new URLSearchParams(window.location.search);
-    const testMode = searchParams.get("testMode");
-
-    if (!event) {
-      console.error(
-        "Sequel event not found. Please double check the event id."
-      );
-      return;
-    }
-
-    if (sequelEventId === "723b6d9d-238c-48e5-84f7-17bb2d97fe02") {
-      const isOnZoomInfoMainPage = window.location.href.startsWith(
-        "https://www.zoominfo.com/gtm25-virtual"
-      );
-
-      const isDayOfEvent = isSameDay(new Date(), new Date(event.startDate));
-
-      if (testMode || (isOnZoomInfoMainPage && joinCode && isDayOfEvent)) {
-        const targetUrl = new URL(
-          "https://www.zoominfo.com/live/gtm25-keynote"
-        );
-        targetUrl.search = window.location.search;
-        window.location.href = targetUrl.toString();
-      }
-
-      if (joinCode && isDayOfEvent) {
-        forceLinksToNewTab();
-        window.addEventListener("DOMContentLoaded", forceLinksToNewTab);
-      }
-    }
 
     const sequelRoot = document.getElementById(`sequel_root`);
     if (!sequelRoot) {
@@ -1531,41 +1426,7 @@ class Sequel {
       joinCode: joinCode || "",
       hybrid: true,
       isPopup: isPopup,
-      agenda: event.agenda,
-      enableWidgets,
     });
-  };
-
-  static renderPreviewWidgets = async ({
-    layout,
-    joinCode = "",
-  }: {
-    layout: PreviewLayout;
-    joinCode?: string;
-  }) => {
-    try {
-      const { widgets } = await trpcSequelApi.widgets.previewWidgets.query({
-        layout,
-      });
-
-      if (!widgets || widgets.length === 0) {
-        console.warn("No widgets returned from previewWidgets.");
-        return;
-      }
-
-      const target = document.getElementById("sequel_root");
-      if (!target) {
-        console.error(
-          'Element with id "sequel_root" not found. Please add a div with this id to your HTML.'
-        );
-        return;
-      }
-
-      // Note: tRPC serializes Date objects as strings over the wire
-      renderApp(<WidgetContainer widgets={widgets as any[]} joinCode={joinCode} />, target);
-    } catch (error) {
-      console.error("Failed to render preview widgets:", error);
-    }
   };
 
   static getHubspotFormId = async ({
@@ -1579,16 +1440,8 @@ class Sequel {
 
   static embedSequel = async ({ sequelEventId }: { sequelEventId: string }) => {
     const joinCode = await getValidatedJoinCode({ eventId: sequelEventId });
-    const event = await getEvent(sequelEventId);
 
-    if (!event) {
-      console.error(
-        "Sequel event not found. Please double check the event id."
-      );
-      return;
-    }
-
-    let sequelRoot = document.getElementById(`sequel_root`);
+    const sequelRoot = document.getElementById(`sequel_root`);
     if (!sequelRoot) {
       console.error(
         "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
@@ -1602,28 +1455,7 @@ class Sequel {
     Sequel.renderEvent({
       eventId: sequelEventId,
       joinCode: joinCode || "",
-      agenda: event.agenda,
     });
-  };
-
-  static renderEmbedAgenda = async ({ eventId }: { eventId: string }) => {
-    const event = await getEvent(eventId);
-
-    if (!event) {
-      console.error(
-        "Sequel event not found. Please double check the event id."
-      );
-      return;
-    }
-
-    if (!event.agenda) {
-      console.error(
-        "The Sequel event does not have an agenda. Please double check the event information in the Sequel dashboard."
-      );
-      return;
-    }
-
-    renderApp(<ZoomInfoAgendaContainer agenda={event.agenda} />);
   };
 
   static handleWebinarRegistration = (
