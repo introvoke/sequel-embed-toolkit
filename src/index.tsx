@@ -6,7 +6,6 @@ import { getEvent } from "@src/api/event/getEvent";
 import { trackIdentify, trackPageView } from "@src/api/website/website";
 import { getUserEmailFromJoinCode } from "@src/api/registration/getUserJoinInformation";
 import Cookies from "js-cookie";
-import type { AppRouter } from "@introvoke/sequel-trpc";
 
 // React and DOM utilities - imported directly (no lazy loading)
 import { useState, useEffect } from "react";
@@ -51,9 +50,6 @@ interface RenderEventParams {
   hybrid?: boolean;
   isPopup?: boolean;
 }
-
-type PreviewLayout =
-  AppRouter["widgets"]["previewWidgets"]["_def"]["_input_in"]["layout"];
 
 // Helper function to remove the element and its parent if the parent is empty
 const removeElementAndParentIfEmpty = (element: HTMLElement | null) => {
