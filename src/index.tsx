@@ -6,7 +6,6 @@ import { getEvent } from "@src/api/event/getEvent";
 import { trackIdentify, trackPageView } from "@src/api/website/website";
 import { getUserEmailFromJoinCode } from "@src/api/registration/getUserJoinInformation";
 import Cookies from "js-cookie";
-import { trpcSequelApi } from "@src/api/apiConfig";
 import type { AppRouter } from "@introvoke/sequel-trpc";
 
 // React and DOM utilities - imported directly (no lazy loading)
@@ -19,7 +18,6 @@ import {
 
 // Components - imported directly (no lazy loading)
 import { MarketoRegistrationSuccess } from "@src/routes/MarketoRegistrationSuccess";
-import { WidgetContainer } from "@src/widgets/WidgetContainer";
 import { CountdownIframe } from "@src/routes/CountdownIframe";
 import { EventRenderer } from "@src/components/EventRenderer";
 
