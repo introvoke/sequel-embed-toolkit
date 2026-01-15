@@ -174,6 +174,7 @@ const EventGrid = ({
     };
 
     loadEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, excludeText]);
 
   const loadMoreUpcoming = async () => {
@@ -520,6 +521,7 @@ const RelatedEvents = ({
     };
 
     loadEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, excludeText, maxEvents]);
 
   if (loading) {
@@ -1012,7 +1014,7 @@ class Sequel {
       return;
     }
 
-    let sequelRoot = document.getElementById(`sequel_root`);
+    const sequelRoot = document.getElementById(`sequel_root`);
     if (!sequelRoot) {
       console.error(
         "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
@@ -1022,7 +1024,7 @@ class Sequel {
 
     // If outsideOfAppEnabled is false or we have a joinCode, render Sequel directly
     if (!event.registration?.outsideOfAppEnabled || joinCode) {
-      let htmlForm = document.getElementById(`hubspotForm`);
+      const htmlForm = document.getElementById(`hubspotForm`);
       removeElementAndParentIfEmpty(htmlForm);
       return Sequel.renderEvent({
         eventId: sequelEventId,
@@ -1033,7 +1035,7 @@ class Sequel {
     // Rest of the existing HubSpot form logic for when outsideOfAppEnabled is true
     const hubspotFormId = event.registration?.hubspotFormId || "";
     const hubspotPortalId = event.registration?.hubspotPortalId || "";
-    let htmlForm = document.getElementById(`hubspotForm`);
+    const htmlForm = document.getElementById(`hubspotForm`);
 
     if (!htmlForm) {
       console.error(
@@ -1194,7 +1196,7 @@ class Sequel {
       return;
     }
 
-    let sequelRoot = document.getElementById(`sequel_root`);
+    const sequelRoot = document.getElementById(`sequel_root`);
     if (!sequelRoot) {
       console.error(
         "The Sequel root element was not found. Please add a div with id `sequelRoot` to your html."
@@ -1202,7 +1204,7 @@ class Sequel {
       return;
     }
 
-    let htmlForm = document.getElementById(`mktoForm`);
+    const htmlForm = document.getElementById(`mktoForm`);
     if (!htmlForm) {
       console.error(
         "The Marketo element was not found. Please add a div with id `mktoForm` to your html."
@@ -1851,7 +1853,7 @@ class Sequel {
     const cookieName = `sequel_join_code_${eventId}`;
     const cookies = document.cookie.split(";");
 
-    for (let cookie of cookies) {
+    for (const cookie of cookies) {
       const [name, value] = cookie.trim().split("=");
       if (name === cookieName) {
         return decodeURIComponent(value);

@@ -5,7 +5,7 @@ interface CountdownIframeProps {
 }
 
 export const CountdownIframe = ({ eventId }: CountdownIframeProps) => {
-    let countdownRoot = document.getElementById('sequel_countdown');
+    const countdownRoot = document.getElementById('sequel_countdown');
     if (!countdownRoot) {
       console.error(
         "The Sequel countdown element was not found. Please add a div with id `sequel_countdown` to your html."

@@ -23,6 +23,10 @@ export default defineConfig({
       },
     },
   },
+  define: {
+    "process.env.NODE_ENV": JSON.stringify("production"),
+    "process.nextTick": "queueMicrotask",
+  },
   build: {
     lib: {
       entry: resolve(__dirname, "src/index.tsx"),

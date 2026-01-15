@@ -127,6 +127,7 @@ export const RelatedEvents: React.FC<RelatedEventsProps> = ({
     };
 
     loadEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, excludeText, maxEvents]);
 
   if (loading) {

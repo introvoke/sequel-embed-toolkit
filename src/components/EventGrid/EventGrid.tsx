@@ -73,6 +73,7 @@ export const EventGrid: React.FC<EventGridProps> = ({
     };
 
     loadEvents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [companyId, excludeText]);
 
   const loadMoreUpcoming = async () => {
