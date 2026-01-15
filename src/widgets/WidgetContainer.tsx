@@ -35,17 +35,17 @@ type LocalEventEmbed = {
 
 type LocalDescription = {
   type: "description";
+  data: {
+    html: string;
+  };
   config: {
-    description?: string;
+    horizontalSpacing?: "none" | "small" | "medium" | "large";
+    fontColor?: string;
   };
 };
 
 // Combine API widgets with local-only widgets
-type Widget =
-  | ApiWidget
-  | WidgetEventAgenda
-  | LocalEventEmbed
-  | LocalDescription;
+type Widget = ApiWidget | WidgetEventAgenda | LocalEventEmbed | LocalDescription;
 
 interface WidgetContainerProps {
   widgets: Widget[];
@@ -83,7 +83,7 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
           )}
 
           {widget.type === "description" && (
-            <DescriptionWidget config={widget.config} />
+            <DescriptionWidget widget={widget as LocalDescription} />
           )}
 
           {widget.type === "eventAgenda" && (
