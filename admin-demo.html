@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - AI Personalization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f9fafb;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .sidebar-logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 20px;
+            margin-bottom: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .nav-item:hover {
+            background: #f9fafb;
+            color: #1f2937;
+        }
+
+        .nav-item.active {
+            background: #eff6ff;
+            color: #2563eb;
+            border-left-color: #2563eb;
+        }
+
+        .nav-item-icon {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .demo-link-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .demo-link-btn:hover {
+            background: #059669;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            background: #f9fafb;
+        }
+
+        .content-header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 24px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content-header-info h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 4px 0;
+        }
+
+        .content-header-info p {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .btn-danger {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .btn-danger:hover {
+            background: #fee2e2;
+        }
+
+        .content-body {
+            padding: 32px;
+        }
+
+        /* Widget Grid */
+        .widget-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .widget-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .widget-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+        }
+
+        .widget-card-icon {
+            height: 140px;
+            background: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            position: relative;
+        }
+
+        .widget-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .widget-badge.top { background: #3b82f6; }
+        .widget-badge.mid { background: #8b5cf6; }
+        .widget-badge.bottom { background: #10b981; }
+
+        .widget-card-content {
+            padding: 20px;
+        }
+
+        .widget-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .widget-card-meta {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .widget-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .widget-card-actions .btn {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #6b7280;
+            margin-bottom: 24px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        .modal-header {
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .funnel-selector {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .funnel-option {
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .funnel-option:hover {
+            border-color: #d1d5db;
+        }
+
+        .funnel-option.selected {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .funnel-option-icon {
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+
+        .funnel-option-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #1f2937;
+        }
+
+        .funnel-option-sublabel {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+            padding: 12px;
+        }
+
+        /* Layout Builder */
+        .layout-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .layout-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .layout-card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .layout-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .funnel-stages {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .funnel-stage {
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .funnel-stage.top { background: #eff6ff; border: 2px solid #3b82f6; }
+        .funnel-stage.mid { background: #f5f3ff; border: 2px solid #8b5cf6; }
+        .funnel-stage.bottom { background: #ecfdf5; border: 2px solid #10b981; }
+
+        .funnel-stage-header {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+
+        .funnel-stage-range {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .funnel-stage-count {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .widget-selector {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .widget-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .widget-checkbox-item:hover {
+            background: #f9fafb;
+        }
+
+        .widget-checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .widget-checkbox-label {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #1f2937;
+        }
+
+        .widget-checkbox-type {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script type="module">
+        import { h, render } from 'https://esm.sh/preact@10.19.3';
+        import { useState } from 'https://esm.sh/preact@10.19.3/hooks';
+        import htm from 'https://esm.sh/htm@3.1.1';
+
+        const html = htm.bind(h);
+
+        const WIDGET_ICONS = {
+            poll: '📊',
+            nps: '⭐',
+            survey: '📝',
+            newsletter: '📮',
+            page: '🔗',
+            video: '🎥',
+            doc: '📚',
+            webinar: '📹',
+            demo: '🎯'
+        };
+
+        // Mock data for existing content (in production, this comes from Sequel API)
+        const EXISTING_WEBINARS = [
+            { id: 'webinar_1', title: 'AI Personalization for Events: Best Practices', date: '2024-03-15', description: 'Learn how to personalize your events with AI-powered recommendations', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop' },
+            { id: 'webinar_2', title: 'Marketing Automation Trends 2024', date: '2024-03-20', description: 'Discover the latest trends in marketing automation and event engagement', thumbnail: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=400&h=300&fit=crop' },
+            { id: 'webinar_3', title: 'Enterprise Event ROI Strategies', date: '2024-03-25', description: 'Executive insights on measuring and maximizing event ROI', thumbnail: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=400&h=300&fit=crop' },
+        ];
+
+        const EXISTING_VIDEOS = [
+            { id: 'video_1', title: 'Product Tutorial: Getting Started', duration: '5:30', description: 'Quick 5-minute walkthrough of key features', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop' },
+            { id: 'video_2', title: 'Customer Success Story: TechCorp', duration: '3:45', description: 'See how TechCorp increased engagement by 300%', thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=300&fit=crop' },
+            { id: 'video_3', title: 'Feature Showcase: AI Personalization', duration: '4:15', description: 'Deep dive into our AI personalization capabilities', thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop' },
+        ];
+
+        const EXISTING_POLLS = [
+            { id: 'poll_1', title: "What's Your Biggest Marketing Challenge?", description: 'Help us understand your priorities', options: ['Lead generation', 'Content strategy', 'Event ROI', 'Attendee engagement'] },
+            { id: 'poll_2', title: 'Which feature interests you most?', description: 'Share your feedback to shape our roadmap', options: ['AI Personalization', 'Analytics', 'Integrations', 'Automation'] },
+            { id: 'poll_3', title: 'What type of events do you run?', description: 'Tell us about your event format', options: ['Webinars', 'Conferences', 'Workshops', 'Virtual events'] },
+        ];
+
+        // Widget Form Modal
+        function WidgetFormModal({ widget, onSave, onClose }) {
+            const [formData, setFormData] = useState(widget || {
+                id: 'widget_' + Date.now(),
+                type: 'poll',
+                title: '',
+                description: '',
+                url: '',
+                thumbnail: '',
+                funnelStage: 'top',
+                sourceId: '', // For selecting existing content
+                pollOptions: [], // For custom polls
+                ctaText: '', // For demo/newsletter buttons
+                emailPlaceholder: '' // For newsletter
+            });
+            const [fetchingMetadata, setFetchingMetadata] = useState(false);
+            const [metadataError, setMetadataError] = useState('');
+            const [contentSource, setContentSource] = useState(widget?.sourceId ? 'existing' : 'new'); // 'existing' or 'new'
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                
+                // Validate required fields based on widget type
+                let isValid = formData.title && formData.description;
+                
+                // Type-specific validation
+                if (formData.type === 'page' && !formData.url) isValid = false;
+                if (formData.type === 'webinar' && !formData.sourceId) isValid = false;
+                if (formData.type === 'video' && !formData.sourceId) isValid = false;
+                if (formData.type === 'poll' && contentSource === 'existing' && !formData.sourceId) isValid = false;
+                if (formData.type === 'doc' && !formData.url) isValid = false;
+                if (formData.type === 'demo' && !formData.url) isValid = false;
+                
+                if (isValid) {
+                    onSave(formData);
+                }
+            };
+
+            const fetchMetadata = async () => {
+                if (!formData.url) return;
+                
+                setFetchingMetadata(true);
+                setMetadataError('');
+                
+                try {
+                    // Try multiple CORS proxies as fallback
+                    const proxies = [
+                        'https://corsproxy.io/?',
+                        'https://api.allorigins.win/raw?url=',
+                        'https://cors-anywhere.herokuapp.com/'
+                    ];
+                    
+                    let html = null;
+                    let lastError = null;
+                    
+                    for (const proxy of proxies) {
+                        try {
+                            const response = await fetch(proxy + encodeURIComponent(formData.url), {
+                                signal: AbortSignal.timeout(10000) // 10 second timeout
+                            });
+                            
+                            if (response.ok) {
+                                html = await response.text();
+                                break; // Success, exit loop
+                            }
+                        } catch (err) {
+                            lastError = err;
+                            continue; // Try next proxy
+                        }
+                    }
+                    
+                    if (!html) {
+                        throw lastError || new Error('All proxies failed');
+                    }
+                    
+                    // Create a temporary DOM to parse the HTML
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Extract title
+                    let title = doc.querySelector('meta[property="og:title"]')?.content || 
+                                doc.querySelector('meta[name="twitter:title"]')?.content ||
+                                doc.querySelector('title')?.textContent ||
+                                formData.title;
+                    
+                    // Extract description
+                    let description = doc.querySelector('meta[property="og:description"]')?.content || 
+                                     doc.querySelector('meta[name="twitter:description"]')?.content ||
+                                     doc.querySelector('meta[name="description"]')?.content ||
+                                     formData.description;
+                    
+                    // Extract thumbnail/banner image
+                    let thumbnail = doc.querySelector('meta[property="og:image"]')?.content || 
+                                   doc.querySelector('meta[name="twitter:image"]')?.content ||
+                                   doc.querySelector('link[rel="image_src"]')?.href ||
+                                   formData.thumbnail;
+                    
+                    // Clean up the data
+                    if (title) title = title.trim();
+                    if (description) description = description.trim().substring(0, 200);
+                    
+                    // Update form data with fetched metadata
+                    setFormData({
+                        ...formData,
+                        title: title || formData.title,
+                        description: description || formData.description,
+                        thumbnail: thumbnail || formData.thumbnail
+                    });
+                    
+                } catch (error) {
+                    console.error('Error fetching metadata:', error);
+                    setMetadataError('Unable to fetch metadata from URL. This may be due to CORS restrictions. Please enter details manually.');
+                } finally {
+                    setFetchingMetadata(false);
+                }
+            };
+
+            return html`
+                <div class="modal-overlay" onClick=${(e) => e.target.className === 'modal-overlay' && onClose()}>
+                    <div class="modal">
+                        <div class="modal-header">
+                            <h2>${widget ? 'Edit Widget' : 'Create New Widget'}</h2>
+                        </div>
+
+                        <form onSubmit=${handleSubmit}>
+                            <div class="form-group">
+                                <label class="form-label">Widget Type *</label>
+                                <select
+                                    class="form-select"
+                                    value=${formData.type}
+                                    onChange=${(e) => setFormData({ ...formData, type: e.target.value })}
+                                >
+                                    <optgroup label="Interactive">
+                                        <option value="poll">📊 Poll</option>
+                                        <option value="nps">⭐ NPS Survey</option>
+                                        <option value="survey">📝 Survey</option>
+                                        <option value="newsletter">📮 Newsletter</option>
+                                    </optgroup>
+                                    <optgroup label="Content">
+                                        <option value="page">🔗 Page Link</option>
+                                        <option value="video">🎥 Video</option>
+                                        <option value="doc">📚 Document</option>
+                                        <option value="webinar">📹 Webinar</option>
+                                    </optgroup>
+                                    <optgroup label="Conversion">
+                                        <option value="demo">🎯 Demo Booking</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <!-- Type-Specific Content Configuration -->
+                            <div style=${{ marginBottom: '32px', paddingBottom: '24px', borderBottom: '2px solid #e5e7eb' }}>
+                                <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; color: #1f2937; font-weight: 600;">Content Configuration</h3>
+                                
+                                ${/* PAGE LINK */ formData.type === 'page' && html`
+                                    <div class="form-group">
+                                        <label class="form-label">Content Link *</label>
+                                        <div style=${{ display: 'flex', gap: '8px' }}>
+                                            <input
+                                                type="url"
+                                                class="form-input"
+                                                value=${formData.url}
+                                                onInput=${(e) => setFormData({ ...formData, url: e.target.value })}
+                                                placeholder="https://example.com/blog/article"
+                                                required
+                                                style=${{ flex: 1 }}
+                                            />
+                                            <button type="button" onClick=${fetchMetadata} disabled=${!formData.url || fetchingMetadata}
+                                                style=${{ padding: '10px 20px', background: fetchingMetadata ? '#d1d5db' : '#10b981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: fetchingMetadata ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}>
+                                                ${fetchingMetadata ? '⏳' : '🔍'} Fetch
+                                            </button>
+                                        </div>
+                                        ${metadataError && html`<div style=${{ fontSize: '0.85rem', color: '#dc2626', marginTop: '8px', padding: '8px', background: '#fef2f2', borderRadius: '6px', border: '1px solid #fecaca' }}>⚠️ ${metadataError}</div>`}
+                                    </div>
+                                    ${formData.thumbnail && html`<div class="form-group"><img src=${formData.thumbnail} style=${{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} /></div>`}
+                                `}
+
+                                ${/* WEBINAR */ formData.type === 'webinar' && html`
+                                    <div class="form-group">
+                                        <label class="form-label">Select Webinar from Sequel *</label>
+                                        <select class="form-select" value=${formData.sourceId} onChange=${(e) => {
+                                            const webinar = EXISTING_WEBINARS.find(w => w.id === e.target.value);
+                                            setFormData({ ...formData, sourceId: e.target.value, title: webinar?.title || '', description: webinar?.description || '', thumbnail: webinar?.thumbnail || '' });
+                                        }} required>
+                                            <option value="">-- Select a webinar --</option>
+                                            ${EXISTING_WEBINARS.map(w => html`<option key=${w.id} value=${w.id}>${w.title} (${w.date})</option>`)}
+                                        </select>
+                                    </div>
+                                    ${formData.sourceId && html`
+                                        <div style=${{ marginTop: '12px' }}>
+                                            <img src=${EXISTING_WEBINARS.find(w => w.id === formData.sourceId)?.thumbnail} style=${{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} />
+                                        </div>
+                                    `}
+                                `}
+
+                                ${/* VIDEO */ formData.type === 'video' && html`
+                                    <div class="form-group">
+                                        <label class="form-label">Select Video from Sequel *</label>
+                                        <select class="form-select" value=${formData.sourceId} onChange=${(e) => {
+                                            const video = EXISTING_VIDEOS.find(v => v.id === e.target.value);
+                                            setFormData({ ...formData, sourceId: e.target.value, title: video?.title || '', description: video?.description || '', thumbnail: video?.thumbnail || '' });
+                                        }} required>
+                                            <option value="">-- Select a video --</option>
+                                            ${EXISTING_VIDEOS.map(v => html`<option key=${v.id} value=${v.id}>${v.title} (${v.duration})</option>`)}
+                                        </select>
+                                    </div>
+                                    ${formData.sourceId && html`
+                                        <div style=${{ marginTop: '12px' }}>
+                                            <img src=${EXISTING_VIDEOS.find(v => v.id === formData.sourceId)?.thumbnail} style=${{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '8px' }} />
+                                        </div>
+                                    `}
+                                `}
+
+                                ${/* POLL */ formData.type === 'poll' && html`
+                                    <div class="form-group">
+                                        <label class="form-label">Poll Source</label>
+                                        <div style=${{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                                            <button type="button" onClick=${() => setContentSource('existing')} style=${{ flex: 1, padding: '10px', borderRadius: '8px', border: contentSource === 'existing' ? '2px solid #3b82f6' : '2px solid #e5e7eb', background: contentSource === 'existing' ? '#eff6ff' : 'white', fontWeight: '600', cursor: 'pointer' }}>
+                                                📋 Use Existing
+                                            </button>
+                                            <button type="button" onClick=${() => setContentSource('new')} style=${{ flex: 1, padding: '10px', borderRadius: '8px', border: contentSource === 'new' ? '2px solid #3b82f6' : '2px solid #e5e7eb', background: contentSource === 'new' ? '#eff6ff' : 'white', fontWeight: '600', cursor: 'pointer' }}>
+                                                ➕ Create New
+                                            </button>
+                                        </div>
+                                        ${contentSource === 'existing' ? html`
+                                            <select class="form-select" value=${formData.sourceId} onChange=${(e) => {
+                                                const poll = EXISTING_POLLS.find(p => p.id === e.target.value);
+                                                setFormData({ ...formData, sourceId: e.target.value, title: poll?.title || '', description: poll?.description || '', pollOptions: poll?.options || [] });
+                                            }} required>
+                                                <option value="">-- Select a poll --</option>
+                                                ${EXISTING_POLLS.map(p => html`<option key=${p.id} value=${p.id}>${p.title}</option>`)}
+                                            </select>
+                                        ` : html`
+                                            <input type="text" class="form-input" placeholder="Poll question (will use title below)" disabled style=${{ opacity: 0.6 }} />
+                                            <div style=${{ fontSize: '0.85rem', color: '#6b7280', marginTop: '6px' }}>💡 Poll options can be configured in the title/description below</div>
+                                        `}
+                                    </div>
+                                `}
+
+                                ${/* NPS */ formData.type === 'nps' && html`
+                                    <div style=${{ padding: '16px', background: '#f9fafb', borderRadius: '8px', fontSize: '0.9rem', color: '#6b7280' }}>
+                                        ⭐ NPS surveys use a standard 1-5 rating scale. Configure the question text in the title field below.
+                                    </div>
+                                `}
+
+                                ${/* SURVEY */ formData.type === 'survey' && html`
+                                    <div style=${{ padding: '16px', background: '#f9fafb', borderRadius: '8px', fontSize: '0.9rem', color: '#6b7280' }}>
+                                        📝 Surveys collect open-ended text feedback. Configure the prompt in the title field below.
+                                    </div>
+                                `}
+
+                                ${/* NEWSLETTER */ formData.type === 'newsletter' && html`
+                                    <div class="form-group">
+                                        <label class="form-label">Email Placeholder</label>
+                                        <input type="text" class="form-input" value=${formData.emailPlaceholder || 'Your email address'} onInput=${(e) => setFormData({ ...formData, emailPlaceholder: e.target.value })} placeholder="Your email address" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Button Text</label>
+                                        <input type="text" class="form-input" value=${formData.ctaText || 'Subscribe'} onInput=${(e) => setFormData({ ...formData, ctaText: e.target.value })} placeholder="Subscribe" />
+                                    </div>
+                                `}
+
+                                ${/* DOCUMENT */ formData.type === 'doc' && html`
+                                    <div class="form-group">
+                                        <label class="form-label">Document URL *</label>
+                                        <input type="url" class="form-input" value=${formData.url} onInput=${(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://example.com/whitepaper.pdf" required />
+                                        <div style=${{ fontSize: '0.85rem', color: '#6b7280', marginTop: '6px' }}>Link to PDF, whitepaper, or downloadable resource</div>
+                                    </div>
+                                `}
+
+                                ${/* DEMO */ formData.type === 'demo' && html`
+                                    <div class="form-group">
+                                        <label class="form-label">Calendly/Booking Link *</label>
+                                        <input type="url" class="form-input" value=${formData.url} onInput=${(e) => setFormData({ ...formData, url: e.target.value })} placeholder="https://calendly.com/..." required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">CTA Button Text</label>
+                                        <input type="text" class="form-input" value=${formData.ctaText || 'Book Demo'} onInput=${(e) => setFormData({ ...formData, ctaText: e.target.value })} placeholder="Book Demo" />
+                                    </div>
+                                `}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Funnel Stage *</label>
+                                <div class="funnel-selector">
+                                    ${['top', 'mid', 'bottom'].map(stage => html`
+                                        <div
+                                            class=${`funnel-option ${formData.funnelStage === stage ? 'selected' : ''}`}
+                                            onClick=${() => setFormData({ ...formData, funnelStage: stage })}
+                                        >
+                                            <div class="funnel-option-icon">
+                                                ${stage === 'top' ? '🔵' : stage === 'mid' ? '🟣' : '🟢'}
+                                            </div>
+                                            <div class="funnel-option-label">
+                                                ${stage === 'top' ? 'Top' : stage === 'mid' ? 'Mid' : 'Bottom'}
+                                            </div>
+                                            <div class="funnel-option-sublabel">
+                                                ${stage === 'top' ? 'Explore' : stage === 'mid' ? 'Engage' : 'Convert'}
+                                            </div>
+                                        </div>
+                                    `)}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Title * 
+                                    ${(formData.sourceId || (formData.type === 'page' && formData.thumbnail)) && html`
+                                        <span style=${{ fontSize: '0.85rem', fontWeight: '400', color: '#10b981', marginLeft: '8px' }}>
+                                            ✓ Auto-populated (you can override)
+                                        </span>
+                                    `}
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-input"
+                                    value=${formData.title}
+                                    onInput=${(e) => setFormData({ ...formData, title: e.target.value })}
+                                    placeholder=${
+                                        formData.type === 'poll' ? 'e.g., What\'s Your Biggest Marketing Challenge?' :
+                                        formData.type === 'nps' ? 'e.g., How likely are you to recommend us?' :
+                                        formData.type === 'survey' ? 'e.g., Tell us about your experience' :
+                                        formData.type === 'newsletter' ? 'e.g., Subscribe to Marketing Insights Weekly' :
+                                        formData.type === 'demo' ? 'e.g., Book a Personalized Demo' :
+                                        'Widget title'
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Description * 
+                                    ${(formData.sourceId || (formData.type === 'page' && formData.thumbnail)) && html`
+                                        <span style=${{ fontSize: '0.85rem', fontWeight: '400', color: '#10b981', marginLeft: '8px' }}>
+                                            ✓ Auto-populated (you can override)
+                                        </span>
+                                    `}
+                                </label>
+                                <textarea
+                                    class="form-textarea"
+                                    value=${formData.description}
+                                    onInput=${(e) => setFormData({ ...formData, description: e.target.value })}
+                                    placeholder="Brief description that will appear in the widget card..."
+                                    required
+                                />
+                            </div>
+
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onClick=${onClose}>Cancel</button>
+                                <button type="submit" class="btn btn-primary">
+                                    ${widget ? 'Update Widget' : 'Create Widget'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Layout Form Modal
+        function LayoutFormModal({ layout, widgets, onSave, onClose }) {
+            const [formData, setFormData] = useState(layout || {
+                id: 'layout_' + Date.now(),
+                name: '',
+                description: '',
+                icpSegments: [
+                    {
+                        id: 'segment_1',
+                        name: 'VP / Enterprise',
+                        role: 'vp',
+                        companySize: 'enterprise',
+                        rules: [
+                            { engagementMin: 0, engagementMax: 49, funnelStage: 'top', widgetIds: [] },
+                            { engagementMin: 50, engagementMax: 79, funnelStage: 'mid', widgetIds: [] },
+                            { engagementMin: 80, engagementMax: 100, funnelStage: 'bottom', widgetIds: [] }
+                        ]
+                    },
+                    {
+                        id: 'segment_2',
+                        name: 'Manager / Small-Medium',
+                        role: 'ic',
+                        companySize: 'small-medium',
+                        rules: [
+                            { engagementMin: 0, engagementMax: 49, funnelStage: 'top', widgetIds: [] },
+                            { engagementMin: 50, engagementMax: 79, funnelStage: 'mid', widgetIds: [] },
+                            { engagementMin: 80, engagementMax: 100, funnelStage: 'bottom', widgetIds: [] }
+                        ]
+                    },
+                    {
+                        id: 'segment_3',
+                        name: 'All Others',
+                        role: 'all',
+                        companySize: 'all',
+                        rules: [
+                            { engagementMin: 0, engagementMax: 49, funnelStage: 'top', widgetIds: [] },
+                            { engagementMin: 50, engagementMax: 79, funnelStage: 'mid', widgetIds: [] },
+                            { engagementMin: 80, engagementMax: 100, funnelStage: 'bottom', widgetIds: [] }
+                        ]
+                    }
+                ]
+            });
+            const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (formData.name) {
+                    onSave(formData);
+                }
+            };
+
+            const toggleWidget = (segmentIndex, ruleIndex, widgetId) => {
+                const newSegments = [...formData.icpSegments];
+                const widgetIds = newSegments[segmentIndex].rules[ruleIndex].widgetIds;
+                
+                if (widgetIds.includes(widgetId)) {
+                    newSegments[segmentIndex].rules[ruleIndex].widgetIds = widgetIds.filter(id => id !== widgetId);
+                } else {
+                    newSegments[segmentIndex].rules[ruleIndex].widgetIds = [...widgetIds, widgetId];
+                }
+                
+                setFormData({ ...formData, icpSegments: newSegments });
+            };
+
+            const updateSegmentName = (segmentIndex, name) => {
+                const newSegments = [...formData.icpSegments];
+                newSegments[segmentIndex].name = name;
+                setFormData({ ...formData, icpSegments: newSegments });
+            };
+
+            const updateSegmentICP = (segmentIndex, field, value) => {
+                const newSegments = [...formData.icpSegments];
+                newSegments[segmentIndex][field] = value;
+                setFormData({ ...formData, icpSegments: newSegments });
+            };
+
+            const addSegment = () => {
+                const newSegments = [...formData.icpSegments, {
+                    id: 'segment_' + Date.now(),
+                    name: 'New Segment',
+                    role: 'all',
+                    companySize: 'all',
+                    rules: [
+                        { engagementMin: 0, engagementMax: 49, funnelStage: 'top', widgetIds: [] },
+                        { engagementMin: 50, engagementMax: 79, funnelStage: 'mid', widgetIds: [] },
+                        { engagementMin: 80, engagementMax: 100, funnelStage: 'bottom', widgetIds: [] }
+                    ]
+                }];
+                setFormData({ ...formData, icpSegments: newSegments });
+                setCurrentSegmentIndex(newSegments.length - 1);
+            };
+
+            const deleteSegment = (segmentIndex) => {
+                if (formData.icpSegments.length <= 1) {
+                    alert('You must have at least one segment');
+                    return;
+                }
+                const newSegments = formData.icpSegments.filter((_, i) => i !== segmentIndex);
+                setFormData({ ...formData, icpSegments: newSegments });
+                setCurrentSegmentIndex(Math.max(0, segmentIndex - 1));
+            };
+
+            return html`
+                <div class="modal-overlay" onClick=${(e) => e.target.className === 'modal-overlay' && onClose()}>
+                    <div class="modal" style="max-width: 800px;">
+                        <div class="modal-header">
+                            <h2>${layout ? 'Edit Layout' : 'Create New Layout'}</h2>
+                        </div>
+
+                        <form onSubmit=${handleSubmit}>
+                            <div class="form-group">
+                                <label class="form-label">Layout Name *</label>
+                                <input
+                                    type="text"
+                                    class="form-input"
+                                    value=${formData.name}
+                                    onInput=${(e) => setFormData({ ...formData, name: e.target.value })}
+                                    placeholder="e.g., Marketing Event Layout"
+                                    required
+                                />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <input
+                                    type="text"
+                                    class="form-input"
+                                    value=${formData.description || ''}
+                                    onInput=${(e) => setFormData({ ...formData, description: e.target.value })}
+                                    placeholder="Brief description..."
+                                />
+                            </div>
+
+                            <!-- ICP Segments Tabs -->
+                            <div style=${{ marginTop: '24px', marginBottom: '24px' }}>
+                                <div style=${{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                    <h3 style=${{ margin: 0, fontSize: '1.1rem', color: '#1f2937', fontWeight: '600' }}>
+                                        👥 ICP Segments
+                                    </h3>
+                                    <button
+                                        type="button"
+                                        onClick=${addSegment}
+                                        class="btn btn-secondary"
+                                        style=${{ fontSize: '0.9rem', padding: '6px 12px' }}
+                                    >
+                                        + Add Segment
+                                    </button>
+                                </div>
+                                <div style=${{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '16px' }}>
+                                    Define different audience segments and customize their funnel progression. Each segment can have unique content based on role and company size.
+                                </div>
+                                
+                                <!-- Segment Tabs -->
+                                <div style=${{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                                    ${formData.icpSegments.map((segment, index) => html`
+                                        <button
+                                            key=${segment.id}
+                                            type="button"
+                                            onClick=${() => setCurrentSegmentIndex(index)}
+                                            style=${{
+                                                padding: '10px 16px',
+                                                borderRadius: '8px',
+                                                border: '2px solid',
+                                                borderColor: currentSegmentIndex === index ? '#3b82f6' : '#e5e7eb',
+                                                background: currentSegmentIndex === index ? '#eff6ff' : 'white',
+                                                color: currentSegmentIndex === index ? '#1e40af' : '#6b7280',
+                                                fontWeight: currentSegmentIndex === index ? '600' : '500',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s',
+                                                fontSize: '0.9rem'
+                                            }}
+                                        >
+                                            ${segment.name}
+                                        </button>
+                                    `)}
+                                </div>
+
+                                <!-- Current Segment Configuration -->
+                                ${formData.icpSegments[currentSegmentIndex] && html`
+                                    <div style=${{ 
+                                        padding: '20px', 
+                                        background: '#f9fafb', 
+                                        borderRadius: '12px',
+                                        border: '2px solid #e5e7eb'
+                                    }}>
+                                        <div class="form-group">
+                                            <label class="form-label">Segment Name *</label>
+                                            <input
+                                                type="text"
+                                                class="form-input"
+                                                value=${formData.icpSegments[currentSegmentIndex].name}
+                                                onInput=${(e) => updateSegmentName(currentSegmentIndex, e.target.value)}
+                                                placeholder="e.g., VP / Enterprise"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div style=${{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '20px' }}>
+                                            <div>
+                                                <label class="form-label">👤 Role</label>
+                                                <select
+                                                    class="form-select"
+                                                    value=${formData.icpSegments[currentSegmentIndex].role}
+                                                    onChange=${(e) => updateSegmentICP(currentSegmentIndex, 'role', e.target.value)}
+                                                >
+                                                    <option value="all">All Roles</option>
+                                                    <option value="vp">VP / Executive</option>
+                                                    <option value="ic">Manager / IC</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="form-label">🏢 Company Size</label>
+                                                <select
+                                                    class="form-select"
+                                                    value=${formData.icpSegments[currentSegmentIndex].companySize}
+                                                    onChange=${(e) => updateSegmentICP(currentSegmentIndex, 'companySize', e.target.value)}
+                                                >
+                                                    <option value="all">All Sizes</option>
+                                                    <option value="enterprise">Enterprise (1000+)</option>
+                                                    <option value="small-medium">Small-Medium (1-999)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <!-- Funnel Stages for This Segment -->
+                                        ${formData.icpSegments[currentSegmentIndex].rules.map((rule, ruleIndex) => html`
+                                            <div class="form-group" key=${ruleIndex} style=${{ marginTop: '20px' }}>
+                                                <label class="form-label">
+                                                    ${rule.funnelStage === 'top' ? '🔵 Top Funnel (Explore)' : 
+                                                      rule.funnelStage === 'mid' ? '🟣 Mid Funnel (Engage)' : 
+                                                      '🟢 Bottom Funnel (Convert)'} - ${rule.engagementMin}-${rule.engagementMax}%
+                                                </label>
+                                                
+                                                <div class="widget-selector">
+                                                    ${widgets
+                                                        .filter(w => w.funnelStage === rule.funnelStage)
+                                                        .map(widget => html`
+                                                            <label class="widget-checkbox-item" key=${widget.id}>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked=${rule.widgetIds.includes(widget.id)}
+                                                                    onChange=${() => toggleWidget(currentSegmentIndex, ruleIndex, widget.id)}
+                                                                />
+                                                                <div style="flex: 1;">
+                                                                    <div class="widget-checkbox-label">
+                                                                        ${WIDGET_ICONS[widget.type]} ${widget.title}
+                                                                    </div>
+                                                                    <div class="widget-checkbox-type">${widget.type}</div>
+                                                                </div>
+                                                            </label>
+                                                        `)}
+                                                    ${widgets.filter(w => w.funnelStage === rule.funnelStage).length === 0 && html`
+                                                        <div style="text-align: center; padding: 20px; color: #6b7280;">
+                                                            No ${rule.funnelStage} funnel widgets available. Create widgets first.
+                                                        </div>
+                                                    `}
+                                                </div>
+                                            </div>
+                                        `)}
+
+                                        ${formData.icpSegments.length > 1 && html`
+                                            <div style=${{ marginTop: '16px', textAlign: 'right' }}>
+                                                <button
+                                                    type="button"
+                                                    onClick=${() => deleteSegment(currentSegmentIndex)}
+                                                    class="btn btn-danger"
+                                                    style=${{ fontSize: '0.9rem' }}
+                                                >
+                                                    Delete Segment
+                                                </button>
+                                            </div>
+                                        `}
+                                    </div>
+                                `}
+                            </div>
+
+                            <div class="modal-actions">
+                                <button type="button" class="btn btn-secondary" onClick=${onClose}>Cancel</button>
+                                <button type="submit" class="btn btn-primary">
+                                    ${layout ? 'Update Layout' : 'Create Layout'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Main App Component
+        function App() {
+            const [currentPage, setCurrentPage] = useState('widgets');
+            const [widgets, setWidgets] = useState([
+                { id: 'widget_1', type: 'poll', title: "What's Your Biggest Marketing Challenge?", description: 'Help us understand your priorities', url: 'https://example.com/poll', funnelStage: 'top' },
+                { id: 'widget_2', type: 'page', title: '7 Event Marketing Trends Shaping 2024', description: 'Latest insights', url: 'https://example.com/blog', funnelStage: 'top' },
+                { id: 'widget_3', type: 'nps', title: 'How Likely Are You to Recommend?', description: 'Share your feedback', url: 'https://example.com/nps', funnelStage: 'mid' },
+                { id: 'widget_4', type: 'demo', title: 'Book a Personalized Demo', description: 'See the platform in action', url: 'https://example.com/demo', funnelStage: 'bottom' },
+            ]);
+            const [layouts, setLayouts] = useState([
+                {
+                    id: 'layout_1',
+                    name: 'Default Marketing Layout',
+                    description: 'ICP-based funnel progression for marketing events',
+                    icpSegments: [
+                        {
+                            id: 'segment_1',
+                            name: 'VP / Enterprise',
+                            role: 'vp',
+                            companySize: 'enterprise',
+                            rules: [
+                                { engagementMin: 0, engagementMax: 49, funnelStage: 'top', widgetIds: ['widget_1', 'widget_2'] },
+                                { engagementMin: 50, engagementMax: 79, funnelStage: 'mid', widgetIds: ['widget_3'] },
+                                { engagementMin: 80, engagementMax: 100, funnelStage: 'bottom', widgetIds: ['widget_4'] }
+                            ]
+                        },
+                        {
+                            id: 'segment_2',
+                            name: 'All Others',
+                            role: 'all',
+                            companySize: 'all',
+                            rules: [
+                                { engagementMin: 0, engagementMax: 49, funnelStage: 'top', widgetIds: ['widget_1'] },
+                                { engagementMin: 50, engagementMax: 79, funnelStage: 'mid', widgetIds: ['widget_3'] },
+                                { engagementMin: 80, engagementMax: 100, funnelStage: 'bottom', widgetIds: ['widget_4'] }
+                            ]
+                        }
+                    ]
+                }
+            ]);
+            const [showWidgetModal, setShowWidgetModal] = useState(false);
+            const [showLayoutModal, setShowLayoutModal] = useState(false);
+            const [editingWidget, setEditingWidget] = useState(null);
+            const [editingLayout, setEditingLayout] = useState(null);
+
+            const handleSaveWidget = (widget) => {
+                if (editingWidget) {
+                    setWidgets(widgets.map(w => w.id === widget.id ? widget : w));
+                } else {
+                    setWidgets([...widgets, widget]);
+                }
+                setShowWidgetModal(false);
+                setEditingWidget(null);
+            };
+
+            const handleDeleteWidget = (id) => {
+                if (confirm('Delete this widget?')) {
+                    setWidgets(widgets.filter(w => w.id !== id));
+                }
+            };
+
+            const handleSaveLayout = (layout) => {
+                if (editingLayout) {
+                    setLayouts(layouts.map(l => l.id === layout.id ? layout : l));
+                } else {
+                    setLayouts([...layouts, layout]);
+                }
+                setShowLayoutModal(false);
+                setEditingLayout(null);
+            };
+
+            const handleDeleteLayout = (id) => {
+                if (confirm('Delete this layout?')) {
+                    setLayouts(layouts.filter(l => l.id !== id));
+                }
+            };
+
+            return html`
+                <div class="app-container">
+                    <!-- Sidebar -->
+                    <div class="sidebar">
+                        <div class="sidebar-header">
+                            <div class="sidebar-logo">
+                                🎯 AI Admin
+                            </div>
+                            <div class="sidebar-subtitle">Personalization Dashboard</div>
+                        </div>
+
+                        <div class="sidebar-nav">
+                            <div class="nav-section">
+                                <div class="nav-section-title">Manage</div>
+                                <div
+                                    class=${`nav-item ${currentPage === 'widgets' ? 'active' : ''}`}
+                                    onClick=${() => setCurrentPage('widgets')}
+                                >
+                                    <span class="nav-item-icon">🧩</span>
+                                    <span>Widgets</span>
+                                </div>
+                                <div
+                                    class=${`nav-item ${currentPage === 'layouts' ? 'active' : ''}`}
+                                    onClick=${() => setCurrentPage('layouts')}
+                                >
+                                    <span class="nav-item-icon">📐</span>
+                                    <span>Layouts</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-footer">
+                            <a href="/test-ai-personalization.html" class="demo-link-btn">
+                                👁️ View User Demo
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="main-content">
+                        ${currentPage === 'widgets' && html`
+                            <div class="content-header">
+                                <div class="content-header-info">
+                                    <h1>Widgets</h1>
+                                    <p>Create and manage content widgets for your events</p>
+                                </div>
+                                <button class="btn btn-primary" onClick=${() => { setEditingWidget(null); setShowWidgetModal(true); }}>
+                                    + Create Widget
+                                </button>
+                            </div>
+
+                            <div class="content-body">
+                                ${widgets.length === 0 ? html`
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">🧩</div>
+                                        <h3>No widgets yet</h3>
+                                        <p>Create your first widget to get started</p>
+                                        <button class="btn btn-primary" onClick=${() => setShowWidgetModal(true)}>
+                                            + Create Widget
+                                        </button>
+                                    </div>
+                                ` : html`
+                                    <div class="widget-grid">
+                                        ${widgets.map(widget => html`
+                                            <div class="widget-card" key=${widget.id}>
+                                                <div class="widget-card-icon" style=${{
+                                                    background: widget.thumbnail ? `url(${widget.thumbnail}) center/cover` : '#f9fafb'
+                                                }}>
+                                                    ${!widget.thumbnail && WIDGET_ICONS[widget.type]}
+                                                    <div class=${`widget-badge ${widget.funnelStage}`}>
+                                                        ${widget.funnelStage === 'top' ? '🔵' : widget.funnelStage === 'mid' ? '🟣' : '🟢'}
+                                                    </div>
+                                                </div>
+                                                <div class="widget-card-content">
+                                                    <div class="widget-card-title">${widget.title}</div>
+                                                    <div class="widget-card-meta">${widget.type} • ${widget.funnelStage} funnel</div>
+                                                    <div class="widget-card-actions">
+                                                        <button class="btn btn-secondary" onClick=${() => { setEditingWidget(widget); setShowWidgetModal(true); }}>
+                                                            Edit
+                                                        </button>
+                                                        <button class="btn btn-danger" onClick=${() => handleDeleteWidget(widget.id)}>
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `)}
+                                    </div>
+                                `}
+                            </div>
+                        `}
+
+                        ${currentPage === 'layouts' && html`
+                            <div class="content-header">
+                                <div class="content-header-info">
+                                    <h1>Layouts</h1>
+                                    <p>Configure funnel-based widget display rules</p>
+                                </div>
+                                <button class="btn btn-primary" onClick=${() => { setEditingLayout(null); setShowLayoutModal(true); }}>
+                                    + Create Layout
+                                </button>
+                            </div>
+
+                            <div class="content-body">
+                                ${layouts.length === 0 ? html`
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon">📐</div>
+                                        <h3>No layouts yet</h3>
+                                        <p>Create your first layout to configure widget display rules</p>
+                                        <button class="btn btn-primary" onClick=${() => setShowLayoutModal(true)}>
+                                            + Create Layout
+                                        </button>
+                                    </div>
+                                ` : html`
+                                    ${layouts.map(layout => html`
+                                        <div class="layout-card" key=${layout.id}>
+                                            <div class="layout-card-header">
+                                                <div>
+                                                    <div class="layout-card-title">${layout.name}</div>
+                                                    <div style="font-size: 0.9rem; color: #6b7280; margin-top: 4px;">${layout.description}</div>
+                                                </div>
+                                                <div class="layout-card-actions">
+                                                    <button class="btn btn-secondary" onClick=${() => { setEditingLayout(layout); setShowLayoutModal(true); }}>
+                                                        Edit
+                                                    </button>
+                                                    <button class="btn btn-danger" onClick=${() => handleDeleteLayout(layout.id)}>
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- ICP Segments Display -->
+                                            <div style=${{ marginTop: '16px' }}>
+                                                <div style=${{ fontSize: '0.85rem', fontWeight: '600', color: '#374151', marginBottom: '12px' }}>
+                                                    👥 ICP Segments (${layout.icpSegments.length})
+                                                </div>
+                                                ${layout.icpSegments.map(segment => html`
+                                                    <div key=${segment.id} style=${{ 
+                                                        marginBottom: '20px',
+                                                        padding: '16px',
+                                                        background: '#f9fafb',
+                                                        borderRadius: '12px',
+                                                        border: '2px solid #e5e7eb'
+                                                    }}>
+                                                        <div style=${{ 
+                                                            display: 'flex', 
+                                                            justifyContent: 'space-between', 
+                                                            alignItems: 'center',
+                                                            marginBottom: '16px',
+                                                            paddingBottom: '12px',
+                                                            borderBottom: '1px solid #e5e7eb'
+                                                        }}>
+                                                            <div style=${{ fontWeight: '600', fontSize: '1rem', color: '#1f2937' }}>${segment.name}</div>
+                                                            <div style=${{ fontSize: '0.8rem', color: '#6b7280', fontWeight: '500' }}>
+                                                                ${segment.role !== 'all' ? (segment.role === 'vp' ? '👤 VP' : '👤 Manager') : ''}
+                                                                ${segment.role !== 'all' && segment.companySize !== 'all' ? ' • ' : ''}
+                                                                ${segment.companySize !== 'all' ? (segment.companySize === 'enterprise' ? '🏢 Enterprise' : '🏢 SMB') : ''}
+                                                                ${segment.role === 'all' && segment.companySize === 'all' ? '👥 All Audiences' : ''}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Funnel Stages with Widget Details -->
+                                                        ${segment.rules.map(rule => html`
+                                                            <div key=${rule.funnelStage} style=${{ marginBottom: '16px' }}>
+                                                                <div style=${{ 
+                                                                    fontSize: '0.85rem', 
+                                                                    fontWeight: '600', 
+                                                                    color: rule.funnelStage === 'top' ? '#1e40af' : rule.funnelStage === 'mid' ? '#6b21a8' : '#047857',
+                                                                    marginBottom: '8px',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '6px'
+                                                                }}>
+                                                                    <span>${rule.funnelStage === 'top' ? '🔵' : rule.funnelStage === 'mid' ? '🟣' : '🟢'}</span>
+                                                                    <span>${rule.funnelStage === 'top' ? 'Top Funnel (Explore)' : rule.funnelStage === 'mid' ? 'Mid Funnel (Engage)' : 'Bottom Funnel (Convert)'}</span>
+                                                                    <span style=${{ color: '#9ca3af', fontWeight: '400' }}>(${rule.engagementMin}-${rule.engagementMax}%)</span>
+                                                                </div>
+                                                                
+                                                                ${rule.widgetIds.length > 0 ? html`
+                                                                    <div style=${{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                                                        ${rule.widgetIds.map(widgetId => {
+                                                                            const widget = widgets.find(w => w.id === widgetId);
+                                                                            if (!widget) return null;
+                                                                            return html`
+                                                                                <div key=${widgetId} style=${{
+                                                                                    display: 'flex',
+                                                                                    alignItems: 'center',
+                                                                                    gap: '8px',
+                                                                                    padding: '8px 12px',
+                                                                                    background: 'white',
+                                                                                    borderRadius: '8px',
+                                                                                    border: '1px solid #e5e7eb',
+                                                                                    fontSize: '0.85rem',
+                                                                                    flex: '1 1 auto',
+                                                                                    minWidth: '200px'
+                                                                                }}>
+                                                                                    <span style=${{ fontSize: '1.2rem' }}>${WIDGET_ICONS[widget.type]}</span>
+                                                                                    <div style=${{ flex: 1, minWidth: 0 }}>
+                                                                                        <div style=${{ fontWeight: '600', color: '#1f2937', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                                                            ${widget.title}
+                                                                                        </div>
+                                                                                        <div style=${{ fontSize: '0.75rem', color: '#6b7280', textTransform: 'capitalize' }}>
+                                                                                            ${widget.type}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            `;
+                                                                        })}
+                                                                    </div>
+                                                                ` : html`
+                                                                    <div style=${{ 
+                                                                        padding: '12px', 
+                                                                        background: 'white', 
+                                                                        borderRadius: '8px',
+                                                                        border: '1px dashed #d1d5db',
+                                                                        textAlign: 'center',
+                                                                        fontSize: '0.85rem',
+                                                                        color: '#9ca3af'
+                                                                    }}>
+                                                                        No widgets configured
+                                                                    </div>
+                                                                `}
+                                                            </div>
+                                                        `)}
+                                                    </div>
+                                                `)}
+                                            </div>
+                                        </div>
+                                    `)}
+                                `}
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- Modals -->
+                    ${showWidgetModal && html`
+                        <${WidgetFormModal}
+                            widget=${editingWidget}
+                            onSave=${handleSaveWidget}
+                            onClose=${() => { setShowWidgetModal(false); setEditingWidget(null); }}
+                        />
+                    `}
+
+                    ${showLayoutModal && html`
+                        <${LayoutFormModal}
+                            layout=${editingLayout}
+                            widgets=${widgets}
+                            onSave=${handleSaveLayout}
+                            onClose=${() => { setShowLayoutModal(false); setEditingLayout(null); }}
+                        />
+                    `}
+                </div>
+            `;
+        }
+
+        render(html`<${App} />`, document.getElementById('app'));
+    </script>
+</body>
+</html>
+

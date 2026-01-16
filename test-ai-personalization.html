@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Personalization Demo - Sequel Embed Toolkit</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f9fafb;
+        }
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 12px;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+        }
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        .simulated-event {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        .simulator {
+            background: #f3f4f6;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px dashed #d1d5db;
+        }
+        .simulator h3 {
+            margin: 0 0 15px 0;
+            color: #374151;
+            font-size: 1rem;
+        }
+        .simulator-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .sim-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+        .sim-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .sim-button.poll {
+            background-color: #3b82f6;
+        }
+        .sim-button.poll:hover {
+            background-color: #2563eb;
+        }
+        .sim-button.cta {
+            background-color: #10b981;
+        }
+        .sim-button.cta:hover {
+            background-color: #059669;
+        }
+        .sim-button.resource {
+            background-color: #8b5cf6;
+        }
+        .sim-button.resource:hover {
+            background-color: #7c3aed;
+        }
+        .divider {
+            height: 4px;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            margin: 40px 0;
+            border-radius: 2px;
+        }
+        .info-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+        }
+        .info-badge strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🤖 AI Personalization Demo</h1>
+            <p>Dynamic content recommendations based on user profile and real-time actions</p>
+        </div>
+
+        <!-- Info Badge -->
+        <div class="info-badge">
+            <strong>🎯 How It Works:</strong>
+            Change your role/company size to see different personalized content! Watch the video, click widgets, and use action buttons below. 
+            Content adapts based on your ICP (role + company size) and progresses through funnel stages (Explore → Engage → Convert).
+        </div>
+
+        <!-- Simulated Event Section -->
+        <div class="simulated-event">
+            <!-- Sequel Video Player -->
+            <div style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); margin-bottom: 30px;">
+                <video 
+                    id="sequelVideo"
+                    style="width: 100%; height: 100%; object-fit: contain;"
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    poster="https://prod-assets.sequelvideo.com/store/d5907d53-e996-4db5-9575-6b9c17b0df1e/7a9738d3-311f-48d2-b72a-4536f2d30761.mp4.jpg"
+                >
+                    <source src="https://prod-assets.sequelvideo.com/store/d5907d53-e996-4db5-9575-6b9c17b0df1e/7a9738d3-311f-48d2-b72a-4536f2d30761.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+
+            <!-- Personalized Content Area (Under Video) -->
+            <div id="personalized_content"></div>
+
+            <!-- Divider -->
+            <div class="divider"></div>
+
+            <!-- Action Simulator -->
+            <div class="simulator">
+                <h3>🎮 Simulate User Actions During Event:</h3>
+                <div class="simulator-buttons">
+                    <button class="sim-button poll" onclick="simulateAction('poll_answer')">
+                        📊 Answer Poll
+                    </button>
+                    <button class="sim-button cta" onclick="simulateAction('cta_click')">
+                        🎯 Click CTA
+                    </button>
+                    <button class="sim-button resource" onclick="simulateAction('resource_download')">
+                        📥 Download Resource
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Preact and HTM from CDN -->
+    <script type="module">
+        import { h, render } from 'https://esm.sh/preact@10.19.3';
+        import { useState, useEffect } from 'https://esm.sh/preact@10.19.3/hooks';
+        import htm from 'https://esm.sh/htm@3.1.1';
+
+        const html = htm.bind(h);
+
+        // Mock content recommendations with ICP targeting
+        const mockContent = [
+            // Top Funnel - VP Content
+            { id: '1', type: 'poll', title: 'VP Poll: What\'s Your Top Strategic Priority?', description: 'Help us understand your business goals', url: '#', funnel: 'top', targetRole: 'vp', targetCompanySize: 'enterprise', score: 100 },
+            { id: '2', type: 'page', title: 'Enterprise Event Strategy: Board-Level Metrics', description: 'ROI frameworks for executive leadership', url: '#', funnel: 'top', targetRole: 'vp', targetCompanySize: 'enterprise', score: 90 },
+            { id: '3', type: 'video', title: 'Executive Briefing: Platform Roadmap', description: 'Strategic vision and enterprise features', url: '#', funnel: 'top', targetRole: 'vp', targetCompanySize: 'enterprise', score: 85 },
+            { id: '4', type: 'doc', title: 'Enterprise Buyer\'s Guide', description: 'Complete evaluation framework for VPs', url: '#', funnel: 'top', targetRole: 'vp', targetCompanySize: 'enterprise', score: 80 },
+            
+            // Top Funnel - IC Content (for both small and enterprise)
+            { id: '11', type: 'poll', title: 'Quick Poll: What\'s Your Biggest Marketing Challenge?', description: 'Help us understand your day-to-day priorities', url: '#', funnel: 'top', targetRole: 'ic', score: 100 },
+            { id: '12', type: 'page', title: '7 Event Marketing Trends Shaping 2024', description: 'Tactical insights from 10,000+ webinars', url: '#', funnel: 'top', targetRole: 'ic', score: 90 },
+            { id: '13', type: 'video', title: 'Product Tutorial: New AI Features', description: '5-minute hands-on walkthrough', url: '#', funnel: 'top', targetRole: 'ic', score: 85 },
+            { id: '14', type: 'doc', title: 'Quick Start Guide: Event Marketing ROI', description: 'Practical templates and frameworks', url: '#', funnel: 'top', targetRole: 'ic', score: 80 },
+            
+            // Mid Funnel - VP Content
+            { id: '5', type: 'nps', title: 'Executive Feedback: Strategic Value', description: 'Share your perspective on business impact', url: '#', funnel: 'mid', targetRole: 'vp', score: 100 },
+            { id: '6', type: 'newsletter', title: 'Executive Insights: Industry Trends', description: 'Monthly strategic briefings for leaders', url: '#', funnel: 'mid', targetRole: 'vp', score: 90 },
+            { id: '7', type: 'webinar', title: 'VIP Event: Enterprise Leadership Roundtable', description: 'Peer discussion with other VPs', url: '#', funnel: 'mid', targetRole: 'vp', score: 85 },
+            
+            // Mid Funnel - IC Content
+            { id: '15', type: 'nps', title: 'How Likely Are You to Recommend?', description: 'Share your feedback to help us improve', url: '#', funnel: 'mid', targetRole: 'ic', score: 100 },
+            { id: '16', type: 'newsletter', title: 'Subscribe to Marketing Insights Weekly', description: 'Tactical tips delivered every Tuesday', url: '#', funnel: 'mid', targetRole: 'ic', score: 90 },
+            { id: '17', type: 'webinar', title: 'Workshop: Personalization Best Practices', description: 'Hands-on training session', url: '#', funnel: 'mid', targetRole: 'ic', score: 85 },
+            
+            // Bottom Funnel - VP Content
+            { id: '8', type: 'demo', title: 'Enterprise Demo: Executive Overview', description: 'Strategic review with our C-suite', url: '#', funnel: 'bottom', targetRole: 'vp', score: 100 },
+            
+            // Bottom Funnel - IC Content
+            { id: '18', type: 'demo', title: 'Book a Product Demo', description: 'See the platform in action', url: '#', funnel: 'bottom', targetRole: 'ic', score: 100 },
+        ];
+
+        const ICONS = {
+            poll: '📊', page: '🔗', video: '🎥', doc: '📚',
+            nps: '⭐', newsletter: '📮', webinar: '📹', survey: '📝', demo: '🎯'
+        };
+
+        function PersonalizedContent() {
+            const [engagement, setEngagement] = useState(0);
+            const [viewedContent, setViewedContent] = useState(new Set());
+            const [currentFunnel, setCurrentFunnel] = useState('top');
+            const [pollAnswers, setPollAnswers] = useState({});
+            const [npsScores, setNpsScores] = useState({});
+            const [emailInputs, setEmailInputs] = useState({});
+            const [userICP, setUserICP] = useState({
+                role: 'vp',
+                companySize: 'enterprise'
+            });
+
+            useEffect(() => {
+                // Listen for action messages
+                const handleMessage = (event) => {
+                    if (event.data && event.data.event) {
+                        console.log('📨 Received action:', event.data.event);
+                        
+                        let points = 0;
+                        if (event.data.event === 'user_poll_answer') points = 15;
+                        else if (event.data.event === 'user_cta_click') points = 15;
+                        else if (event.data.event === 'user_resource_click') points = 20;
+                        
+                        setEngagement(prev => Math.min(100, prev + points));
+                    }
+                };
+
+                window.addEventListener('message', handleMessage);
+                return () => window.removeEventListener('message', handleMessage);
+            }, []);
+
+            useEffect(() => {
+                if (engagement < 50) setCurrentFunnel('top');
+                else if (engagement < 80) setCurrentFunnel('mid');
+                else setCurrentFunnel('bottom');
+            }, [engagement]);
+
+            useEffect(() => {
+                // Reset engagement when ICP changes to see fresh content
+                setEngagement(0);
+                setViewedContent(new Set());
+                setCurrentFunnel('top');
+            }, [userICP.role, userICP.companySize]);
+
+            const handleContentClick = (id) => {
+                setViewedContent(prev => new Set([...prev, id]));
+                setEngagement(prev => Math.min(100, prev + 10));
+            };
+
+            const handlePollAnswer = (contentId, option, e) => {
+                e.stopPropagation();
+                setPollAnswers({...pollAnswers, [contentId]: option});
+                setViewedContent(prev => new Set([...prev, contentId]));
+                setEngagement(prev => Math.min(100, prev + 15));
+            };
+
+            const handleNpsScore = (contentId, score, e) => {
+                e.stopPropagation();
+                setNpsScores({...npsScores, [contentId]: score});
+                setViewedContent(prev => new Set([...prev, contentId]));
+                setEngagement(prev => Math.min(100, prev + 15));
+            };
+
+            const handleEmailSubmit = (contentId, e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setViewedContent(prev => new Set([...prev, contentId]));
+                setEngagement(prev => Math.min(100, prev + 15));
+            };
+
+            // Blend widgets across funnels - always show 4 widgets, filtered by ICP
+            const getBlendedContent = () => {
+                const result = [];
+                
+                // Filter content by ICP first (prioritize role, company size is optional)
+                const icpFilteredContent = mockContent.filter(c => {
+                    // Must match role
+                    if (c.targetRole !== userICP.role) return false;
+                    // Company size is optional - if specified, must match, otherwise always matches
+                    if (c.targetCompanySize && c.targetCompanySize !== userICP.companySize) return false;
+                    return true;
+                });
+                
+                // Start with current funnel
+                const currentContent = icpFilteredContent.filter(c => c.funnel === currentFunnel);
+                result.push(...currentContent);
+                
+                // If we need more, add from appropriate funnel
+                // Top -> Mid -> Bottom (natural progression)
+                // Mid -> Top (backfill from awareness, don't jump to convert)
+                // Bottom -> Mid (backfill from engagement)
+                if (result.length < 4) {
+                    let nextFunnel;
+                    if (currentFunnel === 'top') {
+                        nextFunnel = 'mid';
+                    } else if (currentFunnel === 'mid') {
+                        nextFunnel = 'top'; // Fill from top, not bottom
+                    } else {
+                        nextFunnel = 'mid';
+                    }
+                    const nextContent = icpFilteredContent.filter(c => c.funnel === nextFunnel);
+                    result.push(...nextContent);
+                }
+                
+                // If still need more, add from remaining funnel
+                if (result.length < 4) {
+                    let remainingFunnel;
+                    if (currentFunnel === 'top') {
+                        remainingFunnel = 'bottom';
+                    } else if (currentFunnel === 'mid') {
+                        remainingFunnel = 'bottom';
+                    } else {
+                        remainingFunnel = 'top';
+                    }
+                    const remainingContent = icpFilteredContent.filter(c => c.funnel === remainingFunnel);
+                    result.push(...remainingContent);
+                }
+                
+                return result.slice(0, 4);
+            };
+
+            const visibleContent = getBlendedContent();
+
+            return html`
+                <div>
+                    <!-- ICP Selector -->
+                    <div style=${{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        marginBottom: '20px',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '20px'
+                    }}>
+                        <div style=${{ flex: 1 }}>
+                            <label style=${{ fontSize: '0.9rem', fontWeight: '600', color: '#374151', marginBottom: '8px', display: 'block' }}>
+                                👤 User Role
+                            </label>
+                            <select
+                                value=${userICP.role}
+                                onChange=${(e) => setUserICP({...userICP, role: e.target.value})}
+                                style=${{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    border: '2px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    fontSize: '0.95rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <option value="vp">VP / Executive</option>
+                                <option value="ic">Manager / IC</option>
+                            </select>
+                        </div>
+                        
+                        <div style=${{ flex: 1 }}>
+                            <label style=${{ fontSize: '0.9rem', fontWeight: '600', color: '#374151', marginBottom: '8px', display: 'block' }}>
+                                🏢 Company Size
+                            </label>
+                            <select
+                                value=${userICP.companySize}
+                                onChange=${(e) => setUserICP({...userICP, companySize: e.target.value})}
+                                style=${{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    border: '2px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    fontSize: '0.95rem',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <option value="enterprise">Enterprise (1000+)</option>
+                                <option value="small">Small-Medium (1-999)</option>
+                            </select>
+                        </div>
+                        
+                        <div style=${{ 
+                            padding: '10px 20px',
+                            background: '#eff6ff',
+                            borderRadius: '8px',
+                            border: '2px solid #3b82f6'
+                        }}>
+                            <div style=${{ fontSize: '0.85rem', color: '#1e40af', fontWeight: '600' }}>
+                                Engagement
+                            </div>
+                            <div style=${{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e40af' }}>
+                                ${engagement}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style=${{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(4, 1fr)',
+                        gap: '20px'
+                    }}>
+                        ${visibleContent.map(content => html`
+                            <div
+                                key=${content.id}
+                                onClick=${() => handleContentClick(content.id)}
+                                style=${{
+                                    background: 'white',
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    border: viewedContent.has(content.id) ? '2px solid #3b82f6' : '2px solid transparent'
+                                }}
+                                onMouseEnter=${(e) => {
+                                    e.currentTarget.style.transform = 'translateY(-4px)';
+                                    e.currentTarget.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
+                                }}
+                                onMouseLeave=${(e) => {
+                                    e.currentTarget.style.transform = 'translateY(0)';
+                                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                                }}
+                            >
+                                <div style=${{
+                                    height: '140px',
+                                    background: '#f9fafb',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '4rem',
+                                    position: 'relative'
+                                }}>
+                                    ${ICONS[content.type]}
+                                    ${viewedContent.has(content.id) && html`
+                                        <div style=${{
+                                            position: 'absolute',
+                                            top: '12px',
+                                            left: '12px',
+                                            background: '#3b82f6',
+                                            color: 'white',
+                                            padding: '4px 8px',
+                                            borderRadius: '12px',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            ✓ Viewed
+                                        </div>
+                                    `}
+                                    <div style=${{
+                                        position: 'absolute',
+                                        top: '12px',
+                                        right: '12px',
+                                        padding: '4px 8px',
+                                        borderRadius: '12px',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 'bold',
+                                        background: content.funnel === 'top' ? '#eff6ff' : content.funnel === 'mid' ? '#f5f3ff' : '#ecfdf5',
+                                        color: content.funnel === 'top' ? '#1e40af' : content.funnel === 'mid' ? '#6b21a8' : '#047857'
+                                    }}>
+                                        ${content.funnel === 'top' ? '🔵 Explore' : content.funnel === 'mid' ? '🟣 Engage' : '🟢 Convert'}
+                                    </div>
+                                </div>
+                                <div style=${{ padding: '20px' }}>
+                                    <h3 style=${{
+                                        margin: '0 0 8px 0',
+                                        fontSize: '1.1rem',
+                                        fontWeight: '600',
+                                        color: '#1f2937',
+                                        lineHeight: '1.4'
+                                    }}>
+                                        ${content.title}
+                                    </h3>
+                                    <p style=${{
+                                        margin: '0 0 16px 0',
+                                        fontSize: '0.9rem',
+                                        color: '#6b7280',
+                                        lineHeight: '1.5'
+                                    }}>
+                                        ${content.description}
+                                    </p>
+                                    
+                                    ${content.type === 'poll' ? html`
+                                        <div onClick=${(e) => e.stopPropagation()}>
+                                            ${['Lead generation', 'Content strategy', 'Event ROI', 'Attendee engagement'].map((option, idx) => html`
+                                                <label key=${idx} style=${{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '10px',
+                                                    marginBottom: '8px',
+                                                    border: '2px solid',
+                                                    borderColor: pollAnswers[content.id] === option ? '#3b82f6' : '#e5e7eb',
+                                                    borderRadius: '8px',
+                                                    cursor: 'pointer',
+                                                    background: pollAnswers[content.id] === option ? '#eff6ff' : 'white',
+                                                    transition: 'all 0.2s'
+                                                }}>
+                                                    <input 
+                                                        type="radio" 
+                                                        name=${`poll-${content.id}`}
+                                                        checked=${pollAnswers[content.id] === option}
+                                                        onClick=${(e) => handlePollAnswer(content.id, option, e)}
+                                                        style=${{ marginRight: '10px', cursor: 'pointer' }}
+                                                    />
+                                                    <span style=${{ fontSize: '0.9rem', color: '#1f2937' }}>${option}</span>
+                                                </label>
+                                            `)}
+                                        </div>
+                                    ` : content.type === 'nps' ? html`
+                                        <div onClick=${(e) => e.stopPropagation()}>
+                                            <div style=${{ fontSize: '0.85rem', color: '#6b7280', marginBottom: '8px', textAlign: 'center' }}>
+                                                Rate 1-5
+                                            </div>
+                                            <div style=${{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                                                ${[1,2,3,4,5].map(score => html`
+                                                    <button
+                                                        key=${score}
+                                                        onClick=${(e) => handleNpsScore(content.id, score, e)}
+                                                        style=${{
+                                                            width: '48px',
+                                                            height: '48px',
+                                                            border: '2px solid',
+                                                            borderColor: npsScores[content.id] === score ? '#3b82f6' : '#e5e7eb',
+                                                            borderRadius: '8px',
+                                                            background: npsScores[content.id] === score ? '#3b82f6' : 'white',
+                                                            color: npsScores[content.id] === score ? 'white' : '#1f2937',
+                                                            fontSize: '1.2rem',
+                                                            fontWeight: 'bold',
+                                                            cursor: 'pointer',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        ${score}
+                                                    </button>
+                                                `)}
+                                            </div>
+                                        </div>
+                                    ` : content.type === 'newsletter' ? html`
+                                        <form onSubmit=${(e) => handleEmailSubmit(content.id, e)} onClick=${(e) => e.stopPropagation()}>
+                                            <input
+                                                type="email"
+                                                placeholder="Enter your email"
+                                                value=${emailInputs[content.id] || ''}
+                                                onInput=${(e) => setEmailInputs({...emailInputs, [content.id]: e.target.value})}
+                                                style=${{
+                                                    width: '100%',
+                                                    padding: '12px',
+                                                    border: '2px solid #e5e7eb',
+                                                    borderRadius: '8px',
+                                                    fontSize: '0.9rem',
+                                                    marginBottom: '8px'
+                                                }}
+                                                required
+                                            />
+                                            <button type="submit" style=${{
+                                                width: '100%',
+                                                padding: '12px',
+                                                background: '#3b82f6',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                fontWeight: '600',
+                                                cursor: 'pointer'
+                                            }}>
+                                                📮 Subscribe
+                                            </button>
+                                        </form>
+                                    ` : content.type === 'survey' ? html`
+                                        <form onSubmit=${(e) => handleEmailSubmit(content.id, e)} onClick=${(e) => e.stopPropagation()}>
+                                            <textarea
+                                                placeholder="Share your feedback..."
+                                                rows="3"
+                                                style=${{
+                                                    width: '100%',
+                                                    padding: '12px',
+                                                    border: '2px solid #e5e7eb',
+                                                    borderRadius: '8px',
+                                                    fontSize: '0.9rem',
+                                                    marginBottom: '8px',
+                                                    resize: 'vertical',
+                                                    fontFamily: 'inherit'
+                                                }}
+                                            />
+                                            <button type="submit" style=${{
+                                                width: '100%',
+                                                padding: '12px',
+                                                background: '#8b5cf6',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                fontWeight: '600',
+                                                cursor: 'pointer'
+                                            }}>
+                                                📝 Submit Feedback
+                                            </button>
+                                        </form>
+                                    ` : html`
+                                        <button style=${{
+                                            width: '100%',
+                                            padding: '12px',
+                                            background: content.funnel === 'bottom' ? '#10b981' : '#3b82f6',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontWeight: '600',
+                                            cursor: 'pointer'
+                                        }}>
+                                            ${content.type === 'demo' ? '🎯 Book Demo' : 
+                                              content.type === 'webinar' ? '📹 Register' : 
+                                              content.type === 'doc' ? '📥 Download' : 
+                                              content.type === 'video' ? '▶️ Watch' : '👀 View'}
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        `)}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render the component
+        render(html`<${PersonalizedContent} />`, document.getElementById('personalized_content'));
+        console.log('✨ AI Personalization demo initialized!');
+    </script>
+    
+    <script>
+        // Simulate iframe message sending
+        function simulateAction(actionType) {
+            const messages = {
+                'poll_answer': {
+                    event: 'user_poll_answer',
+                    data: {
+                        pollId: 'poll_' + Math.random().toString(36).substr(2, 9),
+                        answer: 'Option ' + Math.floor(Math.random() * 4 + 1),
+                        question: 'What is your biggest challenge?',
+                        timestamp: Date.now()
+                    }
+                },
+                'cta_click': {
+                    event: 'user_cta_click',
+                    data: {
+                        ctaId: 'cta_' + Math.random().toString(36).substr(2, 9),
+                        ctaName: ['Learn More', 'Get Started', 'Book Demo', 'Download'][Math.floor(Math.random() * 4)],
+                        timestamp: Date.now()
+                    }
+                },
+                'resource_download': {
+                    event: 'user_resource_click',
+                    data: {
+                        resourceId: 'resource_' + Math.random().toString(36).substr(2, 9),
+                        resourceName: ['Whitepaper.pdf', 'Technical Guide.pdf', 'Case Study.pdf'][Math.floor(Math.random() * 3)],
+                        timestamp: Date.now()
+                    }
+                }
+            };
+
+            const message = messages[actionType];
+            console.log('🚀 Simulating action:', message);
+            
+            // Send message to window (simulating iframe postMessage)
+            window.postMessage(message, '*');
+            
+            // Visual feedback
+            event.target.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                event.target.style.transform = '';
+            }, 100);
+        }
+
+    </script>
+</body>
+</html>
+

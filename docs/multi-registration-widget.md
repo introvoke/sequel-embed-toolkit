@@ -249,3 +249,10 @@ The widget supports all modern browsers:
 
 For questions or issues with the Multi-Registration widget, please contact Sequel support or refer to the main [README](../README.md) documentation.
 
+
+
+
+
+
+
+
