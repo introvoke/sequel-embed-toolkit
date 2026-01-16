@@ -46,9 +46,11 @@ interface CheckAndRenderEventParams {
 
 interface RenderEventParams {
   eventId: string;
-  joinCode: string;
+  joinCode?: string;
   hybrid?: boolean;
   isPopup?: boolean;
+  viewReplay?: string;
+  registrationOnly?: boolean;
 }
 
 // Helper function to remove the element and its parent if the parent is empty
@@ -1355,6 +1357,8 @@ class Sequel {
     joinCode,
     hybrid,
     isPopup,
+    viewReplay,
+    registrationOnly,
   }: RenderEventParams) => {
     // Render the EventRenderer component which:
     // 1. Immediately renders the iframe (no blocking)
@@ -1363,9 +1367,11 @@ class Sequel {
     renderApp(
       <EventRenderer
         eventId={eventId}
-        joinCode={joinCode}
+        joinCode={joinCode || ""}
         hybrid={hybrid}
         isPopup={isPopup}
+        viewReplay={viewReplay}
+        registrationOnly={registrationOnly}
       />
     );
   };

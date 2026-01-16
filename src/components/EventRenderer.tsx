@@ -11,6 +11,8 @@ interface EventRendererProps {
   joinCode: string;
   hybrid?: boolean;
   isPopup?: boolean;
+  viewReplay?: string;
+  registrationOnly?: boolean;
 }
 
 const INTER_FONT = {
@@ -23,6 +25,8 @@ export const EventRenderer = ({
   joinCode,
   hybrid,
   isPopup,
+  viewReplay,
+  registrationOnly,
 }: EventRendererProps) => {
   const shadowRoot = useShadowRoot();
   const { data, isLoading } = useQuery({
@@ -67,6 +71,8 @@ export const EventRenderer = ({
         joinCode={joinCode}
         hybrid={hybrid}
         isPopup={isPopup}
+        viewReplay={viewReplay}
+        registrationOnly={registrationOnly}
       />
 
       {/* Widgets render after loading, only if there are any */}
