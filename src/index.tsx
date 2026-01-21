@@ -19,6 +19,7 @@ import {
 import { MarketoRegistrationSuccess } from "@src/routes/MarketoRegistrationSuccess";
 import { CountdownIframe } from "@src/routes/CountdownIframe";
 import { EventRenderer } from "@src/components/EventRenderer";
+import { StandaloneWidgetRenderer } from "@src/components/StandaloneWidgetRenderer";
 
 interface RenderMarketoFormParams {
   sequelEventId: string;
@@ -51,6 +52,12 @@ interface RenderEventParams {
   isPopup?: boolean;
   viewReplay?: string;
   registrationOnly?: boolean;
+}
+
+interface EmbedWidgetsConfig {
+  companyId: string;
+  widgetSetId: string;
+  targetId: string;
 }
 
 // Helper function to remove the element and its parent if the parent is empty
@@ -1973,6 +1980,49 @@ class Sequel {
         }
       }
     });
+  };
+
+  /**
+   * Embeds standalone widget sets into a specified target element
+   */
+  static embedWidgets = async ({
+    companyId,
+    widgetSetId,
+    targetId,
+  }: EmbedWidgetsConfig) => {
+    if (!companyId) {
+      console.error("Company ID is required for Sequel.embedWidgets()");
+      return;
+    }
+
+    if (!widgetSetId) {
+      console.error("Widget Set ID is required for Sequel.embedWidgets()");
+      return;
+    }
+
+    if (!targetId) {
+      console.error("Target ID is required for Sequel.embedWidgets()");
+      return;
+    }
+
+    // Find target element
+    const targetElement = document.getElementById(targetId);
+    if (!targetElement) {
+      console.error(
+        `Target element with id "${targetId}" not found. Please add a div with this id to your HTML.`
+      );
+      return;
+    }
+
+    // Render StandaloneWidgetRenderer which handles:
+    // 1. Fetching data via react-query
+    // 2. Loading fonts into shadow DOM
+    // 3. Applying font styles
+    // 4. Rendering widgets or nothing (on error/empty/loading)
+    renderApp(
+      <StandaloneWidgetRenderer companyId={companyId} widgetSetId={widgetSetId} />,
+      targetElement
+    );
   };
 }
 

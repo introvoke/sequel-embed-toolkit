@@ -64,17 +64,12 @@ export const DescriptionWidget: React.FC<DescriptionWidgetProps> = ({
 
   return (
     <div
-      className="sequel-description-widget w-full"
       style={{
         color: fontColor,
-        marginTop: spacing,
-        marginBottom: spacing,
+        paddingTop: spacing,
+        paddingBottom: spacing,
       }}
-    >
-      <div
-        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-        className="flex flex-col gap-2 [&_a]:underline [&_a]:text-inherit [&_h1]:text-heading-lg [&_h2]:text-heading-md [&_h3]:text-heading-sm [&_p]:text-body-sm [&_ul]:text-body-sm [&_ol]:text-body-sm"
-      />
-    </div>
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+    />
   );
 };

@@ -54,20 +54,22 @@ export const EventsGridWidget: React.FC<EventsGridWidgetProps> = ({
   }
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {normalizedEvents.map((event) => {
-        const eventEndDate = new Date(event.endDate).getTime();
-        const isUpcoming = eventEndDate > currentDate;
+    <div className="@container w-full">
+      <div className="grid grid-cols-1 gap-4 @[600px]:grid-cols-2 @[900px]:grid-cols-3">
+        {normalizedEvents.map((event) => {
+          const eventEndDate = new Date(event.endDate).getTime();
+          const isUpcoming = eventEndDate > currentDate;
 
-        return (
-          <EventCard
-            key={event.uid}
-            event={event}
-            isUpcoming={isUpcoming}
-            showDescription={true}
-          />
-        );
-      })}
+          return (
+            <EventCard
+              key={event.uid}
+              event={event}
+              isUpcoming={isUpcoming}
+              showDescription={true}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };
