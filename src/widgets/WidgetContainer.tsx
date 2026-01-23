@@ -36,10 +36,12 @@ type LocalEventEmbed = {
 type LocalDescription = {
   type: "description";
   data: {
-    html: string;
+    title?: string;
+    content?: string;
+    html: string; // legacy field
   };
   config: {
-    horizontalSpacing?: "none" | "small" | "medium" | "large";
+    verticalSpacing?: "none" | "small" | "medium" | "large";
     fontColor?: string;
   };
 };

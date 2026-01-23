@@ -1,11 +1,13 @@
-import React, { useMemo } from "react";
-import DOMPurify from "dompurify";
+import React from "react";
+import { Description } from "@introvoke/react/components/widgets/Description";
 
 // Local type definition until API types are available
 type DescriptionWidgetType = {
   type: "description";
   data: {
-    html: string;
+    title?: string;
+    content?: string;
+    html: string; // legacy field
   };
   config: {
     verticalSpacing?: "none" | "small" | "medium" | "large";
@@ -29,47 +31,25 @@ export const DescriptionWidget: React.FC<DescriptionWidgetProps> = ({
 }) => {
   const { data, config } = widget;
 
-  // Sanitize HTML
-  const sanitizedHtml = useMemo(() => {
-    return DOMPurify.sanitize(data.html, {
-      ALLOWED_TAGS: [
-        "h1",
-        "h2",
-        "h3",
-        "h4",
-        "h5",
-        "h6",
-        "p",
-        "strong",
-        "b",
-        "em",
-        "i",
-        "ul",
-        "ol",
-        "li",
-        "a",
-        "br",
-      ],
-      ALLOWED_ATTR: ["href", "target", "rel"],
-    });
-  }, [data.html]);
-
-  // Don't render if no content
-  if (!sanitizedHtml.trim()) {
-    return null;
-  }
-
   const spacing = SPACING_VALUES[config.verticalSpacing ?? "medium"];
   const fontColor = config.fontColor ?? "#000000";
 
+  // Use content if available, fall back to html for backward compatibility
+  const content = data.content || data.html || "";
+
+  // Don't render if no content and no title
+  if (!content && !data.title) {
+    return null;
+  }
+
   return (
-    <div
+    <Description
+      title={data.title}
+      content={content}
       style={{
-        color: fontColor,
-        paddingTop: spacing,
-        paddingBottom: spacing,
-      }}
-      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+        "--sequel-description-widget-fontColor": fontColor,
+        "--sequel-description-widget-verticalSpacing": spacing,
+      } as React.CSSProperties}
     />
   );
 };

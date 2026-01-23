@@ -5,11 +5,12 @@ import { DescriptionWidget } from "@src/widgets/DescriptionWidget";
 const mockWidget = {
   type: "description" as const,
   data: {
-    html: `
-      <h2>About This Event</h2>
+    title: "About This Event",
+    content: `
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
       <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore. <a href="#">Learn more</a></p>
     `,
+    html: "",
   },
   config: {
     verticalSpacing: "medium" as const,
@@ -35,6 +36,48 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: { widget: mockWidget },
+};
+
+export const WithoutTitle: Story = {
+  args: {
+    widget: {
+      ...mockWidget,
+      data: {
+        ...mockWidget.data,
+        title: undefined,
+      },
+    },
+  },
+};
+
+export const ContentOnly: Story = {
+  args: {
+    widget: {
+      ...mockWidget,
+      data: {
+        title: undefined,
+        content: "<p>This is a simple description without a title.</p>",
+        html: "",
+      },
+    },
+  },
+};
+
+export const LegacyHtmlField: Story = {
+  args: {
+    widget: {
+      type: "description" as const,
+      data: {
+        title: "Legacy Format",
+        content: undefined,
+        html: `
+          <h2>Using HTML Field</h2>
+          <p>This story demonstrates backward compatibility with the legacy html field.</p>
+        `,
+      },
+      config: { verticalSpacing: "medium", fontColor: "#ffffff" },
+    },
+  },
 };
 
 export const LightMode: Story = {
@@ -75,7 +118,7 @@ export const Empty: Story = {
   args: {
     widget: {
       ...mockWidget,
-      data: { html: "" },
+      data: { title: undefined, content: "", html: "" },
     },
   },
 };
