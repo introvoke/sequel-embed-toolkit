@@ -23,7 +23,6 @@ export const StandaloneWidgetRenderer = ({
   const { data, isLoading, error } = useQuery({
     queryKey: ["standaloneWidgets", companyId, widgetSetId],
     queryFn: () =>
-      // @ts-expect-error - getStandaloneWidgets endpoint will be available after sequel-api implementation
       trpcSequelApi.widgets.getStandaloneWidgets.query({
         companyId,
         widgetSetId,

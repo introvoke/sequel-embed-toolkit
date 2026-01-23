@@ -68,16 +68,15 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
         <div key={index} className="w-full">
           {widget.type === "eventEmbed" && (
             <EventEmbedWidget
-              widget={
-                "data" in widget && widget.data?.eventId
-                  ? widget
-                  : ({
-                      type: "eventEmbed",
-                      data: {
-                        eventId: (widget as LocalEventEmbed).config?.id || "",
-                      },
-                    } as any)
-              }
+              widget={{
+                type: "eventEmbed",
+                data: {
+                  eventId:
+                    ("data" in widget && widget.data?.eventId) ||
+                    (widget as LocalEventEmbed).config?.id ||
+                    "",
+                },
+              }}
               joinCode={joinCode}
               hybrid={hybrid}
               isPopup={isPopup}

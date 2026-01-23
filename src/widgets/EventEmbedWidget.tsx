@@ -1,11 +1,11 @@
 import React from "react";
 import { EmbedIframe } from "@src/routes/EmbedIframe";
-import type { AppRouter } from "@introvoke/sequel-trpc";
 
-type GetWidgetsOutput =
-  AppRouter["widgets"]["getWidgets"]["_def"]["_output_out"];
-type ApiWidget = GetWidgetsOutput["widgets"][number];
-type EventEmbedWidgetType = Extract<ApiWidget, { type: "eventEmbed" }>;
+// Local type definition - eventEmbed is not in API types
+type EventEmbedWidgetType = {
+  type: "eventEmbed";
+  data: { eventId: string };
+};
 
 interface EventEmbedWidgetProps {
   widget: EventEmbedWidgetType;

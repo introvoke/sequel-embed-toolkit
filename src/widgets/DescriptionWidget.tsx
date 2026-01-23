@@ -43,13 +43,14 @@ export const DescriptionWidget: React.FC<DescriptionWidgetProps> = ({
   }
 
   return (
-    <Description
-      title={data.title}
-      content={content}
-      style={{
-        "--sequel-description-widget-fontColor": fontColor,
-        "--sequel-description-widget-verticalSpacing": spacing,
-      } as React.CSSProperties}
-    />
+    <div style={{ marginTop: spacing, marginBottom: spacing }}>
+      <Description
+        title={data.title}
+        content={content}
+        style={{
+          "--sequel-description-widget-fontColor": fontColor,
+        } as React.CSSProperties}
+      />
+    </div>
   );
 };

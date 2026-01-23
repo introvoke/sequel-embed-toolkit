@@ -3,10 +3,15 @@ import { useEffect, useState } from "react";
 import "@src/index.css";
 import { WidgetContainer } from "@src/widgets/WidgetContainer";
 import { trpcSequelApi } from "@src/api/apiConfig";
-import type { AppRouter } from "@introvoke/sequel-trpc";
 
-type PreviewLayout =
-  AppRouter["widgets"]["previewWidgets"]["_def"]["_input_in"]["layout"];
+// Local type definition - previewWidgets endpoint may not be in API types
+type PreviewLayout = {
+  title: string;
+  rows: Array<{
+    type: string;
+    config?: Record<string, unknown>;
+  }>;
+};
 
 const layoutEmbedCountdownDescriptionAgenda: PreviewLayout = {
   title: "Embed + Countdown + Description + Agenda (preview-safe)",
@@ -69,13 +74,14 @@ const RenderEventWithWidgets: React.FC<{
 
   useEffect(() => {
     let mounted = true;
+    // @ts-expect-error - previewWidgets endpoint may not be in published API types yet
     trpcSequelApi.widgets.previewWidgets
       .query({ layout })
-      .then((res) => {
+      .then((res: { widgets: unknown[] }) => {
         if (!mounted) return;
         setWidgets(res.widgets);
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         console.error("Failed to fetch preview widgets", err);
         if (mounted) setError("Failed to load preview widgets");
       });
