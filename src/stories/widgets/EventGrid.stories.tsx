@@ -1,92 +1,52 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { useEffect } from "react";
+import { EventsGridWidget } from "@src/widgets/EventsGridWidget";
 
-const EventGridWidget: React.FC<{ 
-  companyId: string; 
-  darkMode?: boolean; 
-  excludeText?: string; 
-  showDescription?: boolean;
-}> = ({ companyId, darkMode = false, excludeText = "", showDescription = false }) => {
-  useEffect(() => {
-    window.Sequel.renderEventGrid({
-      companyId,
-      darkMode,
-      excludeText,
-      showDescription,
-    });
-  }, [companyId, darkMode, excludeText, showDescription]);
-
-  return (
-    <div 
-      className={`p-8 min-h-screen ${darkMode ? 'bg-black' : 'bg-white'}`}
-      style={{ backgroundColor: darkMode ? '#000000' : '#ffffff' }}
-    >
-      <div id="sequel_root"></div>
-    </div>
-  );
+const widget = {
+  type: "eventGrid" as const,
+  data: {
+    events: [
+      {
+        id: "evt-1",
+        name: "Launch Day",
+        startDate: new Date(),
+        endDate: new Date(Date.now() + 60 * 60 * 1000),
+        description: "Kick off and demos",
+        picture: "https://placekitten.com/400/240",
+      },
+      {
+        id: "evt-2",
+        name: "Workshop",
+        startDate: new Date(Date.now() + 2 * 60 * 60 * 1000),
+        endDate: new Date(Date.now() + 3 * 60 * 60 * 1000),
+        thumbnail: "https://placekitten.com/401/240",
+      },
+      {
+        id: "evt-3",
+        name: "Fireside Chat",
+        startDate: new Date(Date.now() + 4 * 60 * 60 * 1000),
+        endDate: new Date(Date.now() + 5 * 60 * 60 * 1000),
+        picture: "https://placekitten.com/402/240",
+      },
+    ],
+  },
+  config: {
+    cardsToDisplay: 3,
+  },
 };
 
 const meta = {
   title: "Widgets/EventGrid",
-  component: EventGridWidget,
+  component: EventsGridWidget,
   parameters: {
-    layout: "fullscreen",
+    layout: "padded",
   },
-  argTypes: {
-    companyId: {
-      control: { type: "text" },
-      description: "The company ID to fetch events for",
-    },
-    darkMode: {
-      control: { type: "boolean" },
-      description: "Enable dark mode styling",
-    },
-    excludeText: {
-      control: { type: "text" },
-      description: "Text to exclude events starting with (e.g., 'test')",
-    },
-    showDescription: {
-      control: { type: "boolean" },
-      description: "Show event descriptions below the title",
-    },
-  },
-} satisfies Meta<typeof EventGridWidget>;
+} satisfies Meta<typeof EventsGridWidget>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const LightMode: Story = {
+export const Default: Story = {
   args: {
-    companyId: "8f956eae-f2ee-4095-b00f-58edbbaeaa23", // Replace with a real company ID that has events
-    darkMode: false,
-    excludeText: "",
-    showDescription: false,
-  },
-};
-
-export const DarkMode: Story = {
-  args: {
-    companyId: "8f956eae-f2ee-4095-b00f-58edbbaeaa23", // Replace with a real company ID that has events
-    darkMode: true,
-    excludeText: "",
-    showDescription: false,
-  },
-};
-
-export const WithDescription: Story = {
-  args: {
-    companyId: "8f956eae-f2ee-4095-b00f-58edbbaeaa23", // Replace with a real company ID that has events
-    darkMode: false,
-    excludeText: "",
-    showDescription: true,
-  },
-};
-
-export const DarkModeWithDescription: Story = {
-  args: {
-    companyId: "8f956eae-f2ee-4095-b00f-58edbbaeaa23", // Replace with a real company ID that has events
-    darkMode: true,
-    excludeText: "",
-    showDescription: true,
+    widget,
   },
 };

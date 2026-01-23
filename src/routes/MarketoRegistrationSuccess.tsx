@@ -1,7 +1,9 @@
-import { Button } from "@src/components/Button";
-import { FeaturedIcon } from "@src/components/FeaturedIcon";
-import CheckVerifiedIcon from "@src/components/icons/CheckVerified01";
-import CalendarPlusIcon from "@src/components/icons/CalendarPlus02";
+import {
+  Button,
+  FeaturedIcon,
+  CheckVerified01 as CheckVerifiedIcon,
+  CalendarPlus02 as CalendarPlusIcon,
+} from "@src/lib/introvoke-exports";
 import { Event } from "@src/api/event/event";
 import AddToCalendarButton from "@src/components/icons/AddToCalendarButton";
 

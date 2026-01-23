@@ -1,24 +1,43 @@
+import { useMemo } from "react";
 import { ApiConfig } from "@src/api/apiConfig";
 
 interface EmbedIframeProps {
   eventId: string;
   joinCode: string;
   hybrid?: boolean;
+  isPopup?: boolean;
+  viewReplay?: string;
+  registrationOnly?: boolean;
 }
 
-export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup }: EmbedIframeProps & { isPopup?: boolean }) => {
-  // Get current URL search parameters
-  const searchParams = new URLSearchParams(window.location.search);
-  
-  // Create base URL with required parameters
-  const baseUrl = `${ApiConfig.GetEmbedUrl()}/event/${eventId}?joinCode=${joinCode}&hybrid=${hybrid}`;
-  
-  // Add all other search parameters
-  const iframeUrl = Array.from(searchParams.entries()).reduce((url, [key, value]) => {
-    // Skip parameters that are already included in the base URL
-    if (key === 'joinCode' || key === 'hybrid') return url;
-    return `${url}&${key}=${value}`;
-  }, baseUrl);
+export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup, viewReplay, registrationOnly }: EmbedIframeProps) => {
+  const iframeUrl = useMemo(() => {
+    const url = new URL(`${ApiConfig.GetEmbedUrl()}/event/${eventId}`);
+    const params = url.searchParams;
+
+    // Set core parameters
+    params.set('joinCode', joinCode);
+    params.set('hybrid', String(hybrid ?? false));
+
+    // Set optional parameters if provided
+    if (viewReplay) {
+      params.set('viewReplay', viewReplay);
+    }
+    if (registrationOnly) {
+      params.set('registrationOnly', 'true');
+    }
+
+    // Merge in any additional search parameters from the current page URL
+    const currentPageParams = new URLSearchParams(window.location.search);
+    currentPageParams.forEach((value, key) => {
+      // Skip parameters we've already set
+      if (!params.has(key)) {
+        params.set(key, value);
+      }
+    });
+
+    return url.toString();
+  }, [eventId, joinCode, hybrid, viewReplay, registrationOnly]);
 
   const iframeStyle = isPopup 
     ? {

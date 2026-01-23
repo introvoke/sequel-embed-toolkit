@@ -6,6 +6,7 @@ const EventEmbed: React.FC<{ eventId: string }> = ({ eventId }) => {
     window.Sequel.embedSequel({
       sequelEventId: eventId,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return <div id="sequel_root"></div>;

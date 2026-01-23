@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sequel Widget Template</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="sequel_root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+    <script>
+      // Admin replaces {{TEMPLATE_DATA}} with JSON; we parse before use
+      const __TEMPLATE_DATA__ = "{{TEMPLATE_DATA}}";
+      const layout =
+        __TEMPLATE_DATA__ && __TEMPLATE_DATA__ !== "{{TEMPLATE_DATA}}"
+          ? JSON.parse(__TEMPLATE_DATA__)
+          : {};
+      window.addEventListener("load", () => {
+        window.Sequel?.renderPreviewWidgets({ layout });
+      });
+    </script>
+  </body>
+</html>

@@ -3,7 +3,7 @@
  *
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export const deepFreeze = <T extends Record<string, any>>(obj: T): T => {
   Object.getOwnPropertyNames(obj).forEach((prop) => {
     if (

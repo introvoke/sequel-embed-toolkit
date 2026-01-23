@@ -12,28 +12,50 @@ export const onDocumentReady = (callback: () => void) => {
   }
 };
 
-let appRoot: Root;
-export const renderApp = (app: React.ReactNode) => {
-  appRoot?.unmount();
-  appRoot = createRoot(document.getElementById("sequel_root")!);
-  appRoot.render(
-    // <React.StrictMode>
-    <Providers>{app}</Providers>
-    // </React.StrictMode>
-  );
+// Map to track roots per container element - fixes multiple widget rendering bug
+const appRoots = new Map<HTMLElement, Root>();
+
+export const renderApp = (app: React.ReactNode, container?: HTMLElement) => {
+  // If a container is provided, use per-container root management
+  if (container) {
+    const existingRoot = appRoots.get(container);
+    if (existingRoot) {
+      // Reuse existing root for this container
+      existingRoot.render(<Providers>{app}</Providers>);
+      return;
+    }
+    // Create new root for this container
+    const newRoot = createRoot(container);
+    appRoots.set(container, newRoot);
+    newRoot.render(<Providers>{app}</Providers>);
+    return;
+  }
+
+  // Default behavior for backward compatibility (no container specified)
+  // Use singleton pattern for sequel_root
+  const targetElement = document.getElementById("sequel_root")!;
+  const existingRoot = appRoots.get(targetElement);
+  if (existingRoot) {
+    existingRoot.render(<Providers>{app}</Providers>);
+  } else {
+    const newRoot = createRoot(targetElement);
+    appRoots.set(targetElement, newRoot);
+    newRoot.render(<Providers>{app}</Providers>);
+  }
 };
 
 export const renderAppInsideDocument = (
   app: React.ReactNode,
   document: any
 ) => {
-  appRoot?.unmount();
-  appRoot = createRoot(document!);
-  appRoot.render(
-    // <React.StrictMode>
-    <Providers>{app}</Providers>
-    // </React.StrictMode>
-  );
+  const existingRoot = appRoots.get(document);
+  if (existingRoot) {
+    existingRoot.render(<Providers>{app}</Providers>);
+  } else {
+    const newRoot = createRoot(document!);
+    appRoots.set(document, newRoot);
+    newRoot.render(<Providers>{app}</Providers>);
+  }
 };
 
 export function forceLinksToNewTab() {
