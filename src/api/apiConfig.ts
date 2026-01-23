@@ -46,8 +46,7 @@ const DemoAppEndpoints: Endpoints = {
 /** These are the new endpoints hosted in the new Sequel API repo using tRPC */
 const SequelApiEndpoints: Endpoints = {
   PRODUCTION: "https://sequel-api.sequelvideo.com",
-  // STAGING: "https://stg-sequel-api.sequelvideo.com",
-  STAGING: "http://localhost:3345",
+  STAGING: "https://stg-sequel-api.sequelvideo.com",
   DEV: "https://dev-sequel-api.sequelvideo.com",
   TEST: "https://test-sequel-api.sequelvideo.com",
 };
