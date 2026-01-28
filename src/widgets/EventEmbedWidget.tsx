@@ -9,15 +9,13 @@ type EventEmbedWidgetType = {
 
 interface EventEmbedWidgetProps {
   widget: EventEmbedWidgetType;
-  joinCode: string;
-  hybrid?: boolean;
+  joinCode?: string;
   isPopup?: boolean;
 }
 
 export const EventEmbedWidget: React.FC<EventEmbedWidgetProps> = ({
   widget,
   joinCode,
-  hybrid,
   isPopup,
 }) => {
   const eventId = widget.data.eventId;
@@ -27,7 +25,6 @@ export const EventEmbedWidget: React.FC<EventEmbedWidgetProps> = ({
       <EmbedIframe
         eventId={eventId}
         joinCode={joinCode}
-        hybrid={hybrid}
         isPopup={isPopup}
       />
     </div>

@@ -51,15 +51,13 @@ type Widget = ApiWidget | WidgetEventAgenda | LocalEventEmbed | LocalDescription
 
 interface WidgetContainerProps {
   widgets: Widget[];
-  joinCode: string;
-  hybrid?: boolean;
+  joinCode?: string;
   isPopup?: boolean;
 }
 
 export const WidgetContainer: React.FC<WidgetContainerProps> = ({
   widgets,
   joinCode,
-  hybrid,
   isPopup,
 }) => {
   return (
@@ -78,7 +76,6 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
                 },
               }}
               joinCode={joinCode}
-              hybrid={hybrid}
               isPopup={isPopup}
             />
           )}

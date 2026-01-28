@@ -8,8 +8,7 @@ import { useShadowRoot } from "@src/components/Providers";
 
 interface EventRendererProps {
   eventId: string;
-  joinCode: string;
-  hybrid?: boolean;
+  joinCode?: string;
   isPopup?: boolean;
   viewReplay?: string;
   registrationOnly?: boolean;
@@ -23,7 +22,6 @@ const INTER_FONT = {
 export const EventRenderer = ({
   eventId,
   joinCode,
-  hybrid,
   isPopup,
   viewReplay,
   registrationOnly,
@@ -69,7 +67,6 @@ export const EventRenderer = ({
       <EmbedIframe
         eventId={eventId}
         joinCode={joinCode}
-        hybrid={hybrid}
         isPopup={isPopup}
         viewReplay={viewReplay}
         registrationOnly={registrationOnly}
@@ -80,7 +77,6 @@ export const EventRenderer = ({
         <WidgetContainer
           widgets={widgets as any[]}
           joinCode={joinCode}
-          hybrid={hybrid}
           isPopup={isPopup}
         />
       )}

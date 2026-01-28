@@ -48,7 +48,6 @@ interface CheckAndRenderEventParams {
 interface RenderEventParams {
   eventId: string;
   joinCode?: string;
-  hybrid?: boolean;
   isPopup?: boolean;
   viewReplay?: string;
   registrationOnly?: boolean;
@@ -1359,23 +1358,29 @@ class Sequel {
     }
   };
 
-  static renderEvent = ({
+  static renderEvent = async ({
     eventId,
     joinCode,
-    hybrid,
     isPopup,
     viewReplay,
     registrationOnly,
   }: RenderEventParams) => {
+    // Validate and get joinCode from URL params or cookies
+    const validatedJoinCode = await getValidatedJoinCode({ eventId });
+    
+    // Use explicitly provided joinCode if available, otherwise use validated one
+    const finalJoinCode = joinCode || validatedJoinCode || undefined;
+    
     // Render the EventRenderer component which:
     // 1. Immediately renders the iframe (no blocking)
     // 2. Asynchronously loads widgets via react-query
     // 3. Only renders widgets if the API returns any
+    // Note: The EmbedIframe component will read ALL search params from window.location.search
+    // and merge them with any explicitly provided params
     renderApp(
       <EventRenderer
         eventId={eventId}
-        joinCode={joinCode || ""}
-        hybrid={hybrid}
+        joinCode={finalJoinCode}
         isPopup={isPopup}
         viewReplay={viewReplay}
         registrationOnly={registrationOnly}
@@ -1433,7 +1438,6 @@ class Sequel {
     Sequel.renderEvent({
       eventId: sequelEventId,
       joinCode: joinCode || "",
-      hybrid: true,
       isPopup: isPopup,
     });
   };

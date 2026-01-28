@@ -3,41 +3,41 @@ import { ApiConfig } from "@src/api/apiConfig";
 
 interface EmbedIframeProps {
   eventId: string;
-  joinCode: string;
-  hybrid?: boolean;
+  joinCode?: string;
   isPopup?: boolean;
   viewReplay?: string;
   registrationOnly?: boolean;
 }
 
-export const EmbedIframe = ({ eventId, joinCode, hybrid, isPopup, viewReplay, registrationOnly }: EmbedIframeProps) => {
+export const EmbedIframe = ({ eventId, joinCode, isPopup, viewReplay, registrationOnly }: EmbedIframeProps) => {
   const iframeUrl = useMemo(() => {
     const url = new URL(`${ApiConfig.GetEmbedUrl()}/event/${eventId}`);
     const params = url.searchParams;
 
-    // Set core parameters
-    params.set('joinCode', joinCode);
-    params.set('hybrid', String(hybrid ?? false));
-
-    // Set optional parameters if provided
-    if (viewReplay) {
-      params.set('viewReplay', viewReplay);
-    }
-    if (registrationOnly) {
-      params.set('registrationOnly', 'true');
-    }
-
-    // Merge in any additional search parameters from the current page URL
+    // First, read ALL search parameters from the current page URL
+    // This includes joinCode, hybrid, viewReplay, registrationOnly, and any other custom params
     const currentPageParams = new URLSearchParams(window.location.search);
     currentPageParams.forEach((value, key) => {
-      // Skip parameters we've already set
-      if (!params.has(key)) {
-        params.set(key, value);
-      }
+      params.set(key, value);
     });
 
+    // Then, set explicitly provided parameters (these override URL params)
+    if (joinCode !== undefined) {
+      params.set('joinCode', joinCode);
+    }
+    if (viewReplay !== undefined) {
+      params.set('viewReplay', viewReplay);
+    }
+    if (registrationOnly !== undefined) {
+      params.set('registrationOnly', String(registrationOnly));
+    }
+
     return url.toString();
-  }, [eventId, joinCode, hybrid, viewReplay, registrationOnly]);
+  }, [eventId, joinCode, viewReplay, registrationOnly]);
+
+  // Read hybrid from URL params for styling purposes
+  const urlParams = new URLSearchParams(window.location.search);
+  const hybrid = urlParams.get('hybrid') === 'true';
 
   const iframeStyle = isPopup 
     ? {
