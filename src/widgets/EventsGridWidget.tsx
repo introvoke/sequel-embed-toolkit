@@ -16,7 +16,11 @@ export const EventsGridWidget: React.FC<EventsGridWidgetProps> = ({
   widget,
 }) => {
   const events = widget.data?.events ?? [];
-  const cardsToDisplay = widget.config?.cardsToDisplay;
+  const config = widget.config as typeof widget.config & {
+    title?: string;
+  };
+  const title = config?.title;
+  const cardsToDisplay = config?.cardsToDisplay;
 
   const limitedEvents =
     typeof cardsToDisplay === "number"
@@ -55,6 +59,12 @@ export const EventsGridWidget: React.FC<EventsGridWidgetProps> = ({
 
   return (
     <div className="@container w-full">
+      {/* Grid Title */}
+      {title && (
+        <h2 className="mb-6 text-left text-heading-lg font-bold">
+          {title}
+        </h2>
+      )}
       <div className="grid grid-cols-1 gap-4 @[600px]:grid-cols-2 @[900px]:grid-cols-3">
         {normalizedEvents.map((event) => {
           const eventEndDate = new Date(event.endDate).getTime();

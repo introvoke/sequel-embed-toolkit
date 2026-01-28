@@ -14,7 +14,13 @@ interface SpeakerWidgetProps {
 
 export const SpeakerWidget: React.FC<SpeakerWidgetProps> = ({ widget }) => {
   const speakers = widget.data?.speakers ?? [];
+  // TODO: fix this type, why is it so hard to expose the TRPC types????
+  const config = widget.config as typeof widget.config & {
+    title?: string;
+    showSpeakerCompanyLogo?: boolean;
+  };
   const {
+    title,
     speakerNameColor,
     speakerTitleColor,
     cardBackgroundColor,
@@ -23,7 +29,8 @@ export const SpeakerWidget: React.FC<SpeakerWidgetProps> = ({ widget }) => {
     showSpeakerPhoto,
     showSpeakerTitle,
     showSpeakerLinkedIn,
-  } = widget.config ?? {};
+    showSpeakerCompanyLogo,
+  } = config ?? {};
 
   if (!speakers || speakers.length === 0) {
     return null;
@@ -41,10 +48,12 @@ export const SpeakerWidget: React.FC<SpeakerWidgetProps> = ({ widget }) => {
   return (
     <div style={cssVarStyles}>
       <Speaker
+        title={title}
         speakers={speakers}
         showSpeakerPhoto={showSpeakerPhoto}
         showSpeakerTitle={showSpeakerTitle}
         showSpeakerLinkedIn={showSpeakerLinkedIn}
+        showSpeakerCompanyLogo={showSpeakerCompanyLogo}
       />
     </div>
   );
