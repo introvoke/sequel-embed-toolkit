@@ -1,6 +1,7 @@
 import React from "react";
 import { EventCard, type EventData } from "@src/components/EventGrid";
 import type { AppRouter } from "@introvoke/sequel-trpc";
+import { ApiConfig } from "@src/api/apiConfig";
 
 // Infer types from tRPC API
 type GetWidgetsOutput =
@@ -28,26 +29,33 @@ export const EventsGridWidget: React.FC<EventsGridWidgetProps> = ({
       : events;
 
   // Convert widget events to EventData format
-  const normalizedEvents: EventData[] = limitedEvents.map((event) => ({
-    uid: event.id,
-    name: event.name,
-    description: event.description || "",
-    picture: event.picture || event.thumbnail || "",
-    // Dates come as strings from JSON serialization, handle both cases
-    startDate:
-      typeof event.startDate === "string"
-        ? event.startDate
-        : event.startDate.toISOString(),
-    endDate:
-      typeof event.endDate === "string"
-        ? event.endDate
-        : event.endDate.toISOString(),
-    timezone: "",
-    customUrl: "", // Widget events might not have custom URLs
-    isLive: false,
-    isEventSeries: false,
-    isOnDemand: false,
-  }));
+  const normalizedEvents: EventData[] = limitedEvents.map((event) => {
+    // Use customUrl if present, otherwise construct Sequel URL using app.sequel.io
+    const demoSiteUrl = ApiConfig.GetDemoSiteUrl();
+    const sequelUrl = `${demoSiteUrl}/event/${event.id}`;
+    const eventUrl = (event as typeof event & { customUrl?: string }).customUrl || sequelUrl;
+
+    return {
+      uid: event.id,
+      name: event.name,
+      description: event.description || "",
+      picture: event.picture || event.thumbnail || "",
+      // Dates come as strings from JSON serialization, handle both cases
+      startDate:
+        typeof event.startDate === "string"
+          ? event.startDate
+          : event.startDate.toISOString(),
+      endDate:
+        typeof event.endDate === "string"
+          ? event.endDate
+          : event.endDate.toISOString(),
+      timezone: "",
+      customUrl: eventUrl,
+      isLive: false,
+      isEventSeries: false,
+      isOnDemand: false,
+    };
+  });
 
   // Determine if events are upcoming based on end date
   const now = new Date();
