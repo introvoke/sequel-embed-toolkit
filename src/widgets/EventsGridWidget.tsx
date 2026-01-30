@@ -69,7 +69,7 @@ export const EventsGridWidget: React.FC<EventsGridWidgetProps> = ({
     <div className="@container w-full">
       {/* Grid Title */}
       {title && (
-        <h2 className="mb-6 text-left text-heading-lg font-bold">
+        <h2 className="mb-6 text-left text-heading-md">
           {title}
         </h2>
       )}

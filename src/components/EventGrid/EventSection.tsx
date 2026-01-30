@@ -24,7 +24,7 @@ export const EventSection: React.FC<EventSectionProps> = ({
 
   return (
     <div className="mb-10">
-      <h2 className="text-black dark:text-white text-2xl font-bold font-['Inter'] mb-5">
+      <h2 className="mb-6 text-left text-heading-md text-black dark:text-white">
         {title}
       </h2>
       <div className="w-full max-w-[1280px] inline-flex justify-start items-start gap-4 flex-wrap content-start overflow-hidden">
