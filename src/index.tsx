@@ -51,6 +51,7 @@ interface RenderEventParams {
   isPopup?: boolean;
   viewReplay?: string;
   registrationOnly?: boolean;
+  container?: HTMLElement; // Custom container element (e.g., for Shadow DOM)
 }
 
 interface EmbedWidgetsConfig {
@@ -1364,6 +1365,7 @@ class Sequel {
     isPopup,
     viewReplay,
     registrationOnly,
+    container,
   }: RenderEventParams) => {
     // Validate and get joinCode from URL params or cookies
     const validatedJoinCode = await getValidatedJoinCode({ eventId });
@@ -1384,7 +1386,8 @@ class Sequel {
         isPopup={isPopup}
         viewReplay={viewReplay}
         registrationOnly={registrationOnly}
-      />
+      />,
+      container // Pass the custom container if provided
     );
   };
 
