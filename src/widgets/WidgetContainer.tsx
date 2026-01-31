@@ -61,7 +61,7 @@ export const WidgetContainer: React.FC<WidgetContainerProps> = ({
   isPopup,
 }) => {
   return (
-    <div className="flex w-full flex-col gap-6 max-w-[1280px] mx-auto">
+    <div className="flex w-full flex-col gap-6 max-w-[1280px] mx-auto px-4">
       {widgets.map((widget, index) => (
         <div key={index} className="w-full">
           {widget.type === "eventEmbed" && (
